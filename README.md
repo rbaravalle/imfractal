@@ -21,7 +21,7 @@ A library to compute (multi)fractal dimensions of images written in Python.
 
 The usage of imfractal is shown using test.py
 
-## Multifractal Spectrums
+## Multifractal Spectrums implemented (so far)
 
-1) Singularity Multifractal spectrum (Haussdorf dimentions through Hölder exponents)
-2) Sandbox Multifractal spectrum
+1. Singularity Multifractal spectrum (Haussdorf dimentions through Hölder exponents)
+2. Sandbox Multifractal spectrum
