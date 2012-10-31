@@ -1,7 +1,7 @@
 imfractal
 =======
 
-A library to compute (multi)fractal dimensions of the images written in Python.
+A library to compute (multi)fractal dimensions of images written in Python.
 
 ## Required dependencies for imfractal:
 
@@ -20,3 +20,8 @@ A library to compute (multi)fractal dimensions of the images written in Python.
 ## Usage
 
 The usage of imfractal is shown using test.py
+
+## Multifractal Spectrums
+
+1) Singularity Multifractal spectrum (Haussdorf dimentions through Hölder exponents)
+2) Sandbox Multifractal spectrum
