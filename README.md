@@ -12,9 +12,7 @@ A library to compute (multi)fractal dimensions of the images written in Python.
 
 ## Installation
 
-* In Debian/Ubuntu
-
-Just install the required Python packages:
+* In Debian/Ubuntu, just install the required Python packages:
 
 
     apt-get install python-numpy python-scipy python-image 
