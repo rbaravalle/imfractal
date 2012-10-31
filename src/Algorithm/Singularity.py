@@ -113,7 +113,7 @@ class Singularity (Algorithm):
                             for w in range(s1):
                                 for t in range(s2):
                                     b = block[w,t]
-                                    if (b == clases[c]+1): # !!
+                                    if (b == clases[c]): # !!
                                        raise SystemError
                                        f = 1
                                     if(f == 1):
