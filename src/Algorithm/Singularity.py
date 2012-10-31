@@ -98,7 +98,9 @@ class Singularity (Algorithm):
                         f = 0;
                         s1 = len(block)
                         s2 = len(block[0])
+
                         if(c != self.cuantas-1):
+                            # f = 1 if any pixel in block is between clases[c] and clases[c+1]
                             for w in range(s1):
                                 for t in range(s2):
                                     b = block[w,t]
@@ -109,6 +111,7 @@ class Singularity (Algorithm):
                                 if(f == 1):
                                     break
                         else:
+                            # f = 1 if any pixel in block is equal to classes[c]+1
                             for w in range(s1):
                                 for t in range(s2):
                                     b = block[w,t]
@@ -120,8 +123,12 @@ class Singularity (Algorithm):
                                     break
                         
                         flag[i-1,j-1] = f
+
+                        # number of blocks with holder exponents for this class (c)
+                        # and for this window size (k)
                         N[k] = N[k] + f;
 
+            # Haussodorf (box) dimention of the alpha distribution
             falpha[c] = -np.polyfit(map(lambda i: np.log(i*2+1),range(cant+1)),np.log(map(lambda i: i+1,N)),1)[0]
 
         t =  time.clock()-t
