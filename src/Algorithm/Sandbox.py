@@ -36,6 +36,13 @@ class Sandbox (Algorithm):
             sum = sum - intImg[x2][y1-1]
         return sum/((x2-x1+1)*(y2-y1+1));
 
+    # constructs summed area table
+    # img: original image
+    # Nx: img size(x)
+    # Ny: img size(y)
+    # which: type of img: 
+    #   'img': Image
+    #   else:  array
     def sat(self,img,Nx,Ny,which):
         # summed area table, useful for speed up the computation by adding image pixels 
         intImg = [ [ 0 for i in range(Nx) ] for j in range(Ny) ]
@@ -70,6 +77,8 @@ class Sandbox (Algorithm):
 
         return intImg
 
+    # white's algorithm
+    # local threshold schema
     def white(self,img,Nx,Ny):
                
         im = np.zeros((Nx,Ny))
@@ -89,6 +98,8 @@ class Sandbox (Algorithm):
         return ndimage.binary_opening(im, structure=np.ones((2,2))).astype(np.int)
 
 
+    # sum of values in the region (x1,y1), (x2,y2) in intImg
+    # intImg: summed area table
     def count(self,x1,y1,x2,y2,intImg):
         sum = intImg[x2][y2]
         if (x1>= 1 and y1 >= 1):
@@ -99,7 +110,7 @@ class Sandbox (Algorithm):
             sum = sum - intImg[x2][y1-1]
         return sum
                 
-
+    # get multifractal dimentions
     def getFDs(self,filename):
         t = time.clock()
         tP = (self.P)   # tP : two raised to P
@@ -160,12 +171,10 @@ class Sandbox (Algorithm):
 
         t =  time.clock()-t
         print "Time: ", t
-        #print "Dims: ", s
         return s
 
+    # D_{q} 
     def Dq(self,c,q,L,m0,down):
-
-        #aux = 1
         # sum in each radius, all the points
         if q>0: # math representation issue
             aux1 = float(self.total)
@@ -178,9 +187,7 @@ class Sandbox (Algorithm):
             for i in range(self.total):
                 c[0][h-1] = c[0][h-1] + ((c[i+1][h-1]**q)/aux1) # mean of "total" points
 
-        #print "C[0]:", c[0]
         up = map(lambda i: log(i)-aux2-q*log(m0), c[0])
-        #print up
         up2 = map(lambda i: up[i]/(q*down[i]), range(len(up)))
         sizes = range(1,self.P+1)
 

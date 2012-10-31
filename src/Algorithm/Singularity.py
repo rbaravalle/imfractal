@@ -20,6 +20,7 @@ class Singularity (Algorithm):
     :author: Rodrigo Baravalle
     """
 
+    # how many multifractal dimentions should thw algorithm return
     def setCuantas(self,x):
         self.cuantas = x
 
@@ -45,6 +46,7 @@ class Singularity (Algorithm):
         temp = np.log((1.0,3.0,5.0,7.0));
         measure = np.zeros(4);
 
+        # obtain the holder exponent at each pixel
         for i in range(0,Nx-1):
             for j in range(0,Ny-1):
                 measure[0] = max(gray.crop((max(i-1,0),max(j-1,0),min(i+1,Nx-1),min(j+1,Ny-1))).getdata()) + 1
@@ -62,11 +64,11 @@ class Singularity (Algorithm):
 
         paso = (maxim-minim)/self.cuantas
         clases = np.arange(minim,maxim,paso)
-        print "Clases: ", clases, self.cuantas
 
         # Window
         cant = int(np.floor(np.log(Nx)))
 
+        # concatenate the image A as [[A,A],[A,A]]
         hs = np.hstack((alphaIm,alphaIm))
         alphaIm = np.vstack((hs,hs))
 
@@ -75,6 +77,7 @@ class Singularity (Algorithm):
 
         for c in range(self.cuantas):
             N = np.zeros(cant+1)
+            # window sizes
             for k in range(cant+1):
                 sizeBlocks = 2*k+1
                 numBlocks_x = int(np.ceil(Nx/sizeBlocks))
