@@ -2,7 +2,6 @@ from Algorithm import *
 from random import randrange,randint
 from math import log
 from scipy import ndimage
-import time
 import Image
 import numpy as np
 import sys
@@ -17,10 +16,13 @@ class Sandbox (Algorithm):
     :author: Rodrigo Baravalle
     """
 
+    # how many multifractal dimentions should thw algorithm return
+    def __init__(self, c):
+        self.cant = c
+
     def setDef(self,x,y):
         self.total = 10*10      # number of pixels for averaging
         self.P = 40             # window
-        self.cant = 20+1           # number of fractal dimensions (-1 x2)
         self.v = x
         self.b = y
 
@@ -112,7 +114,6 @@ class Sandbox (Algorithm):
                 
     # get multifractal dimentions
     def getFDs(self,filename):
-        t = time.clock()
         tP = (self.P)   # tP : two raised to P
         x = tP+1
         y = tP+1
@@ -166,11 +167,6 @@ class Sandbox (Algorithm):
 
             j = j+1
 
-        #plot(s)
-        #show()
-
-        t =  time.clock()-t
-        print "Time: ", t
         return s
 
     # D_{q} 

@@ -5,7 +5,6 @@ from scipy import ndimage
 from pylab import plot, title, show , legend
 import matplotlib
 from matplotlib import pyplot as plt
-import time
 import Image
 import numpy as np
 import sys
@@ -21,11 +20,10 @@ class Singularity (Algorithm):
     """
 
     # how many multifractal dimentions should thw algorithm return
-    def setCuantas(self,x):
-        self.cuantas = x
+    def __init__(self, c):
+        self.cuantas = c
 
     def getFDs(self,filename):
-        t = time.clock()
         cantSelected = 0
 
         a = Image.open(filename)
@@ -131,8 +129,6 @@ class Singularity (Algorithm):
             # Haussodorf (box) dimention of the alpha distribution
             falpha[c] = -np.polyfit(map(lambda i: np.log(i*2+1),range(cant+1)),np.log(map(lambda i: i+1,N)),1)[0]
 
-        t =  time.clock()-t
         s = np.hstack((clases,falpha))
-        print "Time: ", t
         return s
 
