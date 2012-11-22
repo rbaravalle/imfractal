@@ -9,13 +9,15 @@ import Image
 import numpy as np
 import sys
 import os
+from scipy.sparse import coo_matrix
+import scipy.sparse.linalg as linsolve
 
 class Singularity (Algorithm):
 
     """
 
     :singularity multifractal spectrum
-    :version: 1.0
+    :version: 1.1
     :author: Rodrigo Baravalle
     """
 
@@ -24,8 +26,6 @@ class Singularity (Algorithm):
         self.cuantas = c
 
     def getFDs(self,filename):
-        cantSelected = 0
-
         a = Image.open(filename)
         Nx, Ny = a.size
         L = Nx*Ny
@@ -33,28 +33,32 @@ class Singularity (Algorithm):
         points = []     # number of elements in the structure
         gray = a.convert('L') # rgb 2 gray
 
-        #plt.imshow(gray, cmap=matplotlib.cm.gray)
-        #plt.show()
-
         alphaIm = np.zeros((Nx,Ny), dtype=np.double ) # Nx rows x Ny columns
         #measure = np.zeros(4, dtype=np.double ) # Ny rows x 4 columns
 
         l = 4 # (maximum window size-1) / 2
-        # from 1 to l
-        temp = np.log((1.0,3.0,5.0,7.0));
-        measure = np.zeros(4);
+        temp = np.log((1.0,3.0,5.0,7.0))
+        measure = np.zeros(l*Ny)
 
-        # obtain the holder exponent at each pixel
-        for i in range(0,Nx-1):
-            for j in range(0,Ny-1):
-                measure[0] = max(gray.crop((max(i-1,0),max(j-1,0),min(i+1,Nx-1),min(j+1,Ny-1))).getdata()) + 1
-                measure[1] = max(gray.crop((max(i-2,0),max(j-2,0),min(i+2,Nx-1),min(j+2,Ny-1))).getdata()) + 1
-                measure[2] = max(gray.crop((max(i-3,0),max(j-3,0),min(i+3,Nx-1),min(j+3,Ny-1))).getdata()) + 1
-                measure[3] = max(gray.crop((max(i-4,0),max(j-4,0),min(i+4,Nx-1),min(j+4,Ny-1))).getdata()) + 1
-                alphaIm[j,i] = np.polyfit(temp,np.log(measure),1)[0]
+        b = np.vstack((temp,np.ones((1,l)))).T
+        AA=coo_matrix(np.kron(np.identity(Nx), b))
+        
+        # Instead of doing polyfits, a sparse linear system is constructed and solved
+        for i in range(Nx):
+            for j in range(Ny):
+                measure[0+j*l] = max(gray.crop((max(i-1,0),max(j-1,0),min(i+1,Nx-1),min(j+1,Ny-1))).getdata()) + 1
+                measure[1+j*l] = max(gray.crop((max(i-2,0),max(j-2,0),min(i+2,Nx-1),min(j+2,Ny-1))).getdata()) + 1
+                measure[2+j*l] = max(gray.crop((max(i-3,0),max(j-3,0),min(i+3,Nx-1),min(j+3,Ny-1))).getdata()) + 1
+                measure[3+j*l] = max(gray.crop((max(i-4,0),max(j-4,0),min(i+4,Nx-1),min(j+4,Ny-1))).getdata()) + 1
+
+            bb=np.log(measure)
+            z = linsolve.lsqr(AA,bb)[0]
+            z = z.reshape(2,Ny,order = 'F')
+            alphaIm[i] = z[0]
 
         maxim = np.max(alphaIm)
         minim = np.min(alphaIm)
+        alphaIm = alphaIm.T
 
         # Alpha image
         #plt.imshow(alphaIm, cmap=matplotlib.cm.gray)
