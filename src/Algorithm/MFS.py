@@ -10,8 +10,6 @@ import scipy.signal
 class MFS (Algorithm):
 
     """
-
-
     :version: 1.0
     :author: Rodrigo Baravalle
     """
@@ -20,10 +18,17 @@ class MFS (Algorithm):
         pass
 
     def setDef(self,ind,f,ite,filen):
+
+        # parameters: ind -> determines how many levels are used when computing the density 
+        #                          choose 1 for using  directly the image measurement im or
+        #                          >= 6 for computing the density of im (quite stable for >=5)      
+        #              f ----> determines the dimension of  MFS vector
+        #              ite  ---> determines how many levels are used when computing MFS for each 
+
         self.ind_num = ind      # number of pixels for averaging
-        self.f_num = f             # window
+        self.f_num = f          # window
         self.ite_num = ite 
-        self.FILENAME = filen
+
 
 
     def gauss_kern(self,size, sizey):
@@ -45,61 +50,15 @@ class MFS (Algorithm):
 
     def getFDs(self, filename):
         """
-         
-
         @param string filename : image location
         @return [float] : multi fractal dimentions
-        @author: Rodrigo Baravalle
+        @author: Rodrigo Baravalle. Code ported from Matlab
         """
 
-        #mfs Computes the MFS vector for the input measurement image  im 
-        #
-        # parameters: ind_num -> determines how many levels are used when computing the density 
-        #                          choose 1 for using  directly the image measurement im or
-        #                          >= 6 for computing the density of im (quite stable for >=5)      
-        #              f_num----> determines the dimension of  MFS vector
-        #              ite_num  ---> determines how many levels are used when computing MFS for each level set
-        #                            (quite stable for >= 3)
-        #
-        #MFS = mfs(im) computes the MFS for input  im with default setting
-        #                  
-        #MFS = mfs(im,ind_num) computes the MFS with ind_num density levels
-        #
-        #MFS = mfs(im,ind_num, f_num) computes the MFS of dimension f_num for input im 
-        #                             with ind_num density levels
-        #
-        #MFS = mfs(im, ind_num, f_num,ite_num) computes the MFS of dimension f_num for input measurement im
-        #                                  using ite_num level iterations in the
-        #                                  estimation of the fractal dimension and using ind_num level
-        #                                  iterations in the density estimation.
-        #
-        #Author: Yong Xu, Hui Ji
-        #Date: Apr 24, 2007
-        #Code ported to python : Rodrigo Baravalle. December 2012
-
-        #self.ind_num = 1
-        #if(len(extra) == 1):
-        #    self.ind_num = extra[0]  #density counting levels
-        #    self.f_num = 26          #the dimension of MFS
-        #    self.ite_num = 3         # iteration levels in estimating fractal dimension
-        #if(len(extra) == 2):
-        #    self.ind_num = extra[0]
-        #    self.f_num = extra[1]
-        #    self.ite_num = 3
-        #if(len(extra) >= 3):
-        #    self.ind_num = extra[0]
-        #    self.f_num = extra[1]
-        #    self.ite_num = extra[2]
-
-
-        # Extra[3] == True means what we are passing is a filename
-        # Extra[3] == False means what we are passing is an array
-        #self.FILENAME = extra[3]
-        if(self.FILENAME):
-            im = Image.open(filename)
-            # Preprocessing: if IM is a color image convert it to a gray image 
-            im = im.convert("L")
-            im = np.array(im.getdata()).reshape(im.size)
+        im = Image.open(filename)
+        # Preprocessing: if IM is a color image convert it to a gray image 
+        im = im.convert("L")
+        im = np.array(im.getdata()).reshape(im.size)
 
 
         #Using [0..255] to denote the intensity profile of the image
