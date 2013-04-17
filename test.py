@@ -2,6 +2,7 @@ import Image
 import time
 import src.Algorithm.Singularity as Singularity
 import src.Algorithm.Sandbox as Sandbox
+import src.Algorithm.MFS as MFS
 
 filename = 'images/baguette2.tif'
 
@@ -24,3 +25,12 @@ t =  time.clock()-t
 print "Time Sandbox: ", t
 print fds2
 
+i = MFS.MFS()
+i.setDef(1,20,3,True)
+
+print "Calculating MFS Multifractal Spectrum..."
+t =  time.clock()
+fds3 = i.getFDs(filename)
+t =  time.clock()-t
+print "Time MFS: ", t
+print fds3

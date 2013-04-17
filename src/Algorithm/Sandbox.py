@@ -16,7 +16,7 @@ class Sandbox (Algorithm):
     :author: Rodrigo Baravalle
     """
 
-    # how many multifractal dimentions should thw algorithm return
+    # how many multifractal dimentions should the algorithm return
     def __init__(self, c):
         self.cant = c
 
