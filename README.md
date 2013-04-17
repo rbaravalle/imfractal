@@ -25,3 +25,4 @@ The usage of imfractal is shown using test.py
 
 1. Singularity Multifractal spectrum (Haussdorf dimentions through Hölder exponents)
 2. Sandbox Multifractal spectrum
+2. Multifractal spectrum (MFS)
