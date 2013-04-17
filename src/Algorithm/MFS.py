@@ -17,10 +17,6 @@ class MFS (Algorithm):
     """
 
     def __init__(self):
-        """
-        @return  :
-        @author
-        """
         pass
 
     def setDef(self,ind,f,ite,filen):
@@ -53,7 +49,7 @@ class MFS (Algorithm):
 
         @param string filename : image location
         @return [float] : multi fractal dimentions
-        @author
+        @author: Rodrigo Baravalle
         """
 
         #mfs Computes the MFS vector for the input measurement image  im 
