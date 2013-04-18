@@ -24,12 +24,13 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
+#from Path import Path
+import Algorithm.Sandbox
+import Algorithm.MFS
+import Algorithm.Singularity
 
-import tests.test_MFS
-#except ImportError:
-#    print "Error: the module tests/tests_MFS is missing"
+Sandbox = Algorithm.Sandbox.Sandbox
+MFS = Algorithm.MFS.MFS
+Singularity = Algorithm.Singularity.Singularity
 
-import tests.test_classifier
-#except ImportError:
-#    print "Error: the module tests/tests_classifier is missing"
-
+#REIL_Path = lambda trace_filename,first,last: Path(trace_filename, ReilParser, first, last).

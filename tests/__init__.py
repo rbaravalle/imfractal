@@ -24,12 +24,3 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
-
-import tests.test_MFS
-#except ImportError:
-#    print "Error: the module tests/tests_MFS is missing"
-
-import tests.test_classifier
-#except ImportError:
-#    print "Error: the module tests/tests_classifier is missing"
-

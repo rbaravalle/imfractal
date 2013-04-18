@@ -24,12 +24,35 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
+import numpy
 
-import tests.test_MFS
-#except ImportError:
-#    print "Error: the module tests/tests_MFS is missing"
+class Algorithm(object):
 
-import tests.test_classifier
-#except ImportError:
-#    print "Error: the module tests/tests_classifier is missing"
+  """
+   
+
+  :version:
+  :author:
+  """
+
+  def __init__(self):
+    """
+     
+
+    @return  :
+    @author
+    """
+    pass
+
+  def getFDs(self, filename):
+    """
+     
+
+    @param string filename : image location
+    @return [float] : multi fractal dimentions
+    @author
+    """
+    pass
+
+
 
