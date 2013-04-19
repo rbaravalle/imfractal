@@ -35,7 +35,7 @@ An open source library to compute (multi)fractal dimensions of images written in
 * Numpy 1.1 or higher       (http://numpy.scipy.org/)   
 * Scipy 0.7 or higher       (http://www.scipy.org/)
 * PIL 1.1.7 or higher       (http://www.pythonware.com/products/pil/)
-* python-scikits-learn 0.10.0 or higher
+* scikit-learn 0.10.0 or higher (http://scikit-learn.org/)
 
 ## Installation
 
