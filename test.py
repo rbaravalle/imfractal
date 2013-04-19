@@ -25,11 +25,14 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 
-import tests.test_MFS
+import tests.test_MFS as tmfs
 #except ImportError:
 #    print "Error: the module tests/tests_MFS is missing"
 
-import tests.test_classifier
+import tests.test_classifier as tclass
 #except ImportError:
 #    print "Error: the module tests/tests_classifier is missing"
 
+
+tmfs.do_test()
+tclass.do_test()

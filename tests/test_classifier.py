@@ -37,7 +37,7 @@ import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 from sklearn import cross_validation
 
-def main():
+def do_test():
     cant = 10
     dDFs  = 20
     cantClasses = 2
@@ -89,4 +89,3 @@ def main():
 
 
 
-main()
