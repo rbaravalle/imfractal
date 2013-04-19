@@ -32,7 +32,6 @@ import csv
 import sys
 import os
 from subprocess import *
-import conf # confusion matrix
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 from sklearn import cross_validation
