@@ -58,21 +58,17 @@ def do_test():
     
     ins = MFS()
 
-    print 'Calculating MFS for the bread database...'
+    print 'Training: calculating MFS for the bread database...'
     for i in range(cant):
         ins.setDef(1,20,3,True)
         filename = pathbtr+dirListbtr[i]
-        print filename
         breadtrain[i] = ins.getFDs(filename)
         filename = pathbte+dirListbte[i]
-        print filename
         breadtest[i] = ins.getFDs(filename)
 
         filename = pathnbtr+dirListnbtr[i]
-        print filename
         nonbreadtrain[i] = ins.getFDs(filename)
         filename = pathnbte+dirListnbte[i]
-        print filename
         nonbreadtest[i] = ins.getFDs(filename)
 
     cfr = RandomForestClassifier(n_estimators=100)
@@ -83,6 +79,7 @@ def do_test():
     labels = map(lambda i: np.floor(i/(2*(cant)))+1, labels)
     labels = np.array(labels)
     labels = np.transpose(labels)[0]   # FIX ME
+    print "Testing..."
     scores = cross_validation.cross_val_score(cfr, data, labels, cv=4)
     print "Classification performance (Random Forest classifier): " + str( np.array(scores).mean() )
 
