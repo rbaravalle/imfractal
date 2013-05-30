@@ -23,16 +23,21 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
+from imfractal import *
 
-#from Path import Path
-import Algorithm.Sandbox
-import Algorithm.MFS
-import Algorithm.Singularity
-import Algorithm.Boxdimension
+import Image
+import time
 
-Sandbox = Algorithm.Sandbox.Sandbox
-MFS = Algorithm.MFS.MFS
-Singularity = Algorithm.Singularity.Singularity
-Boxdimension = Algorithm.Boxdimension.Boxdimension
+def do_test():
+    filename = 'images/baguette2.tif'
 
-#REIL_Path = lambda trace_filename,first,last: Path(trace_filename, ReilParser, first, last).
+    i = Boxdimension()
+    i.setDef(40,1.15)
+
+    print "Calculating Box Dimension..."
+    t =  time.clock()
+    fds = i.getFDs(filename)
+    t =  time.clock()-t
+    print "Time Boxdimension: ", t
+    print fds
+
