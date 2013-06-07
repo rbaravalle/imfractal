@@ -227,14 +227,16 @@ class Boxdimension (Algorithm):
 
         x = np.log(delta)
         deltaA = np.vstack([x, np.ones(len(x))]).T
-        m,c = np.linalg.lstsq(deltaA,np.log(N))[0]
+        m = np.linalg.lstsq(deltaA,np.log(N))
 
-        fsize = 14
+        fsize = 26
         plt.ylabel('$log(N_{\epsilon})$',fontsize=fsize)
-        plt.xlabel('$log(1/\delta)$',fontsize=fsize)
-        plt.plot(x,m*x+c,'r-',  label="Linear fit, slope = {0}".format(str(m)),linewidth=2.0)
+        plt.xlabel('$log(1/\epsilon)$',fontsize=fsize)
+        a = round(np.float32(str(m[0][0])),2)
+        b = round(np.float32(str(m[1][0])),2)
+        plt.plot(x,m[0][0]*x+m[0][1],'r-',  label="Linear fit\nSlope (Box Dimension) = {0}\nR = {1}".format(a,np.float32(1.0)-b),linewidth=2.0)
         plt.plot(x,np.log(N),'bo',  label='Data')
         plt.legend(loc = 2)
         plt.show()
 
-        return [m,c]
+        return m

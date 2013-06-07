@@ -35,9 +35,9 @@ def do_test():
     i.setDef(40,1.15)
 
     print "Calculating Box Dimension..."
-    t =  time.clock()
+    #t =  time.clock()
     fds = i.getFDs(filename)
-    t =  time.clock()-t
-    print "Time Boxdimension: ", t
+    #t =  time.clock()-t
+    #print "Time Boxdimension: ", t
     print fds
 
