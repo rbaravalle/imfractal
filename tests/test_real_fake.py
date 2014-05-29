@@ -65,7 +65,7 @@ def do_test():
     
     ins = MFS()
 
-    print 'Training: calculating MFS for the bread database...'
+    print 'Training: computing MFS for the bread database...'
     ins.setDef(1,20,3,True)
     for i in range(cantTrainB):
         filename = pathbtr+dirListbtr[i]
@@ -120,7 +120,7 @@ def do_test():
 
     plt.ylabel(r'$R$',fontsize=fsize)
     plt.xlabel('FD',fontsize=fsize)
-    plt.plot(x, breadtrain.T, 'k+--', label='bread train',linewidth=2.0)
+    plt.plot(x, breadtrain[3:6,:].T, 'k+--', label='bread train',linewidth=2.0)
     plt.plot(x, breadtest.T, 'r*--',  label='bread test',linewidth=2.0)
     plt.legend(loc = 0)
     plt.show()
@@ -129,8 +129,8 @@ def do_test():
     scoreSVM = (len(gtruth)-sum(abs(gtruth-predictionsSVM)))/float(len(gtruth))
 
     #scores = cross_validation.cross_val_score(cfr, data, labels, cv=4)
-    print "Classification performance (Random Forest classifier): " + str( scoreRF )
-    print "Classification performance (Support Vector Machine classifier): " + str( scoreSVM )
+    print "Classification performance (Random Forest classifier): " + str( scoreRF*100 ) + "%"
+    print "Classification performance (Support Vector Machine classifier): " + str( scoreSVM*100 ) + "%"
 
 
 

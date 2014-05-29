@@ -133,15 +133,16 @@ class Boxdimension (Algorithm):
 
         gray = a.convert('L') # rgb 2 gray
 
-        gray = self.white(gray,Nx,Ny) # local thresholding algorithm
+        #gray = #self.white(gray,Nx,Ny) # local thresholding algorithm
 
-        e2 = gray #np.array(gray.getdata(),np.uint8).reshape(gray.size[1], gray.size[0])
+        e2 = np.array(gray.getdata(),np.uint8).reshape(gray.size[1], gray.size[0])
         #plt.imshow(gray, cmap=matplotlib.cm.gray)
         #plt.show()
         delta = []
         N = []
     
         for i in range(9):
+            print "ENTRO."
             numBlocks = 2**i
             sizeBlocks_x = np.floor(np.float32(Nx)/numBlocks)
             sizeBlocks_y = np.floor(np.float32(Nx)/numBlocks)
@@ -219,6 +220,7 @@ class Boxdimension (Algorithm):
                             block = e2[xStart:xEnd][yStart:yEnd]
                             flag[i][j] = np.sum(block) > 0 # mark this if ANY part of block is true
 
+                    print flag
                     boxCount = flag.sum()
 
                 if(boxCount != 0):
@@ -227,6 +229,8 @@ class Boxdimension (Algorithm):
 
         x = np.log(delta)
         deltaA = np.vstack([x, np.ones(len(x))]).T
+        print "delta. ", delta
+        print np.log(N)
         m = np.linalg.lstsq(deltaA,np.log(N))
 
         fsize = 26

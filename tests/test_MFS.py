@@ -29,7 +29,15 @@ import Image
 import time
 
 def do_test():
-    filename = 'images/baguette2.tif'
+    filename = 'images/fractal20Bread.png'
+    i = MFS()
+    i.setDef(1,20,3,True)
+    print "Calculating MFS Multifractal Spectrum..."
+    t =  time.clock()
+    fds3 = i.getFDs(filename)
+    t =  time.clock()-t
+    print "Time MFS: ", t
+    print fds3
 
     i = Singularity(20)
 

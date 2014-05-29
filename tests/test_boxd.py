@@ -29,12 +29,12 @@ import Image
 import time
 
 def do_test():
-    filename = 'images/baguette2.tif'
+    filename = 'images/fractal20Bread.png'
 
     i = Boxdimension()
     i.setDef(40,1.15)
 
-    print "Calculating Box Dimension..."
+    print "Computing Box Dimension..."
     #t =  time.clock()
     fds = i.getFDs(filename)
     #t =  time.clock()-t
