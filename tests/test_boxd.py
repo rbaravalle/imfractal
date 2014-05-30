@@ -29,7 +29,7 @@ import Image
 import time
 
 def do_test():
-    filename = 'images/fractal20Bread.png'
+    filename = 'images/real2.png'
 
     i = Boxdimension()
     i.setDef(40,1.15)

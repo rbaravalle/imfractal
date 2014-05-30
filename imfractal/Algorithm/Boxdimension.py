@@ -126,6 +126,42 @@ class Boxdimension (Algorithm):
         # do an opening operation to remove small elements
         return ndimage.binary_opening(im, structure=np.ones((2,2))).astype(np.int)
 
+    def boxCount(self,e2,posx,posy,numBlocks,sx,sy,Nx,Ny):
+        suma = 0
+        for i in range(1,numBlocks):
+            for j in range(1,numBlocks):
+
+                xStart = posx+(i-1)*sx
+                xEnd   = posx+i*sx - 1
+
+                yStart = posy+(j-1)*sy
+                yEnd   = posy+j*sy - 1
+
+                dx = xEnd - (Nx-1) # sobrante en pixeles en x
+                dy = yEnd - (Ny-1) # sobrante en pixeles en y
+                if (dx > 0 and dy <= 0):
+                    block1 = e2[xStart:Nx-1,yStart:yEnd]
+                    block2 = e2[0:dx,yStart:yEnd]
+                    suma+= np.sum(block1+block2) > 0
+
+                if (dx <= 0 and dy > 0):
+                    block1 = e2[xStart:xEnd,yStart:Ny-1]
+                    block2 = e2[xStart:xEnd,0:dy]
+                    suma+= np.sum(block1+block2) > 0
+
+                if (dx > 0 and dy > 0):
+                    block1 = e2[xStart:Nx-1,yStart:Ny-1]
+                    block2 = e2[0:dx,yStart:Ny-1]
+                    block3 = e2[xStart:Nx-1,0:dy]
+                    block4 = e2[0:dx,0:dy]
+                    suma+= np.sum(block1+block2+block3+block4) > 0
+
+                if (dx <= 0 and dy <= 0): # todo el bloque esta en la grilla
+                    block = e2[xStart:xEnd,yStart:yEnd]
+                    suma+= np.sum(block)>0 
+
+        return suma
+
     def getFDs(self,filename):
         a = Image.open(filename)
         Nx, Ny = a.size
@@ -133,104 +169,42 @@ class Boxdimension (Algorithm):
 
         gray = a.convert('L') # rgb 2 gray
 
-        #gray = #self.white(gray,Nx,Ny) # local thresholding algorithm
+        #gray = self.white(gray,Nx,Ny) # local thresholding algorithm
 
         e2 = np.array(gray.getdata(),np.uint8).reshape(gray.size[1], gray.size[0])
-        #plt.imshow(gray, cmap=matplotlib.cm.gray)
-        #plt.show()
+
+        plt.imshow(e2, cmap=matplotlib.cm.gray)
+        plt.show()
         delta = []
         N = []
     
-        for i in range(9):
-            print "ENTRO."
-            numBlocks = 2**i
-            sizeBlocks_x = np.floor(np.float32(Nx)/numBlocks)
-            sizeBlocks_y = np.floor(np.float32(Nx)/numBlocks)
+        for w in range(1,int(log(Nx)/log(2))):
+            numBlocks = 2**w
+            sx = np.floor(np.float32(Nx)/numBlocks)
+            sy = np.floor(np.float32(Ny)/numBlocks)
+            boxc = 0
 
-            flag = np.zeros((numBlocks,numBlocks))
+            cant = 4#np.min((sx,8)).astype(int) # como maximo 16 (4x4) 
+            suma = 0
 
-            posx = []
-            posy = []
-            boxCount = np.float32(0)
-            if (sizeBlocks_x > 1 and numBlocks > 1):
-                cant = np.min((sizeBlocks_x,4)).astype(int) # como maximo 16 (4x4) 
+            for c1 in range(cant): # promedio de casos
+                posx = np.random.randint(0,sx)
+                posy = np.random.randint(0,sy)
+                print "POSS:", posx, posy
+                temp = self.boxCount(e2,posx,posy,numBlocks,sx,sy,Nx,Ny)
+                suma+=temp
 
-                for j in range(cant):
-                    val = np.floor(np.random.random()*sizeBlocks_x)
-                    while(val in posx):
-                        val = np.floor(np.random.random()*sizeBlocks_x)
+                print "FFF", temp, numBlocks*numBlocks
+            boxc = np.floor(suma/cant)
 
-                    posx.append(val)
-
-                    val = np.floor(np.random.random()*sizeBlocks_x)
-                    while(val in posy):
-                        val = np.floor(np.random.random()*sizeBlocks_x)
-
-                    posy.append(val)
-
-                
-
-                for c1 in range(cant): # promedio de casos
-                    for c2 in range(cant):     # promedio de casos
-                        for i in range(1,numBlocks):
-                            for j in range(1,numBlocks):
-                
-                                xStart = posx[c1]+(i-1)*sizeBlocks_x
-                                xEnd   = posx[c1]+i*sizeBlocks_x - 1
-
-                                yStart = posy[c2]+(j-1)*sizeBlocks_y
-                                yEnd   = posy[c2]+j*sizeBlocks_y - 1
-
-                                dx = xEnd - (Nx-1) # sobrante en pixeles en x
-                                dy = yEnd - (Ny-1) # sobrante en pixeles en y
-                                if (dx > 0 and dy <= 0):
-                                    block1 = e2[xStart:Nx-1][yStart:yEnd]
-                                    block2 = e2[0:dx][yStart:yEnd]
-                                    flag[i][j] = np.sum(block1) > 0 or np.sum(block2) > 0
-
-                                if (dx <= 0 and dy > 0):
-                                    block1 = e2[xStart:xEnd][yStart:Ny-1]
-                                    block2 = e2[xStart:xEnd][0:dy]
-                                    flag[i][j] = np.sum(block1) > 0 or np.sum(block2) > 0
-
-                                if (dx > 0 and dy > 0):
-                                    block1 = e2[xStart:Nx-1][yStart:Ny-1]
-                                    block2 = e2[0:dx][yStart:Ny-1]
-                                    block3 = e2[xStart:Nx-1][0:dy]
-                                    block4 = e2[0:dx][0:dy]
-
-                                    flag[i][j] = np.sum(block1) > 0 or np.sum(block2) > 0 or np.sum(block3) > 0 or np.sum(block4) > 0
-
-                                if (dx <= 0 and dy <= 0): # todo el bloque esta en la grilla
-                                    block = e2[xStart:xEnd][yStart:yEnd]
-                                    flag[i][j] = np.sum(block) # mark this if ANY part of block is true
-
-
-                            boxCount = boxCount + flag.sum()
-                    boxCount = np.floor(boxCount/(cant*cant))
-                else:
-                    for i in range(1,numBlocks):
-                        for j in range(1,numBlocks):
-                            xStart = (i-1)*sizeBlocks_x
-                            xEnd   = i*sizeBlocks_x - 1
-
-                            yStart = (j-1)*sizeBlocks_y
-                            yEnd   = j*sizeBlocks_y - 1
-
-                            block = e2[xStart:xEnd][yStart:yEnd]
-                            flag[i][j] = np.sum(block) > 0 # mark this if ANY part of block is true
-
-                    print flag
-                    boxCount = flag.sum()
-
-                if(boxCount != 0):
-                    delta.append(numBlocks) # numBlocks; (1/delta)
-                    N.append(boxCount)
+            if(boxc > 0):
+                delta.append(numBlocks) # numBlocks: (1/delta)
+                N.append(boxc)
 
         x = np.log(delta)
         deltaA = np.vstack([x, np.ones(len(x))]).T
-        print "delta. ", delta
-        print np.log(N)
+        print "delta:", delta
+        print "N:", np.log(N)
         m = np.linalg.lstsq(deltaA,np.log(N))
 
         fsize = 26
@@ -238,8 +212,11 @@ class Boxdimension (Algorithm):
         plt.xlabel('$log(1/\epsilon)$',fontsize=fsize)
         a = round(np.float32(str(m[0][0])),2)
         b = round(np.float32(str(m[1][0])),2)
-        plt.plot(x,m[0][0]*x+m[0][1],'r-',  label="Linear fit\nSlope (Box Dimension) = {0}\nR = {1}".format(a,np.float32(1.0)-b),linewidth=2.0)
-        plt.plot(x,np.log(N),'bo',  label='Data')
+        print np.array(x).shape
+        print np.array(N).shape
+        plt.plot(np.array(x),m[0][0]*np.array(x)+m[0][1],'r-',  label="Linear fit\nSlope (Box Dimension) = {0}\nR = {1}".format(a,np.float32(1.0)-b),linewidth=2.0)
+
+        plt.plot(np.array(x),np.log(N),'bo',  label='Data')
         plt.legend(loc = 2)
         plt.show()
 
