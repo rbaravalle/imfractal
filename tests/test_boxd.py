@@ -29,7 +29,7 @@ import Image
 import time
 
 def do_test():
-    filename = 'images/real2.png'
+    filename = 'images/baguette2.tif'
 
     i = Boxdimension()
     i.setDef(40,1.15)

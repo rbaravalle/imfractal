@@ -128,8 +128,8 @@ class Boxdimension (Algorithm):
 
     def boxCount(self,e2,posx,posy,numBlocks,sx,sy,Nx,Ny):
         suma = 0
-        for i in range(1,numBlocks):
-            for j in range(1,numBlocks):
+        for i in range(1,numBlocks+1):
+            for j in range(1,numBlocks+1):
 
                 xStart = posx+(i-1)*sx
                 xEnd   = posx+i*sx - 1
@@ -142,22 +142,23 @@ class Boxdimension (Algorithm):
                 if (dx > 0 and dy <= 0):
                     block1 = e2[xStart:Nx-1,yStart:yEnd]
                     block2 = e2[0:dx,yStart:yEnd]
-                    suma+= np.sum(block1+block2) > 0
+                    suma+= np.sum(block1)+np.sum(block2) > 0
 
                 if (dx <= 0 and dy > 0):
                     block1 = e2[xStart:xEnd,yStart:Ny-1]
                     block2 = e2[xStart:xEnd,0:dy]
-                    suma+= np.sum(block1+block2) > 0
+                    suma+= np.sum(block1)+np.sum(block2) > 0
 
                 if (dx > 0 and dy > 0):
                     block1 = e2[xStart:Nx-1,yStart:Ny-1]
                     block2 = e2[0:dx,yStart:Ny-1]
                     block3 = e2[xStart:Nx-1,0:dy]
                     block4 = e2[0:dx,0:dy]
-                    suma+= np.sum(block1+block2+block3+block4) > 0
+                    suma+= np.sum(block1)+np.sum(block2)+np.sum(block3)+np.sum(block4) > 0
 
                 if (dx <= 0 and dy <= 0): # todo el bloque esta en la grilla
                     block = e2[xStart:xEnd,yStart:yEnd]
+                    #if(numBlocks > 
                     suma+= np.sum(block)>0 
 
         return suma
@@ -169,9 +170,9 @@ class Boxdimension (Algorithm):
 
         gray = a.convert('L') # rgb 2 gray
 
-        #gray = self.white(gray,Nx,Ny) # local thresholding algorithm
+        gray = self.white(gray,Nx,Ny) # local thresholding algorithm
 
-        e2 = np.array(gray.getdata(),np.uint8).reshape(gray.size[1], gray.size[0])
+        e2 = gray#np.array(gray.getdata(),np.uint8).reshape(gray.size[1], gray.size[0])
 
         plt.imshow(e2, cmap=matplotlib.cm.gray)
         plt.show()
@@ -188,22 +189,23 @@ class Boxdimension (Algorithm):
             suma = 0
 
             for c1 in range(cant): # promedio de casos
-                posx = np.random.randint(0,sx)
-                posy = np.random.randint(0,sy)
+                posx = np.random.randint(1,sx)
+                posy = np.random.randint(1,sy)
                 print "POSS:", posx, posy
                 temp = self.boxCount(e2,posx,posy,numBlocks,sx,sy,Nx,Ny)
                 suma+=temp
 
-                print "FFF", temp, numBlocks*numBlocks
+                print "Proportion: ", temp, numBlocks*numBlocks
             boxc = np.floor(suma/cant)
 
             if(boxc > 0):
                 delta.append(numBlocks) # numBlocks: (1/delta)
                 N.append(boxc)
 
+        
         x = np.log(delta)
         deltaA = np.vstack([x, np.ones(len(x))]).T
-        print "delta:", delta
+        print "delta:", x
         print "N:", np.log(N)
         m = np.linalg.lstsq(deltaA,np.log(N))
 
