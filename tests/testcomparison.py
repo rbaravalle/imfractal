@@ -59,21 +59,22 @@ def writecsv(filename,array):
 
 def do_test():
     #cant = 10
-    dDFs  = 26
+    dfs = 8
+    dDFs  = 2*dfs
     cantClasses = 2
 
     pathbtr = 'images/train2/bread/'
     dirListbtr=os.listdir(pathbtr)
-    cantTrainB = len(dirListbtr)
+    cantTrainB = 8#len(dirListbtr)
     pathnbtr = 'images/train2/nonbread/'
     dirListnbtr=os.listdir(pathnbtr)
-    cantTrainNB = len(dirListnbtr)
-    pathbte = 'images/test2/bread/'
+    cantTrainNB = 8#len(dirListnbtr)
+    pathbte = 'images/test4/bread/'
     dirListbte=os.listdir(pathbte)
-    cantTestB = len(dirListbte)
-    pathnbte = 'images/test4/nonbread/'
+    cantTestB = 8#len(dirListbte)
+    pathnbte = 'images/test2/nonbread/'
     dirListnbte=os.listdir(pathnbte)
-    cantTestNB = len(dirListnbte)
+    cantTestNB = 8#len(dirListnbte)
 
     breadtrain = np.zeros((cantTrainB, dDFs)).astype(np.float32)
     breadtest = np.zeros((cantTestB, dDFs)).astype(np.float32)
@@ -81,20 +82,25 @@ def do_test():
     nonbreadtrain = np.zeros((cantTrainNB, dDFs)).astype(np.float32)
     nonbreadtest = np.zeros((cantTestNB, dDFs)).astype(np.float32)
     
-    ins = Sandbox(14)
+    ins = Sandbox(dfs+1)
 
     print 'Training: computing MFS for the bread database...'
     ins.setDef(40,1.02,True)
-    for i in range(4):#cantTrainB):
+    print "Computing " + str(cantTrainB) +" bread train..."
+    for i in range(cantTrainB):
         filename = pathbtr+dirListbtr[i]
         breadtrain[i] = ins.getFDs(filename)
-    #for i in range(cantTestB):
-    #    filename = pathbte+dirListbte[i]
-    #    breadtest[i] = ins.getFDs(filename)
-    for i in range(4):#cantTrainNB):
+    print "Computing "+ str(cantTestB) +" bread test..."
+    ins.setDef(40,1.15,False)
+    for i in range(cantTestB):
+        filename = pathbte+dirListbte[i]
+        breadtest[i] = ins.getFDs(filename)
+    print "Computing "+str(cantTrainNB)+" non bread train..."
+    for i in range(cantTrainNB):
         filename = pathnbtr+dirListnbtr[i]
         nonbreadtrain[i] = ins.getFDs(filename)
-    ins.setDef(40,1.15,False)
+    ins.setDef(40,1.02,True)
+    print "Computing "+ str(cantTestNB) +" non bread test..."
     for i in range(cantTestNB):
         filename = pathnbte+dirListnbte[i]
         nonbreadtest[i] = ins.getFDs(filename)
@@ -153,9 +159,10 @@ def do_test():
     plt.ylabel(r'$f(alpha)$',fontsize=fsize)
     plt.xlabel('alpha',fontsize=fsize)
     plt.plot(x, breadtrain.T, 'k+--', label='bread train',linewidth=2.0)
+    plt.plot(x, breadtest.T, 'g+--', label='bread test',linewidth=2.0)
     plt.plot(x, nonbreadtrain.T, 'r*--',  label='non bread train',linewidth=2.0)
     plt.plot(x, nonbreadtest.T, 'b*--',  label='non bread test',linewidth=2.0)
-    #plt.legend(loc = 0)
+    #plt.legend(loc = 3)
     plt.show()
 
     #scoreRF = (len(gtruth)-sum(abs(gtruth-predictionsRF)))/float(len(gtruth))

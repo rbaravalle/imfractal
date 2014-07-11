@@ -29,14 +29,14 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #except ImportError:
 #    print "Error: the module tests/tests_MFS is missing"
 
-#import tests.test_MFS as tmfs
-#tmfs.do_test()
+import tests.testcomparison as tcomp
+tcomp.do_test()
 
 #import tests.test_real_fake as trealfake
 #except ImportError:
 #    print "Error: the module tests/tests_classifier is missing"
 
-import tests.test_boxd as tbox
+#import tests.test_boxd as tbox
 #tmfs.do_test()
 #trealfake.do_test()
-tbox.do_test()
+#tbox.do_test()

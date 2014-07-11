@@ -33,6 +33,8 @@ import Image
 import numpy as np
 import sys
 import os
+import matplotlib
+import matplotlib.pyplot as plt
 
 class Sandbox (Algorithm):
 
@@ -47,11 +49,12 @@ class Sandbox (Algorithm):
     def __init__(self, c):
         self.cant = c
 
-    def setDef(self,x,y):
-        self.total = 10*10      # number of pixels for averaging
+    def setDef(self,x,y,p):
+        self.total = 10*20*10      # number of pixels for averaging
         self.P = 40             # window
         self.v = x
         self.b = y
+        self.param = p
 
     # returns the sum of (summed area) image pixels in the box between
     # (x1,y1) and (x2,y2)
@@ -73,8 +76,8 @@ class Sandbox (Algorithm):
     #   'img': Image
     #   else:  array
     def sat(self,img,Nx,Ny,which):
-        # summed area table, useful for speed up the computation by adding image pixels 
-        intImg = [ [ 0 for i in range(Nx) ] for j in range(Ny) ]
+        # summed area table
+        intImg = np.zeros((Nx,Ny))
         if(which == 'img'):
             intImg[0][0] = img.getpixel((0,0))
             
@@ -121,10 +124,12 @@ class Sandbox (Algorithm):
         for i in arrNx:
             for j in arrNy:
                 if(self.mww(max(0,i-vent),max(0,j-vent),min(Nx-1,i+vent),min(Ny-1,j+vent),intImg) >= img.getpixel((i,j))*self.b ): 
-                    im[j,i] = img.getpixel((i,j))
+                    v = img.getpixel((i,j))
+                    if (v > 0):
+                        im[i,j] = 255#img.getpixel((i,j))
 
         # do an opening operation to remove small elements
-        return ndimage.binary_opening(im, structure=np.ones((2,2))).astype(np.int)
+        return im.T #ndimage.binary_opening(im.T, structure=np.ones((0,0))).astype(np.int)
 
 
     # sum of values in the region (x1,y1), (x2,y2) in intImg
@@ -139,7 +144,7 @@ class Sandbox (Algorithm):
             sum = sum - intImg[x2][y1-1]
         return sum
                 
-    # get multifractal dimentions
+    # get multifractal dimensions
     def getFDs(self,filename):
         tP = (self.P)   # tP : two raised to P
         x = tP+1
@@ -151,11 +156,20 @@ class Sandbox (Algorithm):
         L = Nx*Ny
 
         points = []     # number of elements in the structure
-        gray = a.convert('L') # rgb 2 gray
+        if(self.param):
+            gray = a.convert('L') # rgb 2 gray
 
-        gray = self.white(gray,Nx,Ny) # local thresholding algorithm
+            gray = self.white(gray,Nx,Ny) # local thresholding algorithm
+        else: 
+            b = a.getdata()
+            if(type(b[0]) is int): a=b
+            else: a = np.array(map (lambda i: i[0], np.array(b))) # argh!
+            gray = np.array(a,np.uint8).reshape(b.size[1],b.size[0])
         #plt.imshow(gray, cmap=matplotlib.cm.gray)
         #plt.show()
+
+        Nx = gray.shape[0]
+        Ny = gray.shape[1]
 
         intImg = self.sat(gray,Nx,Ny,'array')
 
