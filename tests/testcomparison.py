@@ -59,22 +59,22 @@ def writecsv(filename,array):
 
 def do_test():
     #cant = 10
-    dfs = 8
+    dfs = 14
     dDFs  = 2*dfs
     cantClasses = 2
 
     pathbtr = 'images/train2/bread/'
     dirListbtr=os.listdir(pathbtr)
-    cantTrainB = 8#len(dirListbtr)
+    cantTrainB = 3#len(dirListbtr)
     pathnbtr = 'images/train2/nonbread/'
     dirListnbtr=os.listdir(pathnbtr)
-    cantTrainNB = 8#len(dirListnbtr)
+    cantTrainNB = 3#len(dirListnbtr)
     pathbte = 'images/test4/bread/'
     dirListbte=os.listdir(pathbte)
-    cantTestB = 8#len(dirListbte)
+    cantTestB = 3#len(dirListbte)
     pathnbte = 'images/test2/nonbread/'
     dirListnbte=os.listdir(pathnbte)
-    cantTestNB = 8#len(dirListnbte)
+    cantTestNB = 3#len(dirListnbte)
 
     breadtrain = np.zeros((cantTrainB, dDFs)).astype(np.float32)
     breadtest = np.zeros((cantTestB, dDFs)).astype(np.float32)
@@ -95,6 +95,7 @@ def do_test():
     for i in range(cantTestB):
         filename = pathbte+dirListbte[i]
         breadtest[i] = ins.getFDs(filename)
+    ins.setDef(40,1.02,True)
     print "Computing "+str(cantTrainNB)+" non bread train..."
     for i in range(cantTrainNB):
         filename = pathnbtr+dirListnbtr[i]
@@ -129,48 +130,69 @@ def do_test():
     #print "1 = Bread"
     #print "2 = Nonbread"
 
-    #train = np.vstack((breadtrain,nonbreadtrain))
-    #labels = np.hstack((labelsbtr[:,0],labelsnbtr[:,0]))
-    #test = np.vstack((breadtest,nonbreadtest))
+    train = np.vstack((breadtrain,nonbreadtrain))
+    labels = np.hstack((labelsbtr[:,0],labelsnbtr[:,0]))
+    test = np.vstack((breadtest,nonbreadtest))
 
-    #lin_svc = svm.LinearSVC(C=1.0).fit(train, labels)
-    #predictionsSVM = lin_svc.predict(test)
+    lin_svc = svm.LinearSVC(C=1.0).fit(train, labels)
+    predictionsSVM = lin_svc.predict(test)
 
-    #cfr = RandomForestClassifier(n_estimators=120)
-    #cfr.fit(train,labels) # train
+    cfr = RandomForestClassifier(n_estimators=120)
+    cfr.fit(train,labels) # train
 
-    #gtruth = np.hstack((labelsbte[:,0],labelsnbte[:,0]))
-    #predictionsRF = cfr.predict(test) # test
+    gtruth = np.hstack((labelsbte[:,0],labelsnbte[:,0]))
+    predictionsRF = cfr.predict(test) # test
 
-    #print dirListbte
-    #print dirListbtr
-    #print "Random Forest Prediction:"
-    #print predictionsRF[:cantTestB]
-    #print predictionsRF[cantTestB:]
-    #print "SVM Prediction:"
-    #print predictionsSVM[:cantTestB]
-    #print predictionsSVM[cantTestB:]
-    #print "REAL: "
-    #print gtruth
+    print dirListbte
+    print dirListbtr
+    print "Random Forest Prediction:"
+    print predictionsRF[:cantTestB]
+    print predictionsRF[cantTestB:]
+    print "SVM Prediction:"
+    print predictionsSVM[:cantTestB]
+    print predictionsSVM[cantTestB:]
+    print "REAL: "
+    print gtruth
 
     x = np.arange(dDFs)
     fsize = 14
 
-    plt.ylabel(r'$f(alpha)$',fontsize=fsize)
-    plt.xlabel('alpha',fontsize=fsize)
-    plt.plot(x, breadtrain.T, 'k+--', label='bread train',linewidth=2.0)
-    plt.plot(x, breadtest.T, 'g+--', label='bread test',linewidth=2.0)
-    plt.plot(x, nonbreadtrain.T, 'r*--',  label='non bread train',linewidth=2.0)
-    plt.plot(x, nonbreadtest.T, 'b*--',  label='non bread test',linewidth=2.0)
+    #plt.ylabel(r'$f(alpha)$',fontsize=fsize)
+    #plt.xlabel('alpha',fontsize=fsize)
+    #plt.plot(x, breadtrain.T, 'k+--', label='bread train',linewidth=2.0)
+    #plt.plot(x, breadtest.T, 'g+--', label='bread test',linewidth=2.0)
+    #plt.plot(x, nonbreadtrain.T, 'r*--',  label='non bread train',linewidth=2.0)
+    #plt.plot(x, nonbreadtest.T, 'b*--',  label='non bread test',linewidth=2.0)
     #plt.legend(loc = 3)
+    #plt.show()
+
+    y0 = 0.05
+    y1 = 0.1
+    #plt.subplot(122)
+    plt.ylim((y0,y1))
+    #plt.xlabel('Real Breads',fontsize=fsize)
+    b = plt.boxplot(np.vstack((breadtrain)),sym="")
+    mediansReal = map(lambda i: i.get_data()[1][0],b['medians'])
+    x = np.arange(len(mediansReal))
+    plt.plot(map(lambda i: i+1, x), mediansReal, 'k+--', label='real',linewidth=2.0)
+
+
+    #plt.subplot(121)
+    #plt.ylim((y0, y1))
+    plt.xlabel('Real and Synthetic Breads',fontsize=fsize)
+    b = plt.boxplot(np.vstack((breadtest)),sym="")
+    mediansSynth = map(lambda i: i.get_data()[1][0],b['medians'])
+    plt.plot(map(lambda i: i+1, x), mediansSynth, 'k+--', label='synthetic',linewidth=2.0)
+    
     plt.show()
 
-    #scoreRF = (len(gtruth)-sum(abs(gtruth-predictionsRF)))/float(len(gtruth))
-    #scoreSVM = (len(gtruth)-sum(abs(gtruth-predictionsSVM)))/float(len(gtruth))
+
+    scoreRF = (len(gtruth)-sum(abs(gtruth-predictionsRF)))/float(len(gtruth))
+    scoreSVM = (len(gtruth)-sum(abs(gtruth-predictionsSVM)))/float(len(gtruth))
 
     #scores = cross_validation.cross_val_score(cfr, data, labels, cv=4)
-    #print "Classification performance (Random Forest classifier): " + str( scoreRF*100 ) + "%"
-    #print "Classification performance (Support Vector Machine classifier): " + str( scoreSVM*100 ) + "%"
+    print "Classification performance (Random Forest classifier): " + str( scoreRF*100 ) + "%"
+    print "Classification performance (Support Vector Machine classifier): " + str( scoreSVM*100 ) + "%"
 
 
 
