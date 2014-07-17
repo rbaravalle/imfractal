@@ -26,7 +26,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 from Algorithm import *
-from random import randrange,randint
+from random import randrange,randint,seed
 from math import log
 from scipy import ndimage
 import Image
@@ -48,10 +48,11 @@ class Sandbox (Algorithm):
     # how many multifractal dimentions should the algorithm return
     def __init__(self, c):
         self.cant = c
+        seed(1)
 
     def setDef(self,x,y,p):
-        self.total = 10*20*10      # number of pixels for averaging
-        self.P = 40             # window
+        self.total = 4000#*3      # number of pixels for averaging
+        self.P = 80             # window
         self.v = x
         self.b = y
         self.param = p
@@ -146,14 +147,15 @@ class Sandbox (Algorithm):
                 
     # get multifractal dimensions
     def getFDs(self,filename):
-        tP = (self.P)   # tP : two raised to P
+        startR = 1
+        tP = startR+self.P#(self.P)   # tP : two raised to P
         x = tP+1
         y = tP+1
         cantSelected = 0
 
         a = Image.open(filename)
         Nx, Ny = a.size
-        L = Nx*Ny
+        L = float(Nx*Ny)
 
         points = []     # number of elements in the structure
         if(self.param):
@@ -189,46 +191,50 @@ class Sandbox (Algorithm):
             points.append([x,y])
             cantSelected = cantSelected+1
 
+        l = range(-self.cant,self.cant+1)
+        res = np.zeros(len(l), dtype=np.double )
+        np.set_printoptions(precision=5)
+        np.set_printoptions(suppress=True)
 
-        c = np.zeros((self.total+1,self.P), dtype=np.double ) # total+1 rows x P columns
-        for i in range(self.total): # for each point randomly selected
-            x = points[i][0]
-            y = points[i][1]
-            for h in range(1,self.P+1):
-                # how many points in the box. M(R) in the literature
-                c[i+1][h-1] = self.count(x-(h),y-(h),x+(h),y+(h),intImg)
+        # ln (R/L)
+        sizes = np.log(np.array(range(startR,self.P+startR))/float(Nx))
 
-        down = range(1,self.P+1)
-        # Generalized Multifractal Dimentions 
-        s = [0 for i in range(2*self.cant-2)]
-        l = range(-self.cant+1,0)+  range(1,self.cant)
-        j = 0
-        for i in l:
-            s[j] = self.Dq(c,i,L,m0,down)
+        h = 0
+        for q in l:
+            down = 1.0/(m0**(q-1))
+            c = np.zeros((self.P), dtype=np.double )
+            # ln< M(R)/M0 ** q-1 >
+            if(q!=1):
+                for R in range(startR,self.P+startR):
+                    summ = np.double(0)
+                    for i in range(self.total): # mean
+                        x = points[i][0]
+                        y = points[i][1]
+                        MR = self.count(x-(R),y-(R),x+(R),y+(R),intImg)
+                        summ+= down*((MR)**(q-1))
+                    summ /= float(self.total) # mean
+                    c[R-startR] = np.log(summ)
 
-            j = j+1
+                (ar,br)=np.polyfit(sizes,c/float(q-1),1)
 
-        return s
+            else: 
+                # q = 1
+                #< ln(M(R)/M0) >
+                for R in range(startR,self.P+startR):
+                    summ = np.double(0)
+                    for i in range(self.total): # mean
+                        x = points[i][0]
+                        y = points[i][1]
+                        MR = self.count(x-(R),y-(R),x+(R),y+(R),intImg)
+                        summ += np.log(MR/m0)
+                    summ /= float(self.total) # mean
+                    c[R-startR] = summ
 
-    # D_{q} 
-    def Dq(self,c,q,L,m0,down):
-        # sum in each radius, all the points
-        if q>0: # math representation issue
-            aux1 = float(self.total)
-            aux2 = 0
-        else:
-            aux1 = 1
-            aux2 = log(float(self.total))
+                (ar,br)=np.polyfit(sizes,c,1)
 
-        for h in range(1,self.P+1):        
-            for i in range(self.total):
-                c[0][h-1] = c[0][h-1] + ((c[i+1][h-1]**q)/aux1) # mean of "total" points
+            res[h] = ar
+            h+=1
 
-        up = map(lambda i: log(i)-aux2-q*log(m0), c[0])
-        up2 = map(lambda i: up[i]/(q*down[i]), range(len(up)))
-        sizes = range(1,self.P+1)
-
-        (ar,br)=np.polyfit(sizes,up2,1)
-        return ar
-        
+        #plt.show()
+        return res
 

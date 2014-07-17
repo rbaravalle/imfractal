@@ -48,6 +48,7 @@ class Sandbox (Algorithm):
         self.cant = c
 
     def setDef(self,x,y):
+        print "eee"
         self.total = 10*10      # number of pixels for averaging
         self.P = 40             # window
         self.v = x
