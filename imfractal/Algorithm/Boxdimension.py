@@ -73,36 +73,38 @@ class Boxdimension (Algorithm):
     #   'img': Image
     #   else:  array
     def sat(self,img,Nx,Ny,which):
-        # summed area table, useful for speed up the computation by adding image pixels 
-        intImg = [ [ 0 for i in range(Nx) ] for j in range(Ny) ]
+        # summed area table, useful for speeding up the computing time by adding image pixels 
+        intImg = np.zeros((Nx,Ny))
+        img = np.array(img.getdata(),np.uint8).reshape(img.size[0], img.size[1])
         if(which == 'img'):
-            intImg[0][0] = img.getpixel((0,0))
+            intImg[0,0] = img[0,0]
             
             arrNx = range(1,Nx)
             arrNy = range(1,Ny)
             for h in arrNx:
-                intImg[h][0] = intImg[h-1][0] + img.getpixel((h,0))
+                print img[h,0]
+                intImg[h,0] = intImg[h-1,0] + img[h,0]
             
             for w in arrNy:
-                intImg[0][w] = intImg[0][w-1] + img.getpixel((0,w))
+                intImg[0,w] = intImg[0,w-1] + img[0,w]
             
             for f in arrNx:
                 for g in arrNy:
-                   intImg[f][g] = img.getpixel((f,g))+intImg[f-1][g]+intImg[f][g-1]-intImg[f-1][g-1]
+                   intImg[f,g] = img[f,g]+intImg[f-1,g]+intImg[f,g-1]-intImg[f-1,g-1]
         else:
-            intImg[0][0] = img[0][0]
+            intImg[0,0] = img[0,0]
             
             arrNx = range(1,Nx)
             arrNy = range(1,Ny)
             for h in arrNx:
-                intImg[h][0] = intImg[h-1][0] + img[h][0]
+                intImg[h,0] = intImg[h-1,0] + img[h,0]
             
             for w in arrNy:
-                intImg[0][w] = intImg[0][w-1] + img[0][w]
+                intImg[0,w] = intImg[0,w-1] + img[0,w]
             
             for f in arrNx:
                 for g in arrNy:
-                   intImg[f][g] = img[f][g]+intImg[f-1][g]+intImg[f][g-1]-intImg[f-1][g-1]
+                   intImg[f,g] = img[f,g]+intImg[f-1,g]+intImg[f,g-1]-intImg[f-1,g-1]
 
         return intImg
 
@@ -114,17 +116,15 @@ class Boxdimension (Algorithm):
         
         intImg = self.sat(img,Nx,Ny,'img')
             
-        arrNx = range(Nx)
-        arrNy = range(Ny)
-
         vent = int(self.v)
-        for i in arrNx:
-            for j in arrNy:
-                if(self.mww(max(0,i-vent),max(0,j-vent),min(Nx-1,i+vent),min(Ny-1,j+vent),intImg) >= img.getpixel((i,j))*self.b ): 
-                    im[j,i] = img.getpixel((i,j))
+        for i in range(Nx):
+            for j in range(Ny):
+                pix = img.getpixel((i,j))
+                if(self.mww(max(0,i-vent),max(0,j-vent),min(Nx-1,i+vent),min(Ny-1,j+vent),intImg) >= pix*self.b ): 
+                    im[i,j] = pix
 
         # do an opening operation to remove small elements
-        return ndimage.binary_opening(im, structure=np.ones((2,2))).astype(np.int)
+        return ndimage.binary_opening(im.T, structure=np.ones((1,1))).astype(np.int)
 
     def boxCount(self,e2,posx,posy,numBlocks,sx,sy,Nx,Ny):
         suma = 0
@@ -170,16 +170,20 @@ class Boxdimension (Algorithm):
 
         gray = a.convert('L') # rgb 2 gray
 
-        gray = self.white(gray,Nx,Ny) # local thresholding algorithm
+        IMG = True
+        if(IMG):
+            gray = self.white(gray,Nx,Ny) # local thresholding algorithm
 
-        e2 = gray#np.array(gray.getdata(),np.uint8).reshape(gray.size[1], gray.size[0])
+            e2 = gray#np.array(gray.getdata(),np.uint8).reshape(gray.size[1], gray.size[0])
+        else:
+            e2 = np.array(gray.getdata(),np.uint8).reshape(gray.size[1], gray.size[0])
 
         plt.imshow(e2, cmap=matplotlib.cm.gray)
         plt.show()
         delta = []
         N = []
     
-        for w in range(1,int(log(Nx)/log(2))):
+        for w in range(1,int(log(min(Nx,Ny))/log(2))):
             numBlocks = 2**w
             sx = np.floor(np.float32(Nx)/numBlocks)
             sy = np.floor(np.float32(Ny)/numBlocks)

@@ -51,8 +51,8 @@ class Sandbox (Algorithm):
         seed(1)
 
     def setDef(self,x,y,p):
-        self.total = 4000#*3      # number of pixels for averaging
-        self.P = 80             # window
+        self.total = 5000#*3      # number of pixels for averaging
+        self.P = 70             # window
         self.v = x
         self.b = y
         self.param = p
@@ -175,7 +175,19 @@ class Sandbox (Algorithm):
 
         intImg = self.sat(gray,Nx,Ny,'array')
 
-        m0 = intImg[Nx-1][Ny-1]#/float(L)
+        m0 = intImg[Nx-1][Ny-1]
+
+        l = range(-self.cant,self.cant+1)
+        res = np.zeros(len(l), dtype=np.double )
+
+        if(m0 == 0):
+            print "Empty IMAGE structure!!!"
+            return res
+
+        if(m0 < self.total):
+            print "Warning: structure with less points than expected"
+            self.total = m0/2 # FIX ME
+            
 
         while(gray[x][y] == 0):
             x = randint(tP,Nx-tP-1)
@@ -191,8 +203,6 @@ class Sandbox (Algorithm):
             points.append([x,y])
             cantSelected = cantSelected+1
 
-        l = range(-self.cant,self.cant+1)
-        res = np.zeros(len(l), dtype=np.double )
         np.set_printoptions(precision=5)
         np.set_printoptions(suppress=True)
 
@@ -236,5 +246,6 @@ class Sandbox (Algorithm):
             h+=1
 
         #plt.show()
+        #print res.shape
         return res
 
