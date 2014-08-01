@@ -31,6 +31,8 @@ from math import log
 from scipy import ndimage
 import Image
 import numpy as np
+import scipy
+import scipy.stats
 import sys
 import os
 import matplotlib
@@ -48,11 +50,9 @@ class Sandbox (Algorithm):
     # how many multifractal dimentions should the algorithm return
     def __init__(self, c):
         self.cant = c
-        seed(1)
 
     def setDef(self,x,y,p):
-        self.total = 5000#*3      # number of pixels for averaging
-        self.P = 70             # window
+        self.total = 1000#*3      # number of pixels for averaging
         self.v = x
         self.b = y
         self.param = p
@@ -148,13 +148,13 @@ class Sandbox (Algorithm):
     # get multifractal dimensions
     def getFDs(self,filename):
         startR = 1
-        tP = startR+self.P#(self.P)   # tP : two raised to P
-        x = tP+1
-        y = tP+1
         cantSelected = 0
 
         a = Image.open(filename)
         Nx, Ny = a.size
+
+        self.P = min(Nx,Ny)/6
+
         L = float(Nx*Ny)
 
         points = []     # number of elements in the structure
@@ -189,16 +189,18 @@ class Sandbox (Algorithm):
             self.total = m0/2 # FIX ME
             
 
+        x = randint(0,Nx-1)
+        y = randint(0,Ny-1)
         while(gray[x][y] == 0):
-            x = randint(tP,Nx-tP-1)
-            y = randint(tP,Ny-tP-1)
+            x = randint(0,Nx-1)
+            y = randint(0,Ny-1)
 
         # list with selected points (the points should be in the "structure")
         # points shouldn't be close to the borders, in order for the windows to have the same size
         while cantSelected < self.total:
-            while(([x,y] in points) or self.count(x-1,y-1,x+1,y+1,intImg) == 0):
-                x = randint(tP,Nx-tP-1)
-                y = randint(tP,Ny-tP-1)
+            while(([x,y] in points) or gray[x][y] == 0):
+                x = randint(0,Nx-1)
+                y = randint(0,Ny-1)
             # new point, add to list
             points.append([x,y])
             cantSelected = cantSelected+1
@@ -206,46 +208,59 @@ class Sandbox (Algorithm):
         np.set_printoptions(precision=5)
         np.set_printoptions(suppress=True)
 
+        # R's
+        stepR = 1
+        rvalues = np.array(range(startR,self.P+startR,stepR))
         # ln (R/L)
-        sizes = np.log(np.array(range(startR,self.P+startR))/float(Nx))
+        sizes = np.log(rvalues/float(Nx))
 
         h = 0
         for q in l:
             down = 1.0/(m0**(q-1))
-            c = np.zeros((self.P), dtype=np.double )
+
+            c = np.zeros((len(rvalues)), dtype=np.double )
             # ln< M(R)/M0 ** q-1 >
             if(q!=1):
-                for R in range(startR,self.P+startR):
+                ind = 0
+                for R in rvalues:
                     summ = np.double(0)
                     for i in range(self.total): # mean
                         x = points[i][0]
                         y = points[i][1]
-                        MR = self.count(x-(R),y-(R),x+(R),y+(R),intImg)
+                        MR = self.count(np.clip(x-R,0,Nx-1),np.clip(y-R,0,Ny-1),np.clip(x+R,0,Nx-1),np.clip(y+R,0,Ny-1),intImg)
                         summ+= down*((MR)**(q-1))
                     summ /= float(self.total) # mean
-                    c[R-startR] = np.log(summ)
+                    c[ind] = np.log(summ)
+                    ind+=1
 
-                (ar,br)=np.polyfit(sizes,c/float(q-1),1)
+                slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(sizes,c/float(q-1))
+                plt.plot(sizes,c/float(q-1))
+
+                print slope,"Residual for q = ", q," : " , "scipy:", r_value**2
 
             else: 
                 # q = 1
                 #< ln(M(R)/M0) >
-                for R in range(startR,self.P+startR):
+                ind = 0
+                for R in rvalues:
                     summ = np.double(0)
                     for i in range(self.total): # mean
                         x = points[i][0]
                         y = points[i][1]
-                        MR = self.count(x-(R),y-(R),x+(R),y+(R),intImg)
+                        MR = self.count(np.clip(x-R,0,Nx-1),np.clip(y-R,0,Ny-1),np.clip(x+R,0,Nx-1),np.clip(y+R,0,Ny-1),intImg)
                         summ += np.log(MR/m0)
                     summ /= float(self.total) # mean
-                    c[R-startR] = summ
+                    c[ind] = summ
+                    ind+=1
 
-                (ar,br)=np.polyfit(sizes,c,1)
+                slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(sizes,c)
+                plt.plot(sizes,c)
+                print slope,"Residual for q = ", q," : " , "scipy:", r_value**2
 
-            res[h] = ar
+            res[h] = slope
             h+=1
 
-        #plt.show()
+        plt.show()
         #print res.shape
         return res
 
