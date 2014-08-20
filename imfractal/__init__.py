@@ -26,11 +26,15 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #from Path import Path
 import Algorithm.Sandbox
+import Algorithm.CSandbox
+import Algorithm.SandboxCL
 import Algorithm.MFS
 import Algorithm.Singularity
 import Algorithm.Boxdimension
 
+SandboxCL = Algorithm.SandboxCL.SandboxCL
 Sandbox = Algorithm.Sandbox.Sandbox
+CSandbox = Algorithm.CSandbox.CSandbox
 MFS = Algorithm.MFS.MFS
 Singularity = Algorithm.Singularity.Singularity
 Boxdimension = Algorithm.Boxdimension.Boxdimension
