@@ -23,26 +23,26 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
+from imfractal import *
 
+import Image
+import time
+import matplotlib.pyplot as plt
+from pylab import *
 
-#import tests.test_MFS as tmfs
-#except ImportError:
-#    print "Error: the module tests/tests_MFS is missing"
+def do_test():
+    filename = 'images/train2/bread/b1.png'
+    #filename = 'images/warpbin.png'
 
+    dims = 10
+    
+    i = CSandbox3D(dims)
+    i.setDef(40,1.02,True)
 
-import tests.test_sandbox3D as ts
-ts.do_test()
-
-exit()
-
-import tests.testcomparison as tcomp
-tcomp.do_test()
-
-#import tests.test_real_fake as trealfake
-#except ImportError:
-#    print "Error: the module tests/tests_classifier is missing"
-
-#import tests.test_boxd as tbox
-#tmfs.do_test()
-#trealfake.do_test()
-#tbox.do_test()
+    print "Computing 3D Cython Sandbox Multifractal Spectrum..."
+    t =  time.clock()
+    fds2 = i.getFDs(filename)
+    t =  time.clock()-t
+    plt.plot(range(-dims,dims+1), fds2, 'b*', label='synthetic',linewidth=2.0)
+    plt.show()
+    
