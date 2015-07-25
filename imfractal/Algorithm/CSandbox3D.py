@@ -57,9 +57,14 @@ class CSandbox3D (Algorithm):
         self.v = x
         self.b = y
         self.param = p
-        
+
+       
     def openData(self, filename):
-        return np.ones((256,256,256))
+        return qs3D.volume(1,0.55,2.7,1,22,256,256)
+
+        # test (should be = 3 for every DF)
+        #data = np.ones((256,256,256))
+        #return data
 
 
     # get multifractal dimensions
@@ -69,7 +74,8 @@ class CSandbox3D (Algorithm):
         data = self.openData(filename)
         Nx, Ny, Nz = data.shape
 
-        self.P = min(Nx,Ny,Nz)/6
+        self.P = 40#min(Nx,Ny,Nz)-100
+        P = self.P
 
         L = float(Nx*Ny*Nz)
 
@@ -92,22 +98,22 @@ class CSandbox3D (Algorithm):
             self.total = m0/2 # FIX ME
             
 
-        x = randint(0,Nx-1)
-        y = randint(0,Ny-1)
-        z = randint(0,Nz-1)
+        x = randint(P,Nx-1-P)
+        y = randint(P,Nx-1-P)
+        z = randint(P,Nx-1-P)
         while(data[x][y][z] == 0):
-            x = randint(0,Nx-1)
-            y = randint(0,Ny-1)
-            z = randint(0,Nz-1)
+            x = randint(P,Nx-1-P)
+            y = randint(P,Nx-1-P)
+            z = randint(P,Nx-1-P)
             
         # list with selected points (the points should be in the "structure")
         # points shouldn't be close to the borders, in order for the windows to have the same size
 
         while cantSelected < self.total:
             while(([x,y,z] in points) or data[x][y][z] == 0):
-                x = randint(0,Nx-1)
-                y = randint(0,Ny-1)
-                z = randint(0,Nz-1)
+                x = randint(P,Nx-1-P)
+                y = randint(P,Nx-1-P)
+                z = randint(P,Nx-1-P)
             # new point, add to list
             points.append([x,y,z])
             cantSelected = cantSelected+1

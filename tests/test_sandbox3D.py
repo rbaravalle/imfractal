@@ -43,6 +43,7 @@ def do_test():
     t =  time.clock()
     fds2 = i.getFDs(filename)
     t =  time.clock()-t
+    plt.ylim(ymax = 4.0, ymin = 1.0)
     plt.plot(range(-dims,dims+1), fds2, 'b*', label='synthetic',linewidth=2.0)
     plt.show()
     

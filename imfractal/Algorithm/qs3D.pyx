@@ -4,6 +4,17 @@ import scipy
 import scipy.stats
 import time
 import Image
+import matplotlib.pyplot as plt
+from numpy import linalg
+
+from libc.stdlib cimport rand
+
+cdef extern from "limits.h":
+    int INT_MAX
+
+cdef extern from "math.h":
+    float pow(int x ,float y)
+    int floor(float x)
 
 
 DTYPE = np.uint8
@@ -18,32 +29,45 @@ cdef extern from "math.h":
     double pow(int x,double y)
     double log(double x)
 
+
+def volume(int param_a,float param_b,float param_c,int param_d,int param_e, int N, int Nz):
+    cdef int r, v, i, j, k,x,y,z, maxrank
+    cdef float cubr,rr
+    cdef np.ndarray[DTYPE_t, ndim=3] field = np.zeros((N,N,Nz),dtype=DTYPE) + np.uint8(1)
+    cubr = (param_b/float(20.0))*N*N*Nz
+    for r from param_d <= r < param_e by param_a:
+        maxrank = floor(cubr/(pow(r,param_c)))
+        if(maxrank >=1.0):
+            for v from 0<=v< maxrank:
+                x = floor((rand() / float(INT_MAX))*N)
+                y = floor((rand() / float(INT_MAX))*N)
+                z = floor((rand() / float(INT_MAX))*Nz)
+                rr = 4.0*np.random.random()
+                for i from x-r<=i<=x+r:
+                    for j from y-r<=j<=y+r:
+                        for k from z-r<=k<=z+r:
+                            if((x-i)*(x-i)+(y-j)*(y-j)+(z-k)*(z-k) <= r*r):
+                                if(i < N and i >= 0 and j < N and j >= 0 and k < Nz and k >= 0 ):
+                                    field[i,j,k] = 0
+
+    return field
     
 # sum of values in the region (x1,y1,z1), (x2,y2,z2) in intImg
 # intImg: summed area table
-def count(int x1,int y1,int z1, int x2,int y2, int z2, np.ndarray[DTYPE_ti, ndim=3] intImg, int Nx, int Ny, int Nz):
+cdef count(int x1,int y1,int z1, int x2,int y2, int z2, np.ndarray[DTYPE_ti, ndim=3] intImg, int Nx, int Ny, int Nz):
     cdef int sum
-    if(x1 < 0): x1 = 0
-    if(y1 < 0): y1 = 0
-    if(z1 < 0): z1 = 0
-    if(x2 >= Nx): x2 = Nx-1
-    if(y2 >= Ny): y2 = Ny-1
-    if(z2 >= Nz): z2 = Nz-1
+    # all up to 2,2,2
     sum = intImg[x2,y2,z2]
-    
+    # we take out three prisms
     sum -= intImg[x2,y2,z1]
     sum -= intImg[x2,y1,z2]
     sum -= intImg[x1,y2,z2]
+    # we took out three extras, so we add them
     sum += intImg[x1,y1,z2]
     sum += intImg[x1,y2,z1]
     sum += intImg[x2,y1,z1]
+    # we added one extra, so we take it out
     sum -= intImg[x1,y1,z1]
-    #if (x1>= 1 and y1 >= 1):
-    #    sum += intImg[x1-1,y1-1]
-    #if (x1 >= 1):
-    #    sum -= intImg[x1-1,y2]
-    #if (y1 >= 1):
-    #    sum -= intImg[x2,y1-1]
     return sum
 
 def aux(int P,int total,int Nx,int Ny,int Nz, np.ndarray[DTYPE_ti, ndim=2] points,np.ndarray[DTYPE_ti, ndim=3] intImg, int m0, int cant):
@@ -60,43 +84,38 @@ def aux(int P,int total,int Nx,int Ny,int Nz, np.ndarray[DTYPE_ti, ndim=2] point
     cdef np.ndarray[DTYPE_td, ndim=1] c = np.zeros((len(rvalues)), dtype=np.double )
     cdef np.ndarray[DTYPE_td, ndim=1] res = np.zeros((cant*2+1), dtype=np.double )
 
-
     h = 0
     for q from -cant <= q < cant+1:
-        down = 1.0/pow(m0,np.double(q-1))
+        down = 1.0/np.power(m0,np.double(q-1))
         ind = 0
-        if(q != 1):
-            # ln< M(R)/M0 ** q-1 >
-            for R in rvalues:
-                summ = 0.0
-                for i from 0<=i<total:
-                    x = points[i,0]
-                    y = points[i,1]
-                    z = points[i,2]
-                    MR = count(x-R,y-R,z-R,x+R,y+R,z+R,intImg,Nx,Ny,Nz)
-                    summ+= down*pow(MR,np.double(q-1))
 
-                summ /= float(total) # mean
-                c[ind] = np.log(summ)/float(q-1)
-                ind+=1
-        else:
-            #q = 1, < ln(M(R)/M0) >
+        if(q != 1):
             for R in rvalues:
+                # ln< M(R)/M0 ** q-1 >
                 summ = 0.0
                 for i from 0<=i<total:
-                    x = points[i][0]
-                    y = points[i][1]
-                    z = points[i][2]
+                    x,y,z = points[i]
                     MR = count(x-R,y-R,z-R,x+R,y+R,z+R,intImg,Nx,Ny,Nz)
-                    summ += np.log(MR/float(m0))
-                summ /= float(total) # mean
-                c[ind] = summ
+                    summ+= down*np.power(MR,np.double(q-1))
+
+                summ /= np.float32(total) # mean
+                c[ind] = np.log(summ)/np.float32(q-1)
                 ind+=1
 
         slope, _, _, _, _ = scipy.stats.linregress(sizes,c)
 
+        if(q%5==0):
+            plt.plot(sizes,c,'o', label = str(q))
+
+        print slope
         res[h] = slope
         h+=1
+
+    plt.legend(loc=2)
+    plt.show()
+
+
+    res[cant+1] = (res[cant]+res[cant+2])/2.0
 
     return res
 
