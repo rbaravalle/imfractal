@@ -29,8 +29,30 @@ cdef extern from "math.h":
     double pow(int x,double y)
     double log(double x)
 
+cdef saveField(field,filename):
+    pp = 0
+    N = field.shape[0]
+    Nz = N
+    I3 = Image.new('L',(N-2*pp,(N-2*pp)*(Nz)),0.0)
 
-def volume(int param_a,float param_b,float param_c,int param_d,int param_e, int N, int Nz):
+    for w in range(Nz):
+        II = Image.frombuffer('L',(N-2*pp,N-2*pp), np.array(field[pp:N-pp,pp:N-pp,w]).astype(np.uint8),'raw','L',0,1)
+        if(w == 216 and filename == "textures/system"): 
+            II.save(filename+"/slice216.png")
+        I3.paste(II,(0,(N-2*pp)*w))
+
+    I3.save(filename+".png")
+    print "Image "+filename+" saved"
+
+
+def volume(np.ndarray[DTYPE_tf, ndim=1] params, int N, int Nz):
+    cdef int param_a = int(params[0])
+    cdef float param_b = params[1]
+    cdef float param_c = params[2]
+    cdef int param_d = int(params[3])
+    cdef int param_e = int(params[4])
+
+    print param_a,param_b,param_c,param_d,param_e
     cdef int r, v, i, j, k,x,y,z, maxrank
     cdef float cubr,rr
     cdef np.ndarray[DTYPE_t, ndim=3] field = np.zeros((N,N,Nz),dtype=DTYPE) + np.uint8(1)
@@ -50,6 +72,7 @@ def volume(int param_a,float param_b,float param_c,int param_d,int param_e, int 
                                 if(i < N and i >= 0 and j < N and j >= 0 and k < Nz and k >= 0 ):
                                     field[i,j,k] = 0
 
+    saveField(255*field,'spec')
     return field
     
 # sum of values in the region (x1,y1,z1), (x2,y2,z2) in intImg
@@ -104,15 +127,15 @@ def aux(int P,int total,int Nx,int Ny,int Nz, np.ndarray[DTYPE_ti, ndim=2] point
 
         slope, _, _, _, _ = scipy.stats.linregress(sizes,c)
 
-        if(q%5==0):
-            plt.plot(sizes,c,'o', label = str(q))
+        #if(q%5==0):
+            #plt.plot(sizes,c,'o', label = str(q))
 
         print slope
         res[h] = slope
         h+=1
 
-    plt.legend(loc=2)
-    plt.show()
+    #plt.legend(loc=2)
+    #plt.show()
 
 
     res[cant+1] = (res[cant]+res[cant+2])/2.0

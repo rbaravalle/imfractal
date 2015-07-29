@@ -52,15 +52,16 @@ class CSandbox3D (Algorithm):
     def __init__(self, c):
         self.cant = c
 
-    def setDef(self,x,y,p):
+    def setDef(self,x,y,p,params):
         self.total = 1000#*3      # number of pixels for averaging
         self.v = x
         self.b = y
         self.param = p
+        self.params = params
 
        
     def openData(self, filename):
-        return qs3D.volume(1,0.55,2.7,1,22,256,256)
+        return qs3D.volume(self.params,256,256)
 
         # test (should be = 3 for every DF)
         #data = np.ones((256,256,256))
