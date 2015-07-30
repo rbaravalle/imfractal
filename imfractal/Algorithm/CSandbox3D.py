@@ -38,6 +38,8 @@ import os
 import matplotlib
 import matplotlib.pyplot as plt
 import time, qs3D	
+import dicom
+import os
 
 class CSandbox3D (Algorithm):
 
@@ -67,13 +69,55 @@ class CSandbox3D (Algorithm):
         #data = np.ones((256,256,256))
         #return data
 
+    # loads a dicom set of files into a 3d numpy array
+    def readDicom(self,path):
+        lstFilesDCM = []  # create an empty list
+        for dirName, subdirList, fileList in os.walk(path):
+            for filename in fileList:
+                if ".dcm" in filename.lower():  # check whether the file's DICOM
+                    lstFilesDCM.append(os.path.join(dirName,filename))
+
+        # Get ref file
+        RefDs = dicom.read_file(lstFilesDCM[0])
+
+        # Load dimensions based on the number of rows, columns, and slices (along the Z axis)
+        ConstPixelDims = (int(RefDs.Rows), int(RefDs.Columns), len(lstFilesDCM))
+
+        # Load spacing values (in mm)
+        ConstPixelSpacing = (float(RefDs.PixelSpacing[0]), float(RefDs.PixelSpacing[1]), float(RefDs.SliceThickness))
+
+        x = numpy.arange(0.0, (ConstPixelDims[0]+1)*ConstPixelSpacing[0], ConstPixelSpacing[0])
+        y = numpy.arange(0.0, (ConstPixelDims[1]+1)*ConstPixelSpacing[1], ConstPixelSpacing[1])
+        z = numpy.arange(0.0, (ConstPixelDims[2]+1)*ConstPixelSpacing[2], ConstPixelSpacing[2])
+
+        # The array is sized based on 'ConstPixelDims'
+        ArrayDicom = numpy.zeros(ConstPixelDims, dtype=RefDs.pixel_array.dtype)
+
+        print "Loading Dicom..."
+        # loop through all the DICOM files
+        for filenameDCM in lstFilesDCM:
+            # read the file
+            ds = dicom.read_file(filenameDCM)
+            # store the raw image data
+            ArrayDicom[:, :, lstFilesDCM.index(filenameDCM)] = ds.pixel_array
+
+        ArrayDicom= numpy.logical_and(ArrayDicom > 3000, ArrayDicom < 6000)
+        plt.imshow((ArrayDicom[:,:,220]), cmap=plt.gray())
+        plt.show()
+        print "loaded!"
+
+
+        return ArrayDicom
+
 
     # get multifractal dimensions
     def getFDs(self,filename):
         cantSelected = 0
 
-        data = self.openData(filename)
+        data = self.readDicom("/home/rodrigo/dicom")
+        #data = self.openData(filename)
         Nx, Ny, Nz = data.shape
+        print data.shape
 
         self.P = 40#min(Nx,Ny,Nz)-100
         P = self.P
@@ -100,12 +144,12 @@ class CSandbox3D (Algorithm):
             
 
         x = randint(P,Nx-1-P)
-        y = randint(P,Nx-1-P)
-        z = randint(P,Nx-1-P)
+        y = randint(P,Ny-1-P)
+        z = randint(P,Nz-1-P)
         while(data[x][y][z] == 0):
             x = randint(P,Nx-1-P)
-            y = randint(P,Nx-1-P)
-            z = randint(P,Nx-1-P)
+            y = randint(P,Ny-1-P)
+            z = randint(P,Nz-1-P)
             
         # list with selected points (the points should be in the "structure")
         # points shouldn't be close to the borders, in order for the windows to have the same size
@@ -113,8 +157,8 @@ class CSandbox3D (Algorithm):
         while cantSelected < self.total:
             while(([x,y,z] in points) or data[x][y][z] == 0):
                 x = randint(P,Nx-1-P)
-                y = randint(P,Nx-1-P)
-                z = randint(P,Nx-1-P)
+                y = randint(P,Ny-1-P)
+                z = randint(P,Nz-1-P)
             # new point, add to list
             points.append([x,y,z])
             cantSelected = cantSelected+1
