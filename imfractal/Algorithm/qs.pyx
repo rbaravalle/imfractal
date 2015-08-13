@@ -108,7 +108,8 @@ def aux(int P,int total,int Nx,int Ny,np.ndarray[DTYPE_ti, ndim=2] points,np.nda
                     summ+= down*pow(MR,np.double(q-1))
 
                 summ /= float(total) # mean
-                c[ind] = np.log(summ)/float(q-1)
+                if(summ > 0.0):
+                    c[ind] = np.log(summ)/float(q-1)
                 ind+=1
         else:
             #q = 1, < ln(M(R)/M0) >
@@ -118,7 +119,8 @@ def aux(int P,int total,int Nx,int Ny,np.ndarray[DTYPE_ti, ndim=2] points,np.nda
                     x = points[i][0]
                     y = points[i][1]
                     MR = count(x-R,y-R,x+R,y+R,intImg,Nx,Ny)
-                    summ += np.log(MR/float(m0))
+                    if(MR > 0):
+                        summ += np.log(MR/float(m0))
                 summ /= float(total) # mean
                 c[ind] = summ
                 ind+=1
