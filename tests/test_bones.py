@@ -42,7 +42,7 @@ def do_test():
     path = "/home/rodrigo/rodrigo/rodrigo/members.imaglabs.org/felix.thomsen/Rodrigo/VertebraPhantom/mats/"
 
     patients = ["5c", "6b", "8b", "8c", "V12"]
-    scans = ["M1", "M2", "01", "02", "03", "XCT"]
+    scans = ["01", "02", "03", "M1", "M2", "XCT"]
     # amount of volumes of interest
     vois = 27
     dims = 10
@@ -76,6 +76,7 @@ def do_test():
             jj = jj+1
 
         ii = ii+1
+
 
     np.save("mfss",mfss)
 

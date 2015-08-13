@@ -29,8 +29,12 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #except ImportError:
 #    print "Error: the module tests/tests_MFS is missing"
 
+#import tests.test_bones as ts
+#ts.do_test()
 
-import tests.test_sandbox3D as ts
+#exit()
+
+import tests.test_bonesR2 as ts
 ts.do_test()
 
 exit()

@@ -63,16 +63,70 @@ def do_test():
         os.system(command3)
 
 
-    print "Creating folder.."
-    createFolders(['exps/figs'])
-
     # load array object file
+    #res = np.load("mfss.npy")
     res = np.load("mfss.npy")
 
     patients = ["5c", "6b", "8b", "8c", "V12"]
 
     # scans except xct
-    scans = ["M1", "M2", "01", "02", "03"]
+    scans = ["01", "02", "03","M1", "M2"]
+    # all scans
+    #scans = ["M1", "M2", "01", "02", "03","xct"]
+
+
+    dims = 10
+    vois = 27
+
+    # compute R2
+    # res = [patient, scan, voi] -> MFS
+    # compute spj for j in voi's and i scans of patient p and for each mfdimension
+    for p in range(len(patients)):
+        sp = np.zeros((vois,2*dims+1)).astype(np.float32)
+        spg = np.zeros(2*dims+1).astype(np.float32)
+        for j in range(vois):      
+           temp = np.zeros(2*dims+1).astype(np.float32)
+           for k in range(len(scans)):
+                temp += res[p][k][j]
+                spg += res[p][k][j]
+
+           sp[j] = temp/len(scans)
+        spg = spg/(len(scans)*vois)
+
+        debug = False
+        if(debug):
+            print sp
+
+            plt.plot(spg)
+            plt.show()
+            for i in range(27):
+                plt.plot(sp[i])
+            plt.show()
+
+
+        r2 = np.zeros(2*dims+1)
+        # R2 for each dimension
+        for r in range(len(r2)):
+            
+            sumup = 0
+            sumdown = 0
+        
+            for j in range(vois):
+                for s in range(len(scans)):
+                    # sumup
+                    temp = res[p][s][j][r] - sp[j][r]
+                    sumup = sumup + temp*temp
+
+                    # sumdown
+                    temp = res[p][s][j][r] - spg[r]
+                    sumdown = sumdown + temp*temp
+
+            r2[r] = 1.0 - sumup / sumdown
+
+        print r2
+    
+
+    exit()
     
 
     pp = 0
