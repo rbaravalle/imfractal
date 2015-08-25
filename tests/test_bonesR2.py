@@ -49,6 +49,8 @@ def do_test():
 
     arr = [ "imfractal/Algorithm/qs3D", "imfractal/Algorithm/qs"]
 
+    print "WTF"
+
     for i in range(len(arr)):
 
         command1 = "cython "+arr[i]+".pyx "
@@ -66,13 +68,15 @@ def do_test():
     # load array object file
     #res = np.load("mfss.npy")
     res = np.load("mfss.npy")
+    #res = np.load("mfssM90-100-P20-DIFF.npy")
+    #res = np.load("mfssM90-100-P31-DIFF.npy")
 
     patients = ["5c", "6b", "8b", "8c", "V12"]
 
     # scans except xct
     scans = ["01", "02", "03","M1", "M2"]
     # all scans
-    #scans = ["M1", "M2", "01", "02", "03","xct"]
+    #scans = ["01", "02", "03","M1", "M2", "xct"]
 
 
     dims = 10
