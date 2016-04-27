@@ -69,7 +69,7 @@ if(False):
 #tb.do_test()
 
 import tests.test_bones_BioAsset as tbba
-tbba.do_test()
+tbba.do_test("/home/rodrigo/members.imaglabs.org/felix.thomsen/Rodrigo/BioAsset/mats/")
 
 #import tests.test_boneMeasuresSpearman as tb
 #tb.do_test()

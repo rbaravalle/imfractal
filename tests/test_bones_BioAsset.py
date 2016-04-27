@@ -25,26 +25,24 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 from imfractal import *
 
-#import Image
-#import time
-#import matplotlib.pyplot as plt
 from pylab import *
 
 import sys
-sys.path.append('/almacen/imfractal/imfractal/Algorithm/')
+import os
+
+sys.path.append(os.path.join(os.path.dirname(sys.path[0]),'imfractal', 'imfractal',  "Algorithm"))
 
 import qs3D
 
 
+def do_test(_path):
 
-def do_test():
+    print "PATH: " + _path
 
-    path = "/almacen/members.imaglabs.org/felix.thomsen/Rodrigo/BioAsset/mats/all/"
-
-    patients = ["01"] #"5c", "6b", "8b", "8c", "V12"]
-    scans = ["1"]#, "02", "03", "M1", "M2", "XCT"]
+    patients = ["01"]
+    scans = ["1"]
     # amount of volumes of interest
-    vois = 1#27
+    vois = 1
     dims = 10
 
     # BioAsset bone's multifractal spectra database
@@ -60,14 +58,12 @@ def do_test():
         jj = 0
         for j in scans:
             for k in range(1,vois+1):
-                fmask =path + "M_" + masks + "BA" + i + "_120_" + j + ".mat"
-                # set voi number and mask filename
-                xct = "no"
-                if(j == 5): xct = "xct"
-                params = [1, 0.75, 3.7, 1, 15, k, fmask, xct, 'M', 'M']
+                fmask = _path + "BA" + i + "_120_" + j + "Mask.mat"
+
+                params = [1, 0.75, 3.7, 1, 15, k, fmask, xct, 'S', 'M']
                 aux.setDef(40,1.02,True,params)
 
-                filename = path + "M_" + slices + "BA" + i + "_120_" + j + ".mat"
+                filename = _path + "BA" + i + "_120_" + j + "Slices.mat"
 
                 print i,j,"voi: ",k
                 print fmask
