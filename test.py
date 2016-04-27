@@ -24,18 +24,55 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
+if(False):
+    import os
+    arr = [ "imfractal/Algorithm/qs3D", "imfractal/Algorithm/qs"]
+
+    print "WTF"
+
+    for i in range(len(arr)):
+
+        command1 = "cython "+arr[i]+".pyx "
+        command2 = "gcc -c -fPIC -I/usr/include/python2.7/ "+arr[i]+".c"+" -o "+arr[i]+".o"
+        command3 = "gcc -shared "+arr[i]+".o -o "+arr[i]+".so"
+
+        print command1
+        os.system(command1)
+        print command2
+        os.system(command2)
+        print command3
+        os.system(command3)
+    exit()
 
 #import tests.test_MFS as tmfs
 #except ImportError:
 #    print "Error: the module tests/tests_MFS is missing"
 
-#import tests.test_bones as ts
-#ts.do_test()
+if(False):
+    import tests.test_bones as ts
+    ts.do_test()
+    exit()
 
-#exit()
+    import tests.test_bonesFelix as ts
+    ts.do_test()
 
-import tests.test_bonesR2 as ts
-ts.do_test()
+    #exit()
+
+if(False):
+    import tests.test_bonesR2 as ts
+    ts.do_test()
+
+    import tests.test_bonesBVTV as tb
+    tb.do_test()
+
+#import tests.test_bonesBVTVspearman as tb
+#tb.do_test()
+
+import tests.test_bones_BioAsset as tbba
+tbba.do_test()
+
+#import tests.test_boneMeasuresSpearman as tb
+#tb.do_test()
 
 exit()
 

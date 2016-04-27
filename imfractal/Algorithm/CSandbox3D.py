@@ -133,8 +133,8 @@ class CSandbox3D (Algorithm):
 
         fmask = self.params[6]
 
-        data = self.openMatlab("slices",filename)
-        dataMask = self.openMatlab("masks",fmask)
+        data = self.openMatlab(self.params[8], filename)
+        dataMask = self.openMatlab(self.params[9], fmask)
 
         # volume of interest
         voi = self.params[5]
