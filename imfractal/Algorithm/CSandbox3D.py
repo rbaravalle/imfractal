@@ -55,7 +55,7 @@ class CSandbox3D (Algorithm):
         self.cant = c
 
     def setDef(self,x,y,p,params):
-        self.total = 800#1000/10#*3      # number of pixels for averaging
+        self.total_pixels = 1000      # number of pixels for averaging
         self.v = x
         self.b = y
         self.param = p
@@ -70,17 +70,16 @@ class CSandbox3D (Algorithm):
         #return data
 
     def openMatlab(self, name, filename, threshold):
+
         import scipy.io as sio
         arr = np.array(sio.loadmat(filename)[name]).astype(np.int32)
-        #if(name == "slices"):
-        if(name == "S"):
-            #if(self.params[7] == "xct"):
-                #arr = arr > 100
-            #    arr = numpy.logical_and(arr > 100, arr < 1200)
-            #else:
-            arr = arr > threshold #numpy.logical_and(arr > 200, arr < 1200)
-        #plt.imshow((arr[:,:,50]), cmap=plt.gray())
-        #plt.show()
+        if name == "S":
+            arr = arr > threshold
+
+        # debug - to see the spongious structure
+        # plt.imshow((arr[:,:,50]), cmap=plt.gray())
+        # plt.show()
+
         return arr
 
     # loads a dicom set of files into a 3d numpy array
@@ -133,17 +132,23 @@ class CSandbox3D (Algorithm):
         threshold = self.params["threshold"]
 
         data = self.openMatlab(self.params["eight"], filename, threshold)
-        dataMask = self.openMatlab(self.params["nine"], fmask, threshold)
+        data_mask = self.openMatlab(self.params["nine"], fmask, threshold)
 
         # volume of interest
-        voi = self.params["five"]
+        # voi = self.params["voi"]
 
         #data = data*(dataMask==voi)
-        data = data * (dataMask > 0)
 
-        print "MAX, MIN: ", np.max(data), np.min(data)
+        # Masking
+        data = data * (data_mask > 0)
+
+        # debug
+        # print "MAX, MIN: ", np.max(data), np.min(data)
+
         Nx, Ny, Nz = data.shape
-        print data.shape
+
+        # debug
+        # print data.shape
 
         self.P = 30#min(Nx,Ny,Nz)-100
         P = self.P
@@ -159,45 +164,50 @@ class CSandbox3D (Algorithm):
         intImg = data.cumsum(0).cumsum(1).cumsum(2)
         
         m0 = intImg[Nx-1][Ny-1][Nz-1]
-        #print m0
 
-        if(m0 == 0):
+        # debug
+        # print m0
+
+        if m0 == 0 :
             print "EMPTY Volume!!!"
             return np.zeros(self.cant*2+1, dtype=np.double )
 
-        if(m0 < self.total):
+        if m0 < self.total_pixels :
             print "Warning: volume has less points than expected"
-            self.total = m0/2 # FIX ME
-            
+            self.total_pixels = m0/2 # FIX ME
 
-        x = randint(P,Nx-1-P)
-        y = randint(P,Ny-1-P)
-        z = randint(P,Nz-1-P)
-        while(data[x][y][z] == 0):
-            x = randint(P,Nx-1-P)
-            y = randint(P,Ny-1-P)
-            z = randint(P,Nz-1-P)
+        x = randint(P, Nx-1-P)
+        y = randint(P, Ny-1-P)
+        z = randint(P, Nz-1-P)
+        while data[x][y][z] == 0 :
+            x = randint(P, Nx-1-P)
+            y = randint(P, Ny-1-P)
+            z = randint(P, Nz-1-P)
             
         # list with selected points (the points should be in the "structure")
         # points shouldn't be close to the borders, in order for the windows to have the same size
 
-        while cantSelected < self.total:
+        while cantSelected < self.total_pixels:
 
-            while(([x,y,z] in points) or data[x][y][z] == 0):
-                x = randint(P,Nx-1-P)
-                y = randint(P,Ny-1-P)
-                z = randint(P,Nz-1-P)
+            while ([x,y,z] in points) or data[x][y][z] == 0 :
+                x = randint(P, Nx-1-P)
+                y = randint(P, Ny-1-P)
+                z = randint(P, Nz-1-P)
+
             # new point, add to list
-            points.append([x,y,z])
-            cantSelected = cantSelected+1
-            #print 
+            points.append([x, y, z])
+            cantSelected += 1
 
         np.set_printoptions(precision=5)
         np.set_printoptions(suppress=True)
 
         points = np.array(points).astype(np.int32)
 
-        res = qs3D.aux(self.P, self.total, Nx, Ny, Nz, points, np.array(intImg).astype(np.int32), m0, self.cant)
+        res = qs3D.aux(self.P, self.total_pixels, Nx, Ny, Nz,
+                       points,
+                       np.array(intImg).astype(np.int32),
+                       m0,
+                       self.cant)
 
         return res
 
