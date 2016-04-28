@@ -60,7 +60,7 @@ def do_test(_path):
             for k in range(1,vois+1):
                 fmask = _path + "BA" + i + "_120_" + j + "Mask.mat"
 
-                params = [1, 0.75, 3.7, 1, 15, k, fmask, xct, 'S', 'M']
+                params = [1, 0.75, 3.7, 1, 15, k, fmask, "no", 'S', 'M']
                 aux.setDef(40,1.02,True,params)
 
                 filename = _path + "BA" + i + "_120_" + j + "Slices.mat"
