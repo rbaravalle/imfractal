@@ -64,8 +64,6 @@ def handle_args(argv):
         print test_name + " -c <compile_cython> -p <path_mats>"
         exit()
 
-    print "COMPILE?: " + compile_cython
-
     if(compile_cython in ("True", "T", "true")):
         import os
         arr = [ "imfractal/Algorithm/qs3D", "imfractal/Algorithm/qs"]
