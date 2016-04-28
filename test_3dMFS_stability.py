@@ -36,23 +36,26 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import sys, getopt
 
-test_name = "test_3dMFS_stability.py"
-
 def handle_args(argv):
 
     compile_cython = False
     path_mats = ''
     num_trials = 1
+    total_pixels = 1500
+
+    test_name = "test_3dMFS_stability.py"
+
+    test_usage_str = test_name + " -c <compile_cython> -p <path_mats> -t <num_trials> -n <total_pixels>"
 
     try:
-        opts, args = getopt.getopt(argv, "hc:p:t:", ["compile_cython=", "path_mats=", "num_trials="])
+        opts, args = getopt.getopt(argv, "hc:p:t:n:", ["compile_cython=", "path_mats=", "num_trials=", "total_pixels="])
     except getopt.GetoptError:
-        print test_name + " -c <compile_cython> -p <path_mats> -t <num_trials>"
+        print test_usage_str
         sys.exit(2)
 
     for opt, arg in opts:
         if opt == '-h':
-            print test_name + " -c <compile_cython> -p <path_mats> -t <num_trials>"
+            print test_usage_str
             sys.exit()
         elif opt in ("-c", "--compile_cython"):
             compile_cython = arg
@@ -60,12 +63,14 @@ def handle_args(argv):
             path_mats = arg
         elif opt in ("-t", "--num_trials"):
             num_trials = arg
+        elif opt in ("-n", "--total_pixels"):
+            total_pixels = arg
 
     print path_mats
 
     if path_mats == '' :
         print "Please specify path to matlab matrices with option -p"
-        print test_name + " -c <compile_cython> -p <path_mats> -t <num_trials>"
+        print test_usage_str
         exit()
 
     if compile_cython in ("True", "T", "true", "t"):
@@ -85,11 +90,11 @@ def handle_args(argv):
             print command3
             os.system(command3)
 
-    return path_mats, num_trials
+    return path_mats, num_trials, total_pixels
 
 if __name__ == "__main__":
-    path_mats, num_trials = handle_args(sys.argv[1:])
+    path_mats, num_trials, total_pixels = handle_args(sys.argv[1:])
 
     import tests.test_3dMFS_stability as t3d_mfs
-    t3d_mfs.do_test(path_mats, num_trials)
+    t3d_mfs.do_test(path_mats, num_trials, int(total_pixels))
 

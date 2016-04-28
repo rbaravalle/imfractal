@@ -35,10 +35,22 @@ sys.path.append(os.path.join(os.path.dirname(sys.path[0]),'imfractal', 'imfracta
 
 import qs3D
 
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
 
-def do_test(_path, N):
+
+def do_test(_path, N, total_pixels):
 
     print "PATH: " + _path
+    print "NUM_TRIALS: ", N
+    print "TOTAL_PIXELS: ", total_pixels
 
     patients = ["32"]
     scans = ["1"]
@@ -62,7 +74,8 @@ def do_test(_path, N):
         "seven": "no",
         "eight": 'S',
         "nine": 'M',
-        "threshold": 200
+        "threshold": 200,
+        "total_pixels": total_pixels
     }
 
     fmask = _path + "BA" + patients[0] + "_120_" + scans[0] + "Mask.mat"
@@ -82,15 +95,25 @@ def do_test(_path, N):
 
         mfss = np.array(aux.getFDs(slice_filename)).astype(np.double)
         for i in range(1, int(N)):
-            print "Computing ", i, " th time"
+            print "Computing ", i+1, " th time"
             mfss = np.vstack((mfss, aux.getFDs(slice_filename)))
 
-        print "MFSS SHAPE: ", mfss.shape
-
         # show variations
-        print "Standard Deviation by dimension: "
+        print ""
+        print "Variation by dimension: in red is higher than 0.01 "
         for j in range(0, mfss.shape[1]):
-            print np.std(mfss[:, j]), " j: ", j
+            #print np.std(mfss[:, j]), " j: ", j # mmhh
+
+            diff = max(mfss[:, j]) - min(mfss[:, j])
+            diff_str = str(diff)
+            dim = str(j-dims)
+            msg = diff_str + " q: " + dim
+            if diff > 0.01 :
+                print bcolors.FAIL + msg + bcolors.ENDC
+            else:
+                print msg
+    else:
+        print "3D MFS should be computed more than once to show variations"
 
 
     
