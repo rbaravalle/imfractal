@@ -130,7 +130,8 @@ def aux(int P,int total,int Nx,int Ny,int Nz, np.ndarray[DTYPE_ti, ndim=2] point
         #if(q%5==0):
             #plt.plot(sizes,c,'o', label = str(q))
 
-        print slope
+        print slope, " , q: ", q
+
         res[h] = slope
         h+=1
 

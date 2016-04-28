@@ -25,7 +25,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 ################
-# test_bones_BioAsset.py: used to test SandBox 3D Implementation on vertebra data
+# test_3dMFS_stability.py: used to test SandBox 3D Implementation for stability
+# i.e. run N times 3dMFS with the same input and check for variations
 ################
 
 # Args:
@@ -35,40 +36,41 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import sys, getopt
 
-test_name = "test_bones_BioAsset.py"
+test_name = "test_3dMFS_stability.py"
 
 def handle_args(argv):
 
     compile_cython = False
     path_mats = ''
+    num_trials = 1
 
     try:
-        opts, args = getopt.getopt(argv, "hc:p:", ["compile_cython=", "path_mats="])
+        opts, args = getopt.getopt(argv, "hc:p:t:", ["compile_cython=", "path_mats=", "num_trials="])
     except getopt.GetoptError:
-        print test_name + " -c <compile_cython> -p <path_mats>"
+        print test_name + " -c <compile_cython> -p <path_mats> -t <num_trials>"
         sys.exit(2)
 
     for opt, arg in opts:
         if opt == '-h':
-            print test_name + " -c <compile_cython> -p <path_mats>"
+            print test_name + " -c <compile_cython> -p <path_mats> -t <num_trials>"
             sys.exit()
         elif opt in ("-c", "--compile_cython"):
             compile_cython = arg
         elif opt in ("-p", "--path_mats"):
             path_mats = arg
+        elif opt in ("-t", "--num_trials"):
+            num_trials = arg
 
     print path_mats
 
     if path_mats == '' :
         print "Please specify path to matlab matrices with option -p"
-        print test_name + " -c <compile_cython> -p <path_mats>"
+        print test_name + " -c <compile_cython> -p <path_mats> -t <num_trials>"
         exit()
 
     if compile_cython in ("True", "T", "true", "t"):
         import os
         arr = [ "imfractal/Algorithm/qs3D", "imfractal/Algorithm/qs"]
-
-        print "WTF"
 
         for i in range(len(arr)):
 
@@ -83,11 +85,11 @@ def handle_args(argv):
             print command3
             os.system(command3)
 
-    return path_mats
+    return path_mats, num_trials
 
 if __name__ == "__main__":
-    path_mats = handle_args(sys.argv[1:])
+    path_mats, num_trials = handle_args(sys.argv[1:])
 
-    import tests.test_bones_BioAsset as tbba
-    tbba.do_test(path_mats)
+    import tests.test_3dMFS_stability as t3d_mfs
+    t3d_mfs.do_test(path_mats, num_trials)
 

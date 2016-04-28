@@ -55,7 +55,7 @@ class CSandbox3D (Algorithm):
         self.cant = c
 
     def setDef(self,x,y,p,params):
-        self.total_pixels = 1000      # number of pixels for averaging
+        self.total_pixels = 1500      # number of pixels for averaging
         self.v = x
         self.b = y
         self.param = p

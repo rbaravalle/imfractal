@@ -29,13 +29,14 @@ from pylab import *
 
 import sys
 import os
+import numpy as np
 
 sys.path.append(os.path.join(os.path.dirname(sys.path[0]),'imfractal', 'imfractal',  "Algorithm"))
 
 import qs3D
 
 
-def do_test(_path):
+def do_test(_path, N):
 
     print "PATH: " + _path
 
@@ -49,9 +50,6 @@ def do_test(_path):
     mfss = np.zeros([len(patients),len(scans),vois,2*dims+1])
 
     aux = CSandbox3D(dims)
-
-    #slices_str = "slice"
-    #masks_str = "mask"
 
     params = {
         "zero": 1,
@@ -67,32 +65,32 @@ def do_test(_path):
         "threshold": 200
     }
 
-    ii = 0
-    for i in patients:
-        jj = 0
-        for j in scans:
-            for k in range(1,vois+1):
-                fmask = _path + "BA" + i + "_120_" + j + "Mask.mat"
+    fmask = _path + "BA" + patients[0] + "_120_" + scans[0] + "Mask.mat"
 
-                params["five"] = k
-                params["mask_filename"] = fmask
+    params["five"] = 0
+    params["mask_filename"] = fmask
 
-                aux.setDef(40, 1.02, True, params)
+    aux.setDef(40, 1.02, True, params)
 
-                slice_filename = _path + "BA" + i + "_120_" + j + "Slices.mat"
+    slice_filename = _path + "BA" + patients[0] + "_120_" + scans[0] + "Slices.mat"
 
-                print i, j, "voi: ", k
-                print fmask
-                print slice_filename
+    print fmask
+    print slice_filename
 
-                mfss[ii, jj, k-1] = aux.getFDs(slice_filename)
+    if N > 1 :
+        print "Repeating", N, " times"
 
-            jj += 1
+        mfss = np.array(aux.getFDs(slice_filename)).astype(np.double)
+        for i in range(1, int(N)):
+            print "Computing ", i, " th time"
+            mfss = np.vstack((mfss, aux.getFDs(slice_filename)))
 
-        ii += 1
+        print "MFSS SHAPE: ", mfss.shape
 
-
-    np.save("mfs_BioAsset",mfss)
+        # show variations
+        print "Standard Deviation by dimension: "
+        for j in range(0, mfss.shape[1]):
+            print np.std(mfss[:, j]), " j: ", j
 
 
     
