@@ -55,7 +55,7 @@ class CSandbox3D (Algorithm):
         self.cant = c
 
     def setDef(self,x,y,p,params):
-        self.total = 80#1000/10#*3      # number of pixels for averaging
+        self.total = 800#1000/10#*3      # number of pixels for averaging
         self.v = x
         self.b = y
         self.param = p
@@ -63,22 +63,22 @@ class CSandbox3D (Algorithm):
 
        
     def openData(self, filename):
-        return qs3D.volume(self.params,256,256)
+        return qs3D.volume(self.params, 256, 256)
 
         # test (should be = 3 for every DF)
         #data = np.ones((256,256,256))
         #return data
 
-    def openMatlab(self, name, filename):
+    def openMatlab(self, name, filename, threshold):
         import scipy.io as sio
-        arr =  np.array(sio.loadmat(filename)[name]).astype(np.int32)
+        arr = np.array(sio.loadmat(filename)[name]).astype(np.int32)
         #if(name == "slices"):
-        if(name == "slices"): 
-            if(self.params[7] == "xct"):
+        if(name == "S"):
+            #if(self.params[7] == "xct"):
                 #arr = arr > 100
-                arr = numpy.logical_and(arr > 100, arr < 1200)
-            else:
-                arr = numpy.logical_and(arr > 200, arr < 1200)
+            #    arr = numpy.logical_and(arr > 100, arr < 1200)
+            #else:
+            arr = arr > threshold #numpy.logical_and(arr > 200, arr < 1200)
         #plt.imshow((arr[:,:,50]), cmap=plt.gray())
         #plt.show()
         return arr
@@ -128,18 +128,18 @@ class CSandbox3D (Algorithm):
     def getFDs(self,filename):
         cantSelected = 0
 
-        #data = self.readDicom("/home/rodrigo/dicom")
-        #data = self.openData(filename)
+        fmask = self.params["mask_filename"]
 
-        fmask = self.params[6]
+        threshold = self.params["threshold"]
 
-        data = self.openMatlab(self.params[8], filename)
-        dataMask = self.openMatlab(self.params[9], fmask)
+        data = self.openMatlab(self.params["eight"], filename, threshold)
+        dataMask = self.openMatlab(self.params["nine"], fmask, threshold)
 
         # volume of interest
-        voi = self.params[5]
+        voi = self.params["five"]
 
-        data = data*(dataMask==voi)
+        #data = data*(dataMask==voi)
+        data = data * (dataMask > 0)
 
         print "MAX, MIN: ", np.max(data), np.min(data)
         Nx, Ny, Nz = data.shape
@@ -197,7 +197,7 @@ class CSandbox3D (Algorithm):
 
         points = np.array(points).astype(np.int32)
 
-        res = qs3D.aux(self.P,self.total,Nx,Ny,Nz,points,np.array(intImg).astype(np.int32),m0,self.cant)
+        res = qs3D.aux(self.P, self.total, Nx, Ny, Nz, points, np.array(intImg).astype(np.int32), m0, self.cant)
 
         return res
 

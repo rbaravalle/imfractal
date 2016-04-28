@@ -50,8 +50,22 @@ def do_test(_path):
 
     aux = CSandbox3D(dims)
 
-    slices = "slice"
-    masks = "mask"
+    #slices_str = "slice"
+    #masks_str = "mask"
+
+    params = {
+        "zero": 1,
+        "one": 0.75,
+        "two": 3.7,
+        "three": 1,
+        "four": 15,
+        "five": 0,
+        "mask_filename": '',
+        "seven": "no",
+        "eight": 'S',
+        "nine": 'M',
+        "threshold": 200
+    }
 
     ii = 0
     for i in patients:
@@ -60,20 +74,22 @@ def do_test(_path):
             for k in range(1,vois+1):
                 fmask = _path + "BA" + i + "_120_" + j + "Mask.mat"
 
-                params = [1, 0.75, 3.7, 1, 15, k, fmask, "no", 'S', 'M']
-                aux.setDef(40,1.02,True,params)
+                params["five"] = k
+                params["mask_filename"] = fmask
 
-                filename = _path + "BA" + i + "_120_" + j + "Slices.mat"
+                aux.setDef(40, 1.02, True, params)
 
-                print i,j,"voi: ",k
+                slice_filename = _path + "BA" + i + "_120_" + j + "Slices.mat"
+
+                print i, j, "voi: ", k
                 print fmask
-                print filename
+                print slice_filename
 
-                mfss[ii,jj,k-1] = aux.getFDs(filename)
+                mfss[ii, jj, k-1] = aux.getFDs(slice_filename)
 
-            jj = jj+1
+            jj += 1
 
-        ii = ii+1
+        ii += 1
 
 
     np.save("mfs_BioAsset",mfss)
