@@ -162,6 +162,7 @@ class CSandbox3D (Algorithm):
 
         t = time.clock()
         points = []     # number of elements in the structure
+        visited_points = [] # points attempted to add
 
         Nx, Ny, Nz = data.shape
 
@@ -181,6 +182,9 @@ class CSandbox3D (Algorithm):
             print "Warning: volume has less points than expected"
             self.total_pixels = m0/2 # FIX ME
 
+        # FIX ME! Replace all this while's with a selection on white pixels
+        # i.e. compute set of white pixels and select from it
+
         x = randint(P, Nx-1-P)
         y = randint(P, Ny-1-P)
         z = randint(P, Nz-1-P)
@@ -192,12 +196,24 @@ class CSandbox3D (Algorithm):
         # list with selected points (the points should be in the "structure")
         # points shouldn't be close to the borders, in order for the windows to have the same size
 
-        while cantSelected < self.total_pixels:
+        threshold_trials = 300
 
-            while ([x,y,z] in points) or data[x][y][z] == 0 :
+        while cantSelected < self.total_pixels:
+            trials = 0
+            while ([x,y,z] in points) or ([x,y,z] in visited_points) or data[x][y][z] == 0 :
+                visited_points.append([x, y, z])
+
                 x = randint(P, Nx-1-P)
                 y = randint(P, Ny-1-P)
                 z = randint(P, Nz-1-P)
+                trials += 1
+                if trials > threshold_trials :
+                    self.total_pixels = len(points)
+                    print "Warning: no more points can be added. Total: ", self.total_pixels
+                    break
+
+            if trials > threshold_trials :
+                break
 
             # new point, add to list
             points.append([x, y, z])
