@@ -153,6 +153,11 @@ class CSandbox3D (Algorithm):
         self.P = 30#min(Nx,Ny,Nz)-100
         P = self.P
 
+        while Nx < 2*P or Ny < 2*P or Nz < 2*P:
+            P /= 2
+            self. P = P
+            print "P too large. New P: ",  P
+
         L = float(Nx*Ny*Nz)
 
         t = time.clock()
