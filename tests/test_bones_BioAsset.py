@@ -46,7 +46,6 @@ def do_test(_path):
     dims = 10
 
     # BioAsset bone's multifractal spectra database
-    mfss = np.zeros([len(patients),len(scans),vois,2*dims+1])
 
     aux = CSandbox3D(dims)
 
@@ -64,32 +63,48 @@ def do_test(_path):
         "seven": "no",
         "eight": 'S',
         "nine": 'M',
-        "threshold": 200
+        "threshold": 200,
+        "total_pixels":6000
     }
 
-    ii = 0
-    for i in patients:
-        jj = 0
-        for j in scans:
-            for k in range(1,vois+1):
-                fmask = _path + "BA" + i + "_120_" + j + "Mask.mat"
+    from os import listdir
+    from os.path import isfile, join
+    mask_files = [f for f in listdir(_path) if isfile(join(_path, f)) and "Mask" in f]
+    slice_files = [f for f in listdir(_path) if isfile(join(_path, f)) and "Slices" in f]
 
-                params["five"] = k
-                params["mask_filename"] = fmask
+    mfss = np.zeros([len(mask_files), 2 * dims + 1])
 
-                aux.setDef(40, 1.02, True, params)
+    mask_files = sort(mask_files)
+    slice_files = sort(slice_files)
 
-                slice_filename = _path + "BA" + i + "_120_" + j + "Slices.mat"
+    if len(mask_files) != len(slice_files):
+        print "The directory should contain the same amount of slices and masks"
+        exit()
 
-                print i, j, "voi: ", k
-                print fmask
-                print slice_filename
+    i = 0
+    for mask_filename in mask_files:
+        [patient_scan_str, _] = mask_filename.split("Mask")
+        [first_str, scan_str] = patient_scan_str.split("_120_")
+        [_, patient_str] = first_str.split("BA")
 
-                mfss[ii, jj, k-1] = aux.getFDs(slice_filename)
+        mask_filename = _path + mask_filename
 
-            jj += 1
+        params["five"] = 1 #fix me
+        params["mask_filename"] = mask_filename
 
-        ii += 1
+        # obviously we can directly use slice_files[i], but this adds robustness
+        slice_filename = _path + "BA" + patient_str + "_120_" + scan_str + "Slices.mat"
+        if slice_filename == _path + slice_files[i]:
+            print "MASK: ", mask_filename
+            print "SLICE: ", slice_filename
+        else:
+            print "Cannot process test: filename ", _path + slice_files[i], " should be ", slice_filename
+            exit()
+
+        aux.setDef(40, 1.02, True, params)
+        mfss[i] = aux.getFDs(slice_filename)
+
+        i += 1
 
 
     np.save("mfs_BioAsset",mfss)
