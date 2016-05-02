@@ -144,7 +144,7 @@ class CSandbox3D (Algorithm):
 
         while Nx < 2*P or Ny < 2*P or Nz < 2*P:
             P /= 2
-            self. P = P
+            self.P = P
             print "P too large. New P: ",  P
 
         L = float(Nx*Ny*Nz)
