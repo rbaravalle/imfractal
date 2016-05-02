@@ -125,19 +125,11 @@ class CSandbox3D (Algorithm):
 
     # get multifractal dimensions
     def getFDs(self,filename):
-        cantSelected = 0
 
         fmask = self.params["mask_filename"]
-
         threshold = self.params["threshold"]
-
         data = self.openMatlab(self.params["eight"], filename, threshold)
         data_mask = self.openMatlab(self.params["nine"], fmask, threshold)
-
-        # volume of interest
-        # voi = self.params["voi"]
-
-        #data = data*(dataMask==voi)
 
         # Masking
         data = data * (data_mask > 0)
@@ -147,10 +139,7 @@ class CSandbox3D (Algorithm):
 
         Nx, Ny, Nz = data.shape
 
-        # debug
-        # print data.shape
-
-        self.P = 30#min(Nx,Ny,Nz)-100
+        self.P = 30
         P = self.P
 
         while Nx < 2*P or Ny < 2*P or Nz < 2*P:
@@ -161,71 +150,52 @@ class CSandbox3D (Algorithm):
         L = float(Nx*Ny*Nz)
 
         t = time.clock()
-        points = []     # number of elements in the structure
-        visited_points = [] # points attempted to add
 
         Nx, Ny, Nz = data.shape
 
-        # Summed Area Table
-        intImg = data.cumsum(0).cumsum(1).cumsum(2)
-        
-        m0 = intImg[Nx-1][Ny-1][Nz-1]
+        white_pixels = np.array([])
 
-        # debug
-        # print m0
+        for i in range(P, Nx-1-P):
+            for j in range(P, Ny-1-P):
+                for k in range(P, Nz-1-P):
 
-        if m0 == 0 :
+                    # list with selected points (the points should be in the "structure")
+                    # points shouldn't be close to the borders, in order for the windows to have the same size
+
+                    if(data[i][j][k] > 0):
+                        if len(white_pixels) == 0:
+                            white_pixels = np.array([i, j, k])
+                        else:
+                            white_pixels = np.vstack((white_pixels, [i, j, k]))
+
+        if len(white_pixels) == 0 :
             print "EMPTY Volume!!!"
             return np.zeros(self.cant*2+1, dtype=np.double )
 
-        if m0 < self.total_pixels :
-            print "Warning: volume has less points than expected"
-            self.total_pixels = m0/2 # FIX ME
+        first_point = white_pixels[randint(0, len(white_pixels)-1)]
+        points = np.array([first_point])
 
-        # FIX ME! Replace all this while's with a selection on white pixels
-        # i.e. compute set of white pixels and select from it
+        if self.total_pixels >= len(white_pixels):
+            # take all points
+            points = white_pixels
+            self.total_pixels = len(white_pixels)
 
-        x = randint(P, Nx-1-P)
-        y = randint(P, Ny-1-P)
-        z = randint(P, Nz-1-P)
-        while data[x][y][z] == 0 :
-            x = randint(P, Nx-1-P)
-            y = randint(P, Ny-1-P)
-            z = randint(P, Nz-1-P)
-            
-        # list with selected points (the points should be in the "structure")
-        # points shouldn't be close to the borders, in order for the windows to have the same size
+        else:
+            for i in range(self.total_pixels):
+                point = randint(0, len(white_pixels) - 1)
+                points = np.vstack((points, white_pixels[point]))
 
-        threshold_trials = 300
-
-        while cantSelected < self.total_pixels:
-            trials = 0
-            while ([x,y,z] in points) or ([x,y,z] in visited_points) or data[x][y][z] == 0 :
-                visited_points.append([x, y, z])
-
-                x = randint(P, Nx-1-P)
-                y = randint(P, Ny-1-P)
-                z = randint(P, Nz-1-P)
-                trials += 1
-                if trials > threshold_trials :
-                    self.total_pixels = len(points)
-                    print "Warning: no more points can be added. Total: ", self.total_pixels
-                    break
-
-            if trials > threshold_trials :
-                break
-
-            # new point, add to list
-            points.append([x, y, z])
-            cantSelected += 1
+                white_pixels = np.delete(white_pixels, point, axis = 0)
 
         np.set_printoptions(precision=5)
         np.set_printoptions(suppress=True)
 
-        points = np.array(points).astype(np.int32)
+        # Summed Area Table
+        intImg = data.cumsum(0).cumsum(1).cumsum(2)
+        m0 = intImg[Nx-1][Ny-1][Nz-1]
 
         res = qs3D.aux(self.P, self.total_pixels, Nx, Ny, Nz,
-                       points,
+                       points.astype(np.int32),
                        np.array(intImg).astype(np.int32),
                        m0,
                        self.cant)
