@@ -2,6 +2,7 @@ from os import listdir
 from os.path import isfile, join
 import numpy as np
 import sys, getopt
+import csv
 
 test_name = "test_correlations_BioAsset.py"
 
@@ -49,6 +50,17 @@ mfs_data = np.load('mfs_BioAsset.npy')
 result = np.array([])
 
 i = 0
+
+f = open('mfs_BioAsset.csv', 'wt')
+
+writer = csv.writer(f)
+
+line = ('Filename',)
+
+line += tuple(map(lambda x: "MFS " + str(x), range(mfs_data.shape[1])))
+
+writer.writerow(line)
+
 for slice_filename in slice_files:
 
     [patient_scan, _] = slice_filename.split('.')
@@ -64,6 +76,10 @@ for slice_filename in slice_files:
             result = data_i
         else:
             result = np.vstack((result, data_i))
+
+        line = (patient_scan,)
+        line += tuple(mfs_data[i])
+        writer.writerow(line)
 
         i += 1
 
