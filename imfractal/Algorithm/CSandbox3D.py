@@ -69,12 +69,45 @@ class CSandbox3D (Algorithm):
         #data = np.ones((256,256,256))
         #return data
 
-    def openMatlab(self, name, filename, threshold):
+    def determine_threshold(self, arr):
+        # compute histogram of values
+        bins = range(np.min(arr), np.max(arr)+1)
+
+        h = np.histogram(arr, bins = bins)
+
+        threshold = np.min(arr)
+
+        # get x% of mass -> threshold
+        assert(len(arr.shape) == 3)
+
+        total_pixels = arr.shape[0] * arr.shape[1] * arr.shape[2]
+
+        for i in range(len(bins)+1) :
+            # compute sum of h(x) from x = 0 to x = i
+            partial_sum_vector = np.cumsum(h[0][ : (i+1)])
+            partial_sum = partial_sum_vector[len(partial_sum_vector) - 1]
+
+            percentage = (float)(partial_sum) / (float)(total_pixels)
+
+            if percentage > 0.75 :
+                threshold = np.min(arr) + i
+                break
+
+        return threshold
+
+    def openMatlab(self, name, filename, threshold, adaptive = False):
 
         import scipy.io as sio
         arr = np.array(sio.loadmat(filename)[name]).astype(np.int32)
         if name == "S":
+            if adaptive:
+                threshold = self.determine_threshold(arr)
+
             arr = arr > threshold
+
+            a_v = arr.cumsum()
+
+            print "Amount of white pixels: ", a_v[len(a_v) - 1]
 
         # debug - to see the spongious structure
         # plt.imshow((arr[:,:,50]), cmap=plt.gray())
@@ -128,7 +161,8 @@ class CSandbox3D (Algorithm):
 
         fmask = self.params["mask_filename"]
         threshold = self.params["threshold"]
-        data = self.openMatlab(self.params["eight"], filename, threshold)
+        adaptive = self.params["adaptive"]
+        data = self.openMatlab(self.params["eight"], filename, threshold, adaptive)
         data_mask = self.openMatlab(self.params["nine"], fmask, threshold)
 
         # Masking

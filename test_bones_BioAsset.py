@@ -68,8 +68,6 @@ def handle_args(argv):
         import os
         arr = [ "imfractal/Algorithm/qs3D", "imfractal/Algorithm/qs"]
 
-        print "WTF"
-
         for i in range(len(arr)):
 
             command1 = "cython "+arr[i]+".pyx "

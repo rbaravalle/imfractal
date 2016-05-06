@@ -39,10 +39,7 @@ def do_test(_path):
 
     print "PATH: " + _path
 
-    patients = ["32"]
-    scans = ["1"]
-    # amount of volumes of interest
-    vois = 1
+
     dims = 10
 
     # BioAsset bone's multifractal spectra database
@@ -63,8 +60,9 @@ def do_test(_path):
         "seven": "no",
         "eight": 'S',
         "nine": 'M',
-        "threshold": 200,
-        "total_pixels":6000
+        "threshold": 100,
+        "total_pixels":6000,
+        "adaptive" : True # adaptive threshold
     }
 
     from os import listdir

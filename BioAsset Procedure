@@ -1,0 +1,4 @@
+0) In octave, transform every .xml to .mat
+1) python test_bones_BioAsset.py -p <path-to-mats>
+2) python test_generates_data_correlations_BioAsset.py -p <path-to-mats>
+3) python test_correlations_BioAsset.py -p <path-to-mats>
