@@ -4,12 +4,10 @@ import numpy as np
 import sys, getopt
 import csv
 
-test_name = "test_correlations_BioAsset.py"
-
-test_usage_str = test_name + " -p <path_mats>"
+test_usage_str = sys.argv[0] + " -p <path_mats>"
 
 meta_pos_filename = 2
-meta_pos_start_data = 3
+meta_pos_start_data = 2
 meta_pos_end_data = 20
 
 argv = sys.argv[1:]
@@ -40,18 +38,19 @@ slice_files = [f for f in listdir(path_mats) if isfile(join(path_mats, f)) and "
 
 slice_files.sort()  # = sort(slice_files)
 
+path = 'exps/data/'
 # one-to-one with slice_files
-meta = np.load('bioAsset_meta.npy')
+meta = np.load(path + 'bioAsset_meta.npy')
 
 # subset of slice_files
-mfs_data = np.load('mfs_BioAsset.npy')
+mfs_data = np.load(path + 'mfs_BioAsset_holder.npy')
 
 
 result = np.array([])
 
 i = 0
 
-f = open('mfs_BioAsset.csv', 'wt')
+f = open(path + 'mfs_BioAsset_holder.csv', 'wt')
 
 writer = csv.writer(f)
 
@@ -69,19 +68,21 @@ for slice_filename in slice_files:
     if patient_scan == meta_patient_scan:
         data_i = np.array(mfs_data[i])
 
-        for d in range(meta_pos_start_data, meta_pos_end_data + 1):
-            data_i = np.hstack((data_i, np.array(meta[i][d])))
+        import math
+        if not(math.isnan(float(meta[i][3]))):
+            for d in range(meta_pos_start_data, meta_pos_end_data + 1):
+                data_i = np.hstack((data_i, np.array(meta[i][d])))
 
-        if len(result) == 0:
-            result = data_i
-        else:
-            result = np.vstack((result, data_i))
+            if len(result) == 0:
+                result = data_i
+            else:
+                result = np.vstack((result, data_i))
 
-        line = (patient_scan,)
-        line += tuple(mfs_data[i])
-        writer.writerow(line)
+            line = (patient_scan,)
+            line += tuple(mfs_data[i])
+            writer.writerow(line)
 
         i += 1
 
 print "Shape: ", result.shape
-np.save('mfs_and_standard_params.npy', result)
+np.save(path+'mfs_holder_and_standard_params.npy', result)

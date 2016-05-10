@@ -7,12 +7,25 @@ import csv
 test_usage_str = sys.argv[0] + " -p <path_mats>"
 
 meta_pos_filename = 2
-meta_pos_start_data = 2
-meta_pos_end_data = 20
+meta_pos_start_data = 17
+meta_pos_end_data = 17
 
 argv = sys.argv[1:]
 
 path_mats = ''
+
+
+MFS_HOLDER = False
+
+STR_MFS = ''
+ADAPTIVE_STR = ''
+
+if MFS_HOLDER:
+    STR_MFS = '_holder'
+    ADAPTIVE_STR = ''
+else:
+    STR_MFS = ''
+    ADAPTIVE_STR = '_adaptive_0.75'
 
 try:
     opts, args = getopt.getopt(argv, "h:p:", ["path_mats="])
@@ -41,16 +54,20 @@ slice_files.sort()  # = sort(slice_files)
 path = 'exps/data/'
 # one-to-one with slice_files
 meta = np.load(path + 'bioAsset_meta.npy')
+meta_adaptive = np.load(path + 'bioAsset_meta_adaptive.npy')
+print "Meta adaptive shape: ", meta_adaptive.shape
+
 
 # subset of slice_files
-mfs_data = np.load(path + 'mfs_BioAsset_holder.npy')
+mfs_data = np.load(path + 'mfs' + STR_MFS + '_BioAsset' + ADAPTIVE_STR + '.npy')
 
 
 result = np.array([])
 
 i = 0
+idx = 0
 
-f = open(path + 'mfs_BioAsset_holder.csv', 'wt')
+f = open(path + 'mfs' + STR_MFS + '_BioAsset' + ADAPTIVE_STR + '.csv', 'wt')
 
 writer = csv.writer(f)
 
@@ -66,12 +83,15 @@ for slice_filename in slice_files:
     [meta_patient_scan, _] = meta[i][meta_pos_filename].split('.')
 
     if patient_scan == meta_patient_scan:
+        print patient_scan, i, idx
         data_i = np.array(mfs_data[i])
 
         import math
-        if not(math.isnan(float(meta[i][3]))):
+
+        if not (math.isnan(float(meta[i][3]))):
+
             for d in range(meta_pos_start_data, meta_pos_end_data + 1):
-                data_i = np.hstack((data_i, np.array(meta[i][d])))
+                data_i = np.hstack((data_i, np.array(meta_adaptive[idx][d])))
 
             if len(result) == 0:
                 result = data_i
@@ -81,8 +101,9 @@ for slice_filename in slice_files:
             line = (patient_scan,)
             line += tuple(mfs_data[i])
             writer.writerow(line)
+            idx += 1
 
         i += 1
 
 print "Shape: ", result.shape
-np.save(path+'mfs_holder_and_standard_params.npy', result)
+np.save(path + 'mfs' + STR_MFS + '_and_standard_params_adaptive.npy', result)
