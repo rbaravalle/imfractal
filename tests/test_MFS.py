@@ -25,11 +25,23 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 from imfractal import *
 
-import Image
 import time
 
 def do_test():
-    filename = 'images/fractal20Bread.png'
+    path = '/almacen/members.imaglabs.org/felix.thomsen/Rodrigo/BioAsset/mats/'
+    filename = path + 'BA01_120_1Slices.mat'
+    file_mask = path + 'BA01_120_1Mask.mat'
+    i = MFS_3D()
+    i.setDef(1, 20, 3, filename, file_mask)
+    print "Calculating 3D MFS Multifractal Spectrum (Holder)..."
+    t = time.clock()
+    fds3 = i.getFDs()
+    t = time.clock() - t
+    print "Time 3D MFS: ", t
+    print fds3
+
+
+    filename = 'images/baguette2.tif'#fractal20Bread.png'
     i = MFS()
     i.setDef(1,20,3,True)
     print "Calculating MFS Multifractal Spectrum..."

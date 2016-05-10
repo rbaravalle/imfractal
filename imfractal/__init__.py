@@ -32,12 +32,14 @@ import Algorithm.CSandbox3D
 import Algorithm.MFS
 import Algorithm.Singularity
 import Algorithm.Boxdimension
+import Algorithm.MFS_3D
 
 #SandboxCL = Algorithm.SandboxCL.SandboxCL
 Sandbox = Algorithm.Sandbox.Sandbox
 CSandbox = Algorithm.CSandbox.CSandbox
 CSandbox3D = Algorithm.CSandbox3D.CSandbox3D
 MFS = Algorithm.MFS.MFS
+MFS_3D = Algorithm.MFS_3D.MFS_3D
 Singularity = Algorithm.Singularity.Singularity
 Boxdimension = Algorithm.Boxdimension.Boxdimension
 

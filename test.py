@@ -68,6 +68,10 @@ if(False):
 #import tests.test_bonesBVTVspearman as tb
 #tb.do_test()
 
+import tests.test_MFS as tmfs
+tmfs.do_test()
+exit()
+
 import tests.test_bones_BioAsset as tbba
 tbba.do_test("/home/rodrigo/members.imaglabs.org/felix.thomsen/Rodrigo/BioAsset/mats/")
 
