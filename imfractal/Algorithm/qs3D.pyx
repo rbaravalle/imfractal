@@ -93,33 +93,42 @@ cdef count(int x1,int y1,int z1, int x2,int y2, int z2, np.ndarray[DTYPE_ti, ndi
     sum -= intImg[x1,y1,z1]
     return sum
 
-def aux(int P,int total,int Nx,int Ny,int Nz, np.ndarray[DTYPE_ti, ndim=2] points,np.ndarray[DTYPE_ti, ndim=3] intImg, int m0, int cant):
+def aux(int P, int total, int Nx, int Ny, int Nz,
+        np.ndarray[DTYPE_ti, ndim=2] points,
+        np.ndarray[DTYPE_ti, ndim=3] intImg,
+        int cant_dims):
 
     cdef double summ, down
-    cdef int i,x,y,z,MR, ind, R,h,q, stepR, startR
+    cdef int i, x, y, z, MR, ind, R, h, q, stepR, startR, half_dim
+
+    cdef int m0 = intImg[Nx-1][Ny-1][Nz-1]
 
     stepR = 1
     startR = 1
-    cdef np.ndarray[DTYPE_ti, ndim=1] rvalues = np.array(range(startR,P+startR,stepR)).astype(np.int32)
+
+    cdef np.ndarray[DTYPE_ti, ndim=1] rvalues = np.array(range(startR, P+startR, stepR)).astype(np.int32)
     # ln (R/L)
     cdef np.ndarray[DTYPE_td, ndim=1] sizes = np.log(rvalues/float(Nx))
 
     cdef np.ndarray[DTYPE_td, ndim=1] c = np.zeros((len(rvalues)), dtype=np.double )
-    cdef np.ndarray[DTYPE_td, ndim=1] res = np.zeros((cant*2+1), dtype=np.double )
+    cdef np.ndarray[DTYPE_td, ndim=1] res = np.zeros((cant_dims), dtype=np.double )
 
     h = 0
-    for q from -cant <= q < cant+1:
-        down = 1.0/np.power(m0,np.double(q-1))
+
+    half_dim = (cant_dims - 1 )/ 2
+
+    for q from -half_dim <= q < half_dim + 1:
+        down = 1.0/np.power(m0, np.double(q - 1))
         ind = 0
 
         if(q != 1):
             for R in rvalues:
                 # ln< M(R)/M0 ** q-1 >
                 summ = 0.0
-                for i from 0<=i<total:
-                    x,y,z = points[i]
-                    MR = count(x-R,y-R,z-R,x+R,y+R,z+R,intImg,Nx,Ny,Nz)
-                    summ+= down*np.power(MR,np.double(q-1))
+                for i from 0 <= i < total:
+                    x, y, z = points[i]
+                    MR = count(x-R, y-R, z-R, x+R, y+R, z+R, intImg, Nx, Ny, Nz)
+                    summ += down*np.power(MR, np.double(q-1))
 
                 summ /= np.float32(total) # mean
                 c[ind] = np.log(summ)/np.float32(q-1)
@@ -138,8 +147,9 @@ def aux(int P,int total,int Nx,int Ny,int Nz, np.ndarray[DTYPE_ti, ndim=2] point
     #plt.legend(loc=2)
     #plt.show()
 
+    # compute Dq for q = 1 (impossible with previous eqs)
 
-    res[cant+1] = (res[cant]+res[cant+2])/2.0
+    res[half_dim + 1] = (res[half_dim] + res[half_dim + 2]) / 2.0
 
     return res
 

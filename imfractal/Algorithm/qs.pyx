@@ -78,10 +78,13 @@ def count(int x1,int y1,int x2,int y2,np.ndarray[DTYPE_ti, ndim=2] intImg, int N
         sum -= intImg[x2,y1-1]
     return sum
 
-def aux(int P,int total,int Nx,int Ny,np.ndarray[DTYPE_ti, ndim=2] points,np.ndarray[DTYPE_ti, ndim=2] intImg, int m0, int cant):
+def aux(int P, int total, int Nx, int Ny,
+        np.ndarray[DTYPE_ti, ndim=2] points,
+        np.ndarray[DTYPE_ti, ndim=2] intImg,
+        int m0, int cant):
 
     cdef double summ, down
-    cdef int i,x,y,MR, ind, R,h,q, stepR, startR
+    cdef int i, x, y, MR, ind, R, h, q, stepR, startR
 
     stepR = 1
     startR = 1

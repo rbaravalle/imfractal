@@ -52,7 +52,7 @@ class CSandbox3D (Algorithm):
 
     # how many multifractal dimentions should the algorithm return
     def __init__(self, c):
-        self.cant = c
+        self.cant_dims = c
 
     def setDef(self,x,y,p,params):
         self.total_pixels = params["total_pixels"]  # number of pixels for averaging
@@ -204,7 +204,7 @@ class CSandbox3D (Algorithm):
 
         if len(white_pixels) == 0 :
             print "EMPTY Volume!!!"
-            return np.zeros(self.cant*2+1, dtype=np.double )
+            return np.zeros(self.cant_dims, dtype=np.double)
 
         first_point = white_pixels[randint(0, len(white_pixels)-1)]
         points = np.array([first_point])
@@ -226,13 +226,11 @@ class CSandbox3D (Algorithm):
 
         # Summed Area Table
         intImg = data.cumsum(0).cumsum(1).cumsum(2)
-        m0 = intImg[Nx-1][Ny-1][Nz-1]
 
         res = qs3D.aux(self.P, self.total_pixels, Nx, Ny, Nz,
                        points.astype(np.int32),
                        np.array(intImg).astype(np.int32),
-                       m0,
-                       self.cant)
+                       self.cant_dims)
 
         return res
 

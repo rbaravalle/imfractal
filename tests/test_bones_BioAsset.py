@@ -40,7 +40,7 @@ def do_test(_path):
     print "PATH: " + _path
 
 
-    dims = 10
+    dims = 21 # should be odd number! to include q = -x , ... q = 0, ..., q = x
 
     # BioAsset bone's multifractal spectra database
 
