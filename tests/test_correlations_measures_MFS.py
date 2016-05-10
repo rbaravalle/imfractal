@@ -43,10 +43,23 @@ def do_test():
 
     dims = 10
 
-    data = np.load('mfs_and_standard_params.npy')
+    path = "exps/data/"
 
-    mfs = data[:, : 2 * dims + 1]
-    measures = data[:, 2 * dims + 2:]
+    MFS_HOLDER = False
+
+    STR_MFS = ''
+
+    if MFS_HOLDER:
+        STR_MFS = '_holder'
+    else:
+        STR_MFS = ''
+
+    data = np.load(path+'mfs' + STR_MFS + '_and_standard_params_adaptive.npy')
+
+    mfs_last_d = 20
+
+    mfs = data[:, : mfs_last_d]
+    measures = data[:, mfs_last_d+1 :]
 
 
     fsize = 18
@@ -54,7 +67,7 @@ def do_test():
     s = 10.0
     x1 = 1
     x2 = 20
-    x = np.arange(2*dims+1)+1
+    x = np.arange(mfs_last_d)+1
 
 
     print "Measures.shape : ", measures.shape
@@ -63,16 +76,15 @@ def do_test():
     # one correlation for each measure and each mfs dimention
     correls = np.zeros((mfs.shape[1], measures.shape[1]))
 
-    print "MFS0", mfs[:, 13]
-    print "measures",measures[:, 13]
+    which_d = 0
+    print "MFS0", mfs[:, which_d]
+    print "measures",measures[:, which_d]
 
-    plt.plot(mfs[:, 13])
-    plt.plot(measures[:, 13])
+    plt.plot(mfs[:, which_d])
+    plt.plot(measures[:, which_d])
     plt.show()
 
     #print "CORR", scipy.stats.stats.spearmanr(mfs[:, 15], measures[:, 15])[0]
-
-
 
     for d in range(mfs.shape[1]):
         for m in range(measures.shape[1]):
@@ -84,6 +96,6 @@ def do_test():
     plt.plot(correls)
     plt.show()
 
-    np.save("correls_measures_mfs.npy", correls)
+    np.save(path + "correls_measures_adaptive_mfs" + STR_MFS + ".npy", correls)
 
 

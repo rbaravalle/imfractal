@@ -10,7 +10,7 @@ my_data = recfromcsv(sys.argv[1], delimiter=',')
 
 print my_data
 
-np.save("bioAsset_meta.npy", my_data)
+np.save("exps/data/bioAsset_meta_adaptive.npy", my_data)
 
 exit()
 
