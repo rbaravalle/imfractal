@@ -37,7 +37,39 @@ def createFolders(dirs):
 
     for f in dirs:
         if not os.path.isdir(f): 
-            os.mkdir (f) 
+            os.mkdir (f)
+
+def compute_linear_model(mfs, measures):
+    from sklearn.linear_model import Ridge
+    from sklearn import linear_model
+
+    # try different ones
+    clf = Ridge(alpha = 1.0)
+    #clf = RidgeCV(alphas=[0.1, 1.0, 10.0])
+    #clf = linear_model.LinearRegression()
+
+    # explain fexp using BMD + the MFS data
+    fexp = measures[:, measures.shape[1]-1]
+
+    bmd = measures[:, 0]
+    bmd = bmd.reshape((bmd.shape[0], 1))
+
+    print "BMD: ", bmd
+    print "FEXP: ", fexp
+    print "MFS; ", mfs
+
+    #PCA
+    #from sklearn.decomposition import PCA
+    #pca = PCA(n_components=12)
+    #pca.fit(mfs)
+    #mfs_pca = pca.transform(mfs)
+
+    X = np.hstack((bmd, mfs))
+    clf.fit(X, fexp)
+
+    # Results
+    print "Coefs:", clf.coef_
+    print "Score (R^2):", clf.score(X, fexp)
 
 def do_test():
 
@@ -45,18 +77,24 @@ def do_test():
 
     path = "exps/data/"
 
-    MFS_HOLDER = False
+    MFS_HOLDER = True
+    MFS_HOLDER_BINARY = False
 
-    STR_MFS = ''
+    BINARY = ''
+    MFS_STR = ''
 
     if MFS_HOLDER:
-        STR_MFS = '_holder'
+        MFS_STR = '_holder'
+        if MFS_HOLDER_BINARY:
+            BINARY = '_binary'
     else:
-        STR_MFS = ''
+        MFS_STR = ''
 
-    data = np.load(path+'mfs' + STR_MFS + '_and_standard_params_adaptive.npy')
+    data = np.load(path+'mfs' + MFS_STR + BINARY + '_and_standard_params_adaptive.npy')
 
     mfs_last_d = 20
+    if MFS_HOLDER:
+        mfs_last_d = 19
 
     mfs = data[:, : mfs_last_d]
     measures = data[:, mfs_last_d+1 :]
@@ -73,16 +111,16 @@ def do_test():
     print "Measures.shape : ", measures.shape
     print "mfss.shape : ", mfs.shape
 
-    # one correlation for each measure and each mfs dimention
+    # one correlation for each measure and each mfs dimension
     correls = np.zeros((mfs.shape[1], measures.shape[1]))
 
     which_d = 0
     print "MFS0", mfs[:, which_d]
     print "measures",measures[:, which_d]
 
-    plt.plot(mfs[:, which_d])
-    plt.plot(measures[:, which_d])
-    plt.show()
+    #plt.plot(mfs[:, which_d])
+    #plt.plot(measures[:, which_d])
+    #plt.show()
 
     #print "CORR", scipy.stats.stats.spearmanr(mfs[:, 15], measures[:, 15])[0]
 
@@ -93,9 +131,10 @@ def do_test():
     print correls
     print "Higher correlations: ", np.min(correls), np.max(correls)
 
-    plt.plot(correls)
-    plt.show()
+    #plt.plot(correls)
+    #plt.show()
 
-    np.save(path + "correls_measures_adaptive_mfs" + STR_MFS + ".npy", correls)
+    np.save(path + "correls_measures_adaptive_mfs" + MFS_STR + BINARY + ".npy", correls)
 
-
+    # compute linear models (BMD + fractal measures)
+    compute_linear_model(mfs, measures)

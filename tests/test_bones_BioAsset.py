@@ -35,13 +35,23 @@ sys.path.append(os.path.join(os.path.dirname(sys.path[0]),'imfractal', 'imfracta
 import qs3D
 
 
+MFS_HOLDER = True
+MFS_HOLDER_BINARY = True
+data_path = "exps/data/"
+
+if MFS_HOLDER :
+    MFS_STR = '_holder'
+    if MFS_HOLDER_BINARY :
+        BINARY = '_binary'
+
 def do_test(_path):
 
     print "PATH: " + _path
 
 
     dims = 21 # should be odd number! to include q = -x , ... q = 0, ..., q = x
-    dims = 20 # Holder 3D MFS
+    if MFS_HOLDER:
+        dims = 20 # Holder 3D MFS
 
     # BioAsset bone's multifractal spectra database
 
@@ -70,7 +80,6 @@ def do_test(_path):
     mask_files = [f for f in listdir(_path) if isfile(join(_path, f)) and "Mask" in f]
     slice_files = [f for f in listdir(_path) if isfile(join(_path, f)) and "Slices" in f]
 
-    #mfss = np.zeros([len(mask_files), 2 * dims + 1])
     mfss = np.zeros([len(mask_files), dims])
 
     mask_files = sort(mask_files)
@@ -100,18 +109,19 @@ def do_test(_path):
             print "Cannot process test: filename ", _path + slice_files[i], " should be ", slice_filename
             exit()
 
-        #aux = CSandbox3D(dims)
-        #aux.setDef(40, 1.02, True, params)
-        # mfss[i] = aux.getFDs(slice_filename)
-
-        aux = MFS_3D()
-        aux.setDef(1, dims, 3, slice_filename, mask_filename)
-        mfss[i] = aux.getFDs()
+        if not(MFS_HOLDER):
+            aux = CSandbox3D(dims)
+            aux.setDef(40, 1.02, True, params)
+            mfss[i] = aux.getFDs(slice_filename)
+        else:
+            aux = MFS_3D()
+            aux.setDef(1, dims, 3, slice_filename, mask_filename)
+            mfss[i] = aux.getFDs()
 
         i += 1
 
 
-    np.save("mfs_BioAsset_holder", mfss)
+    np.save(data_path+'mfs'+MFS_STR+BINARY+'_BioAsset', mfss)
 
 
     

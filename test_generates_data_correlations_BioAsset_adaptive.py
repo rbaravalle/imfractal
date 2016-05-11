@@ -7,7 +7,7 @@ import csv
 test_usage_str = sys.argv[0] + " -p <path_mats>"
 
 meta_pos_filename = 2
-meta_pos_start_data = 17
+meta_pos_start_data = 0
 meta_pos_end_data = 17
 
 argv = sys.argv[1:]
@@ -15,7 +15,15 @@ argv = sys.argv[1:]
 path_mats = ''
 
 
-MFS_HOLDER = False
+MFS_HOLDER = True
+MFS_HOLDER_BINARY = False
+
+BINARY = ''
+
+if MFS_HOLDER :
+    MFS_STR = '_holder'
+    if MFS_HOLDER_BINARY :
+        BINARY = '_binary'
 
 STR_MFS = ''
 ADAPTIVE_STR = ''
@@ -59,7 +67,7 @@ print "Meta adaptive shape: ", meta_adaptive.shape
 
 
 # subset of slice_files
-mfs_data = np.load(path + 'mfs' + STR_MFS + '_BioAsset' + ADAPTIVE_STR + '.npy')
+mfs_data = np.load(path + 'mfs' + STR_MFS + BINARY + '_BioAsset' + ADAPTIVE_STR + '.npy')
 
 
 result = np.array([])
@@ -67,7 +75,7 @@ result = np.array([])
 i = 0
 idx = 0
 
-f = open(path + 'mfs' + STR_MFS + '_BioAsset' + ADAPTIVE_STR + '.csv', 'wt')
+f = open(path + 'mfs' + STR_MFS + BINARY + '_BioAsset' + ADAPTIVE_STR + '.csv', 'wt')
 
 writer = csv.writer(f)
 
@@ -106,4 +114,4 @@ for slice_filename in slice_files:
         i += 1
 
 print "Shape: ", result.shape
-np.save(path + 'mfs' + STR_MFS + '_and_standard_params_adaptive.npy', result)
+np.save(path + 'mfs' + STR_MFS + BINARY + '_and_standard_params_adaptive.npy', result)

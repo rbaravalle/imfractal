@@ -14,6 +14,16 @@ argv = sys.argv[1:]
 
 path_mats = ''
 
+BINARY = ''
+
+MFS_HOLDER = True
+MFS_HOLDER_BINARY = True
+
+if MFS_HOLDER :
+    MFS_STR = '_holder'
+    if MFS_HOLDER_BINARY :
+        BINARY = '_binary'
+
 try:
     opts, args = getopt.getopt(argv, "h:p:", ["path_mats="])
 except getopt.GetoptError:
@@ -43,14 +53,14 @@ path = 'exps/data/'
 meta = np.load(path + 'bioAsset_meta.npy')
 
 # subset of slice_files
-mfs_data = np.load(path + 'mfs_BioAsset_holder.npy')
+mfs_data = np.load(path + 'mfs'+MFS_STR+BINARY+'_BioAsset.npy')
 
 
 result = np.array([])
 
 i = 0
 
-f = open(path + 'mfs_BioAsset_holder.csv', 'wt')
+f = open(path + 'mfs'+MFS_STR+BINARY+'_BioAsset.csv', 'wt')
 
 writer = csv.writer(f)
 
@@ -85,4 +95,4 @@ for slice_filename in slice_files:
         i += 1
 
 print "Shape: ", result.shape
-np.save(path+'mfs_holder_and_standard_params.npy', result)
+np.save(path+'mfs'+MFS_STR+BINARY+'_and_standard_params.npy', result)
