@@ -16,24 +16,30 @@ path_mats = ''
 
 
 MFS_HOLDER = True
-MFS_HOLDER_BINARY = False
+APPLY_LAPLACIAN = True
+APPLY_GRADIENT = False
 
-BINARY = ''
+TRANSFORMED_INPUT_STR = ''
+MFS_STR = ''
+ADAPTIVE_STR = ''
+
+if APPLY_LAPLACIAN:
+    TRANSFORMED_INPUT_STR = '_laplacian'
+else:
+    if APPLY_GRADIENT:
+        TRANSFORMED_INPUT_STR = '_gradient'
+
+MFS_STR = ''
 
 if MFS_HOLDER :
     MFS_STR = '_holder'
-    if MFS_HOLDER_BINARY :
-        BINARY = '_binary'
-
-STR_MFS = ''
-ADAPTIVE_STR = ''
-
-if MFS_HOLDER:
-    STR_MFS = '_holder'
     ADAPTIVE_STR = ''
+
 else:
-    STR_MFS = ''
     ADAPTIVE_STR = '_adaptive_0.75'
+
+
+BASE_NAME = 'mfs' + MFS_STR + TRANSFORMED_INPUT_STR + '_BioAsset' + ADAPTIVE_STR
 
 try:
     opts, args = getopt.getopt(argv, "h:p:", ["path_mats="])
@@ -67,7 +73,7 @@ print "Meta adaptive shape: ", meta_adaptive.shape
 
 
 # subset of slice_files
-mfs_data = np.load(path + 'mfs' + STR_MFS + BINARY + '_BioAsset' + ADAPTIVE_STR + '.npy')
+mfs_data = np.load(path + BASE_NAME + '.npy')
 
 
 result = np.array([])
@@ -75,7 +81,7 @@ result = np.array([])
 i = 0
 idx = 0
 
-f = open(path + 'mfs' + STR_MFS + BINARY + '_BioAsset' + ADAPTIVE_STR + '.csv', 'wt')
+f = open(path + BASE_NAME + '.csv', 'wt')
 
 writer = csv.writer(f)
 
@@ -114,4 +120,5 @@ for slice_filename in slice_files:
         i += 1
 
 print "Shape: ", result.shape
-np.save(path + 'mfs' + STR_MFS + BINARY + '_and_standard_params_adaptive.npy', result)
+print "Saving ", path + BASE_NAME + '_and_standard_params_adaptive.npy'
+np.save(path + BASE_NAME + '_and_standard_params_adaptive.npy', result)

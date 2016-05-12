@@ -75,22 +75,27 @@ def do_test():
 
     dims = 10
 
-    path = "exps/data/"
-
     MFS_HOLDER = True
-    MFS_HOLDER_BINARY = False
+    APPLY_LAPLACIAN = True
+    APPLY_GRADIENT = False
 
-    BINARY = ''
+    TRANSFORMED_INPUT_STR = ''
     MFS_STR = ''
+
+    data_path = "exps/data/"
 
     if MFS_HOLDER:
         MFS_STR = '_holder'
-        if MFS_HOLDER_BINARY:
-            BINARY = '_binary'
-    else:
-        MFS_STR = ''
 
-    data = np.load(path+'mfs' + MFS_STR + BINARY + '_and_standard_params_adaptive.npy')
+    if APPLY_LAPLACIAN:
+        TRANSFORMED_INPUT_STR = '_laplacian'
+    else:
+        if APPLY_GRADIENT:
+            TRANSFORMED_INPUT_STR = '_gradient'
+
+    BASE_NAME = 'mfs' + MFS_STR + TRANSFORMED_INPUT_STR + '_BioAsset'
+
+    data = np.load(data_path + BASE_NAME + '_and_standard_params_adaptive.npy')
 
     mfs_last_d = 20
     if MFS_HOLDER:
@@ -134,7 +139,7 @@ def do_test():
     #plt.plot(correls)
     #plt.show()
 
-    np.save(path + "correls_measures_adaptive_mfs" + MFS_STR + BINARY + ".npy", correls)
+    np.save(data_path + "correls_measures_adaptive_mfs" + MFS_STR + ".npy", correls)
 
     # compute linear models (BMD + fractal measures)
     compute_linear_model(mfs, measures)

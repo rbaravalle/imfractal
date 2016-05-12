@@ -43,7 +43,7 @@ class MFS_3D (Algorithm):
     def __init__(self):
         pass
 
-    def setDef(self, ind, f, ite, filename, file_mask):
+    def setDef(self, ind, f, ite, filename, file_mask, params):
 
         # parameters: ind -> determines how many levels are used when computing the density 
         #                          choose 1 for using  directly the image measurement im or
@@ -56,6 +56,7 @@ class MFS_3D (Algorithm):
         self.ite_num = ite
         self.filename = filename
         self.file_mask = file_mask
+        self.params = params
 
 
 
@@ -107,15 +108,16 @@ class MFS_3D (Algorithm):
 
         return threshold
 
-    #def openMatlab(self, name, filename):
 
-        #arr = np.array(sio.loadmat(filename)[name]).astype(np.int32)
-        #return arr
 
-    def openMatlab(self, name, filename):
+    def openMatlab(self, name, filename, greyscale):
 
         import scipy.io as sio
         arr = np.array(sio.loadmat(filename)[name]).astype(np.int32)
+
+        if greyscale:
+            return arr
+
         if name == "S":
             threshold = self.determine_threshold(arr)
 
@@ -132,6 +134,31 @@ class MFS_3D (Algorithm):
         return arr
 
 
+    def gradient(self, data):
+        print "Warning: Gradient still not implemented, returning the original data!"
+        return data
+
+    def laplacian(self, data):  # MFS of Laplacion
+
+        # 3d, octave:
+        # f1 = fspecial3('gaussian', 5, 1);
+        # f2 = -ones(3,3,3);
+        # f2(2,2,2) = 26;
+        # f = convn(f1, f2);
+
+        laplacian_kernel = np.load('exps/data/laplacian_kernel.npy')
+
+        print "SHAPES: !"
+        print laplacian_kernel.shape
+        print data.shape
+
+        a = scipy.signal.convolve(data, laplacian_kernel, mode="full")
+        Nx, Ny, Nz = a.shape
+        a = a[3:Nx - 3, 3:Ny - 3, 3:Nz - 3]
+        a = np.floor((a < 0).choose(a, 0))
+        return a
+
+
     def getFDs(self):
         """
         @param string filename : volume location
@@ -141,11 +168,19 @@ class MFS_3D (Algorithm):
         """
 
         # data is a 3D grayscale volume
-        data = self.openMatlab('S', self.filename)
-        data_mask = self.openMatlab('M', self.file_mask)
+        data = self.openMatlab('S', self.filename, True)
+        data_mask = self.openMatlab('M', self.file_mask, True)
 
         # Masking
         data = data * (data_mask > 0)
+
+        # Other multifractal measures
+        if self.params['gradient'] == True:
+            data = self.gradient(data)
+        else:
+            if self.params['laplacian'] == True:
+                print "laplacian!"
+                data = self.laplacian(data)
 
         #Using [0..255] to denote the intensity profile of the image
         grayscale_box = [0, 255]

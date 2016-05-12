@@ -36,13 +36,24 @@ import qs3D
 
 
 MFS_HOLDER = True
-MFS_HOLDER_BINARY = True
+APPLY_LAPLACIAN = True
+APPLY_GRADIENT = False
+
+TRANSFORMED_INPUT_STR = ''
+MFS_STR = ''
+
 data_path = "exps/data/"
 
 if MFS_HOLDER :
     MFS_STR = '_holder'
-    if MFS_HOLDER_BINARY :
-        BINARY = '_binary'
+
+if APPLY_LAPLACIAN:
+    TRANSFORMED_INPUT_STR = '_laplacian'
+else:
+    if APPLY_GRADIENT:
+        TRANSFORMED_INPUT_STR = '_gradient'
+
+BASE_NAME = 'mfs' + MFS_STR + TRANSFORMED_INPUT_STR
 
 def do_test(_path):
 
@@ -72,7 +83,9 @@ def do_test(_path):
         "nine": 'M',
         "threshold": 100,
         "total_pixels":6000,
-        "adaptive" : True # adaptive threshold
+        "adaptive" : True, # adaptive threshold (only for not holder)
+        "laplacian": True,
+        "gradient" : False
     }
 
     from os import listdir
@@ -115,13 +128,16 @@ def do_test(_path):
             mfss[i] = aux.getFDs(slice_filename)
         else:
             aux = MFS_3D()
-            aux.setDef(1, dims, 3, slice_filename, mask_filename)
+            aux.setDef(1, dims, 3, slice_filename, mask_filename, params)
             mfss[i] = aux.getFDs()
+
+        # in case something goes wrong, save computed mfs up to here
+        np.save(data_path + BASE_NAME + '_BioAsset', mfss)
 
         i += 1
 
 
-    np.save(data_path+'mfs'+MFS_STR+BINARY+'_BioAsset', mfss)
+    np.save(data_path + BASE_NAME + '_BioAsset', mfss)
 
 
     
