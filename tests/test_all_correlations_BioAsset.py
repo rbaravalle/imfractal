@@ -1,5 +1,5 @@
 """
-Copyright (c) 2013 Rodrigo Baravalle
+Copyright (c) 2016 Rodrigo Baravalle
 All rights reserved.
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -54,9 +54,9 @@ def compute_linear_model(mfs, measures):
     bmd = measures[:, 0]
     bmd = bmd.reshape((bmd.shape[0], 1))
 
-    print "BMD: ", bmd
-    print "FEXP: ", fexp
-    print "MFS; ", mfs
+    #print "BMD: ", bmd
+    #print "FEXP: ", fexp
+    #print "MFS; ", mfs
 
     #PCA
     #from sklearn.decomposition import PCA
@@ -68,58 +68,75 @@ def compute_linear_model(mfs, measures):
     clf.fit(X, fexp)
 
     # Results
-    print "Coefs:", clf.coef_
+    #print "Coefs:", clf.coef_
     print "Score (R^2):", clf.score(X, fexp)
 
-def do_test():
-
-    dims = 10
-
-    data = np.load(data_path + BASE_NAME + '_and_standard_params.npy')
-
-    mfs_last_d = 20
-    if MFS_HOLDER:
-        mfs_last_d = 19
-
-    mfs = data[:, : mfs_last_d]
-    measures = data[:, mfs_last_d+1 :]
-
-
-    fsize = 18
-    e = 0.1
-    s = 10.0
-    x1 = 1
-    x2 = 20
-    x = np.arange(mfs_last_d)+1
-
-
-    print "Measures.shape : ", measures.shape
-    print "mfss.shape : ", mfs.shape
+def compute_values(mfs, measures, filename):
+    #print "Measures.shape : ", measures.shape
+    #print "mfss.shape : ", mfs.shape
 
     # one correlation for each measure and each mfs dimension
     correls = np.zeros((mfs.shape[1], measures.shape[1]))
 
     which_d = 0
-    print "MFS0", mfs[:, which_d]
-    print "measures",measures[:, which_d]
+    #print "MFS0", mfs[:, which_d]
+    #print "measures",measures[:, which_d]
 
     #plt.plot(mfs[:, which_d])
     #plt.plot(measures[:, which_d])
     #plt.show()
 
-    #print "CORR", scipy.stats.stats.spearmanr(mfs[:, 15], measures[:, 15])[0]
-
     for d in range(mfs.shape[1]):
         for m in range(measures.shape[1]):
             correls[d, m] = scipy.stats.stats.spearmanr(mfs[:, d], measures[:, m])[0]
 
-    print correls
+    #print correls
     print "Higher correlations: ", np.min(correls), np.max(correls)
 
     #plt.plot(correls)
     #plt.show()
 
-    np.save(data_path + "correls_measures_mfs" + BASE_NAME + ".npy", correls)
+    np.save(filename, correls)
 
     # compute linear models (BMD + fractal measures)
     compute_linear_model(mfs, measures)
+
+# This test shows all the results for the journal
+def do_test():
+
+    dims = 10
+
+    data_mfs = np.load(data_path + 'mfs_holder_BioAsset_and_standard_params.npy')
+    data_mfs_g = np.load(data_path + 'mfs_holder_gradient_BioAsset_and_standard_params.npy')
+    data_mfs_l = np.load(data_path + 'mfs_holder_laplacian_BioAsset_and_standard_params.npy')
+
+    mfs_last_d = 19
+
+    measures = data_mfs[:, mfs_last_d + 1:]
+    data_mfs = data_mfs[:, : mfs_last_d]
+
+    data_mfs_g = data_mfs_g[:, : mfs_last_d]
+    data_mfs_l = data_mfs_l[:, : mfs_last_d]
+
+    # compute the three mfs separately
+    print "MFS ONLY"
+    compute_values(data_mfs, measures, data_path + "correls_measures_mfs" + BASE_NAME + ".npy")
+    print "MFS GRADIENT ONLY"
+    compute_values(data_mfs_g, measures, data_path + "correls_measures_mfs_gradient.npy")
+    print "MFS LAPLACIAN ONLY"
+    compute_values(data_mfs_l, measures, data_path + "correls_measures_mfs_laplacian.npy")
+
+    # combinations
+    data_mfs_plus_mfs_l = np.hstack((data_mfs, data_mfs_l))
+    data_mfs_plus_mfs_g = np.hstack((data_mfs, data_mfs_g))
+    data_mfs_l_plus_mfs_g = np.hstack((data_mfs_l, data_mfs_g))
+    data_mfs_plus_mfs_g_plus_mfs_l = np.hstack((data_mfs, data_mfs_g, data_mfs_l))
+
+    print "MFS + MFS LAPLACIAN"
+    compute_values(data_mfs_plus_mfs_l, measures, data_path + "correls_measures_mfs_plus_mfs_laplacian.npy")
+    print "MFS + MFS GRADIENT"
+    compute_values(data_mfs_plus_mfs_g, measures, data_path + "correls_measures_mfs_plus_mfs_gradient.npy")
+    print "MFS GRADIENT + MFS LAPLACIAN"
+    compute_values(data_mfs_l_plus_mfs_g, measures, data_path + "correls_measures_mfs_laplacian_plus_mfs_gradient.npy")
+    print "MFS + MFS GRADIENT + MFS LAPLACIAN"
+    compute_values(data_mfs_plus_mfs_g_plus_mfs_l, measures, data_path + "correls_measures_mfs_l_plus_mfs_g_plus_mfs_l.npy")

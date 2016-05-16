@@ -25,19 +25,16 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 ################
-# test_3dMFS_stability.py: used to test SandBox 3D Implementation for stability
-# i.e. run N times 3dMFS with the same input and check for variations
+# test_correlations_BioAsset.py: used to test all HOLDER MFS correlations with
+# failure load (Fexp)
 ################
 
 # Args:
-# compile_cython: if to compile the multifractal spectrum or not (cython)
 # path_mats: path to the matlab matrices with the BioAsset Bones data
 
 
 
 if __name__ == "__main__":
-    #path_mats, num_trials, total_pixels = handle_args(sys.argv[1:])
-
-    import tests.test_correlations_measures_MFS as test
-    test.do_test()
+    import tests.test_all_correlations_BioAsset as tall
+    tall.do_test()
 

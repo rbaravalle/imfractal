@@ -48,7 +48,7 @@ Boxdimension = Algorithm.Boxdimension.Boxdimension
 MFS_HOLDER = True
 # only one of the following equals true, or none
 APPLY_LAPLACIAN = False
-APPLY_GRADIENT = True
+APPLY_GRADIENT = False
 
 
 
