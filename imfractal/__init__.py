@@ -43,4 +43,37 @@ MFS_3D = Algorithm.MFS_3D.MFS_3D
 Singularity = Algorithm.Singularity.Singularity
 Boxdimension = Algorithm.Boxdimension.Boxdimension
 
+# Global Variables
+
+MFS_HOLDER = True
+# only one of the following equals true, or none
+APPLY_LAPLACIAN = False
+APPLY_GRADIENT = True
+
+
+
+TRANSFORMED_INPUT_STR = ''
+MFS_STR = ''
+ADAPTIVE_STR = ''
+
+if APPLY_LAPLACIAN:
+    TRANSFORMED_INPUT_STR = '_laplacian'
+else:
+    if APPLY_GRADIENT:
+        TRANSFORMED_INPUT_STR = '_gradient'
+
+MFS_STR = ''
+
+if MFS_HOLDER :
+    MFS_STR = '_holder'
+    ADAPTIVE_STR = ''
+
+else:
+    ADAPTIVE_STR = '_adaptive_0.75'
+
+data_path = "exps/data/"
+
+BASE_NAME = 'mfs' + MFS_STR + TRANSFORMED_INPUT_STR + '_BioAsset' + ADAPTIVE_STR
+
+
 #REIL_Path = lambda trace_filename,first,last: Path(trace_filename, ReilParser, first, last).

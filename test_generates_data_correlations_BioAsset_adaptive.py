@@ -3,6 +3,8 @@ from os.path import isfile, join
 import numpy as np
 import sys, getopt
 import csv
+from imfractal import *
+
 
 test_usage_str = sys.argv[0] + " -p <path_mats>"
 
@@ -14,32 +16,6 @@ argv = sys.argv[1:]
 
 path_mats = ''
 
-
-MFS_HOLDER = True
-APPLY_LAPLACIAN = False
-APPLY_GRADIENT = True
-
-TRANSFORMED_INPUT_STR = ''
-MFS_STR = ''
-ADAPTIVE_STR = ''
-
-if APPLY_LAPLACIAN:
-    TRANSFORMED_INPUT_STR = '_laplacian'
-else:
-    if APPLY_GRADIENT:
-        TRANSFORMED_INPUT_STR = '_gradient'
-
-MFS_STR = ''
-
-if MFS_HOLDER :
-    MFS_STR = '_holder'
-    ADAPTIVE_STR = ''
-
-else:
-    ADAPTIVE_STR = '_adaptive_0.75'
-
-
-BASE_NAME = 'mfs' + MFS_STR + TRANSFORMED_INPUT_STR + '_BioAsset' + ADAPTIVE_STR
 
 try:
     opts, args = getopt.getopt(argv, "h:p:", ["path_mats="])
@@ -102,6 +78,7 @@ for slice_filename in slice_files:
 
         import math
 
+        # generating correlations only for Failure load reported cases
         if not (math.isnan(float(meta[i][3]))):
 
             for d in range(meta_pos_start_data, meta_pos_end_data + 1):
@@ -120,5 +97,5 @@ for slice_filename in slice_files:
         i += 1
 
 print "Shape: ", result.shape
-print "Saving ", path + BASE_NAME + '_and_standard_params_adaptive.npy'
-np.save(path + BASE_NAME + '_and_standard_params_adaptive.npy', result)
+print "Saving ", path + BASE_NAME + '_and_standard_params.npy'
+np.save(path + BASE_NAME + '_and_standard_params.npy', result)

@@ -35,30 +35,9 @@ sys.path.append(os.path.join(os.path.dirname(sys.path[0]),'imfractal', 'imfracta
 import qs3D
 
 
-MFS_HOLDER = True
-APPLY_LAPLACIAN = False
-APPLY_GRADIENT = True
-
-TRANSFORMED_INPUT_STR = ''
-MFS_STR = ''
-
-data_path = "exps/data/"
-
-if MFS_HOLDER :
-    MFS_STR = '_holder'
-
-if APPLY_LAPLACIAN:
-    TRANSFORMED_INPUT_STR = '_laplacian'
-else:
-    if APPLY_GRADIENT:
-        TRANSFORMED_INPUT_STR = '_gradient'
-
-BASE_NAME = 'mfs' + MFS_STR + TRANSFORMED_INPUT_STR
-
 def do_test(_path):
 
     print "PATH: " + _path
-
 
     dims = 21 # should be odd number! to include q = -x , ... q = 0, ..., q = x
     if MFS_HOLDER:

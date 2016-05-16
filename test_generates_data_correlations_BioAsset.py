@@ -3,6 +3,7 @@ from os.path import isfile, join
 import numpy as np
 import sys, getopt
 import csv
+from imfractal import *
 
 test_usage_str = sys.argv[0] + " -p <path_mats>"
 
@@ -13,11 +14,6 @@ meta_pos_end_data = 20
 argv = sys.argv[1:]
 
 path_mats = ''
-
-
-MFS_HOLDER = True
-APPLY_LAPLACIAN = True
-APPLY_GRADIENT = False
 
 TRANSFORMED_INPUT_STR = ''
 
