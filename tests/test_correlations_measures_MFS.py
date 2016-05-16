@@ -76,8 +76,8 @@ def do_test():
     dims = 10
 
     MFS_HOLDER = True
-    APPLY_LAPLACIAN = True
-    APPLY_GRADIENT = False
+    APPLY_LAPLACIAN = False
+    APPLY_GRADIENT = True
 
     TRANSFORMED_INPUT_STR = ''
     MFS_STR = ''
@@ -139,7 +139,7 @@ def do_test():
     #plt.plot(correls)
     #plt.show()
 
-    np.save(data_path + "correls_measures_adaptive_mfs" + MFS_STR + ".npy", correls)
+    np.save(data_path + "correls_measures_adaptive_mfs" + BASE_NAME + ".npy", correls)
 
     # compute linear models (BMD + fractal measures)
     compute_linear_model(mfs, measures)

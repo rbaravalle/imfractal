@@ -36,8 +36,8 @@ import qs3D
 
 
 MFS_HOLDER = True
-APPLY_LAPLACIAN = True
-APPLY_GRADIENT = False
+APPLY_LAPLACIAN = False
+APPLY_GRADIENT = True
 
 TRANSFORMED_INPUT_STR = ''
 MFS_STR = ''
@@ -84,8 +84,8 @@ def do_test(_path):
         "threshold": 100,
         "total_pixels":6000,
         "adaptive" : True, # adaptive threshold (only for not holder)
-        "laplacian": True,
-        "gradient" : False
+        "laplacian": APPLY_LAPLACIAN,
+        "gradient" : APPLY_GRADIENT
     }
 
     from os import listdir

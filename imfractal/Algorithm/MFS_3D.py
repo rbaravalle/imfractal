@@ -135,7 +135,39 @@ class MFS_3D (Algorithm):
 
 
     def gradient(self, data):
-        print "Warning: Gradient still not implemented, returning the original data!"
+
+        Nx, Ny, Nz = data.shape
+
+        basic_fx  = np.array([[-1, 0, 1], [0, 0, 0], [0, 0, 0]])
+        basic_fy  = basic_fx.T
+        basic_fxy = [[-1, 0, 0], [0, 0, 0], [0, 0, 1]]
+        basic_fyx = [[0, 0, -1], [0, 0, 0], [1, 0, 0]]
+
+        fx = np.float32(0.5) * np.array([basic_fx, basic_fx, basic_fx])
+        fy = np.float32(0.5) * np.array([basic_fy, basic_fy, basic_fy])
+        fxy = np.float32(0.5) * np.array([basic_fxy, basic_fxy, basic_fxy])
+        fyx = np.float32(0.5) * np.array([basic_fyx, basic_fyx, basic_fyx])
+
+        a = scipy.signal.convolve(data, fx, mode="full")
+        Nx, Ny, Nz = a.shape
+        a = a[0:Nx - 2, 1:Ny - 1, 1:Nz - 1] # fix me, check z indices!
+
+        b = scipy.signal.convolve(data, fy, mode="full")
+        Nx, Ny, Nz = b.shape
+        b = b[1:Nx - 1, 0:Ny - 2, 1:Nz - 1]
+
+        c = scipy.signal.convolve(data, fxy, mode="full")
+        Nx, Ny, Nz = c.shape
+        c = c[1:Nx - 1, 1:Ny - 1, 1:Nz - 1]
+
+        d = scipy.signal.convolve(data, fyx, mode="full")
+        Nx, Ny, Nz = d.shape
+        d = d[1:Nx - 1, 1:Ny - 1, 1:Nz - 1]
+
+        data = a ** 2 + b ** 2 + c ** 2 + d ** 2
+        data = np.sqrt(data)
+        data = np.floor(data)
+
         return data
 
     def laplacian(self, data):  # MFS of Laplacion
