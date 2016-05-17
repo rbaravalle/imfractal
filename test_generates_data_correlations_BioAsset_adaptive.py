@@ -41,15 +41,15 @@ slice_files = [f for f in listdir(path_mats) if isfile(join(path_mats, f)) and "
 
 slice_files.sort()  # = sort(slice_files)
 
-path = 'exps/data/'
+#path = 'exps/data/'
 # one-to-one with slice_files
-meta = np.load(path + 'bioAsset_meta.npy')
-meta_adaptive = np.load(path + 'bioAsset_meta_adaptive.npy')
+meta = np.load(data_path + 'bioAsset_meta.npy')
+meta_adaptive = np.load(data_path + 'bioAsset_meta_adaptive.npy')
 print "Meta adaptive shape: ", meta_adaptive.shape
 
 
 # subset of slice_files
-mfs_data = np.load(path + BASE_NAME + '.npy')
+mfs_data = np.load(data_path + BASE_NAME + '.npy')
 
 
 result = np.array([])
@@ -57,7 +57,7 @@ result = np.array([])
 i = 0
 idx = 0
 
-f = open(path + BASE_NAME + '.csv', 'wt')
+f = open(data_path + BASE_NAME + '.csv', 'wt')
 
 writer = csv.writer(f)
 
@@ -97,5 +97,5 @@ for slice_filename in slice_files:
         i += 1
 
 print "Shape: ", result.shape
-print "Saving ", path + BASE_NAME + '_and_standard_params.npy'
-np.save(path + BASE_NAME + '_and_standard_params.npy', result)
+print "Saving ", data_path + BASE_NAME + '_and_standard_params.npy'
+np.save(data_path + BASE_NAME + '_and_standard_params.npy', result)

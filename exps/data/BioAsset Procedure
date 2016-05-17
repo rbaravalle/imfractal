@@ -1,4 +1,12 @@
-0) In octave, transform every .xml to .mat
+Once you have a set of XML data:
+
+0) In octave, transform every .xml to .mat:
+Edit XMLToMaT.m and put <input_dir> and <path-to-mats> as output_dir
+Then just run XMLToMat
+
 1) python test_bones_BioAsset.py -p <path-to-mats>
+
 2) python test_generates_data_correlations_BioAsset.py -p <path-to-mats>
+(Play with MFS'S: L, G, and Not Holder.., file __init__.py in imfractal)
+
 3) python test_correlations_BioAsset.py -p <path-to-mats>
