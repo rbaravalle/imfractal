@@ -9,9 +9,11 @@ import math
 
 # Adaptive Metadata and mfs
 measures = recfromcsv(data_path + 'default_BioAsset_Adaptive.csv', delimiter=',')
-mfs = recfromcsv('exps/data/mfs_holder_BioAsset.csv', delimiter=',')
+mfs = np.load('exps/data/mfs_holder_BioAsset_raw.npy')
 mfs_normalized = recfromcsv('exps/data/BioAssetAdaptiveThresh/mfs_holder_BioAsset.csv', delimiter=',')
 mfs_sandbox_adaptive = np.load('exps/data/BioAssetAdaptiveThresh/mfs_Sandbox_BioAsset_adaptive_0.75.npy')
+
+pos_fexp = 17 #check
 
 def compute_linear_model(mfs, measures):
     from sklearn.linear_model import Ridge
@@ -46,25 +48,24 @@ def compute_linear_model(mfs, measures):
     print "Score (R^2):", clf.score(X, fexp)
 
 def compute_correlations(measures_matrix, mfs, mfs_pos_start_data,
-                                        mfs_pos_end_data):
-    print mfs.shape
-
+                                        mfs_pos_end_data, transform_mfs = True):
     result = []
 
     # convert from ugly format to matrix
     mfs_matrix = []
 
-    for i in range(mfs.shape[0]):
+    if transform_mfs:
+        for i in range(mfs.shape[0]):
+            mfs_i = tuple(mfs[i])
+            mfs_i = mfs_i[mfs_pos_start_data : mfs_pos_end_data + 1]
 
-        mfs_i = tuple(mfs[i])
-        mfs_i = mfs_i[mfs_pos_start_data : mfs_pos_end_data + 1]
 
+            if len(mfs_matrix) == 0:
+               mfs_matrix = mfs_i
+            else:
+               mfs_matrix = np.vstack((mfs_matrix, mfs_i))
 
-        if len(mfs_matrix) == 0:
-            mfs_matrix = mfs_i
-        else:
-            mfs_matrix = np.vstack((mfs_matrix, mfs_i))
-
+    else: mfs_matrix = mfs
 
     correls = np.zeros((mfs_matrix.shape[1], measures_matrix.shape[1]))
     # compute correlations
@@ -84,9 +85,8 @@ def compute_subset(measures_matrix, mfs,
     mfs_subset = []
     for i in range(len(measures)):
         if not (math.isnan(measures_matrix[i][pos_fexp])):
-
             mfs_i = tuple(mfs[i])
-            mfs_i = mfs_i[mfs_pos_start_data: mfs_pos_end_data]
+            mfs_i = mfs_i[mfs_pos_start_data: mfs_pos_end_data + 1]
             if len(mfs_subset) == 0:
                 mfs_subset = np.array(mfs_i)
             else:
@@ -109,30 +109,9 @@ for i in range(measures.shape[0]):
     else:
         measures_matrix = np.vstack((measures_matrix, measures_i))
 
-print "MEASURES MATRIX: ", measures_matrix.shape
-
 ################################################################
 
-mfs_pos_start_data = 1
-mfs_pos_end_data = 20
-
-
-
-pos_fexp = 17 #check
-
-
-#print "Correlations with raw MFS..."
-#compute_correlations(measures, mfs)
-print "Correlations with normalized MFS..."
-compute_correlations(measures_matrix, mfs_normalized, mfs_pos_start_data,
-                                        mfs_pos_end_data)
-
-
-# obtain subsets of 17 scans for Fexp
-mfs_subset = np.array([])
 measures_subset = np.array([])
-
-i = 0
 
 # subset of measures
 for i in range(len(measures)):
@@ -142,21 +121,30 @@ for i in range(len(measures)):
         else:
             measures_subset = np.vstack((measures_subset, measures_matrix[i]))
 
+
+##############################################
+
+
+mfs_pos_start_data = 1
+mfs_pos_end_data = 20
+print "Correlations with normalized MFS..."
+compute_correlations(measures_matrix, mfs_normalized, mfs_pos_start_data,
+                                        mfs_pos_end_data, True)
+
+
 mfs_subset = compute_subset(measures_matrix, mfs_normalized, mfs_pos_start_data,
                             mfs_pos_end_data)
 
-print "MFS_SUBSET: ", mfs_subset.shape
-print "MEASURES_SUBSET: ", measures_subset.shape
 
 compute_linear_model(mfs_subset, measures_subset)
-
-
+print ""
+###########################################
 mfs_pos_start_data = 0
 mfs_pos_end_data = 21
 
 print "Correlations with Sandbox MFS Adaptive..."
 compute_correlations(measures_matrix, mfs_sandbox_adaptive, mfs_pos_start_data,
-                                        mfs_pos_end_data)
+                                        mfs_pos_end_data, True)
 
 
 mfs_sandbox_subset = compute_subset(measures_matrix, mfs_sandbox_adaptive,
@@ -166,6 +154,24 @@ print "MFS_SUBSET: ", mfs_subset.shape
 print "MEASURES_SUBSET: ", measures_subset.shape
 
 compute_linear_model(mfs_sandbox_subset, measures_subset)
+print ""
 
+###############################################
+
+mfs_pos_start_data = 0
+mfs_pos_end_data = 20
+print "Correlations with MFS..."
+compute_correlations(measures_matrix, mfs, mfs_pos_start_data,
+                                        mfs_pos_end_data)
+
+# obtain subsets of 17 scans for Fexp
+
+mfs_subset = compute_subset(measures_matrix, mfs,
+                                    mfs_pos_start_data, mfs_pos_end_data)
+
+
+compute_linear_model(mfs_subset, measures_subset)
+
+print ""
 
 
