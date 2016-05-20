@@ -5,7 +5,7 @@ import scipy
 import math
 
 # for Fexp
-fexp_names = np.load(data_path + 'bioAsset_meta.npy')
+#fexp_names = np.load(data_path + 'bioAsset_meta.npy')
 
 # Adaptive Metadata and mfs
 measures = recfromcsv(data_path + 'default_BioAsset_Adaptive.csv', delimiter=',')
@@ -79,6 +79,21 @@ def compute_correlations(measures_matrix, mfs, mfs_pos_start_data,
     #plt.show()
     print "Higher correlations: ", np.min(correls), np.max(correls)
 
+def compute_subset(measures_matrix, mfs,
+                   mfs_pos_start_data, mfs_pos_end_data):
+    mfs_subset = []
+    for i in range(len(measures)):
+        if not (math.isnan(measures_matrix[i][pos_fexp])):
+
+            mfs_i = tuple(mfs[i])
+            mfs_i = mfs_i[mfs_pos_start_data: mfs_pos_end_data]
+            if len(mfs_subset) == 0:
+                mfs_subset = np.array(mfs_i)
+            else:
+                mfs_subset = np.vstack((mfs_subset, mfs_i))
+
+    return mfs_subset
+
 
 measures_pos_start_data = 1
 measures_pos_end_data = 18
@@ -119,7 +134,7 @@ measures_subset = np.array([])
 
 i = 0
 
-
+# subset of measures
 for i in range(len(measures)):
     if not(math.isnan(measures_matrix[i][pos_fexp])):
         if len(measures_subset) == 0:
@@ -127,14 +142,8 @@ for i in range(len(measures)):
         else:
             measures_subset = np.vstack((measures_subset, measures_matrix[i]))
 
-        mfs_i = tuple(mfs_normalized[i])
-        mfs_i = mfs_i[mfs_pos_start_data : mfs_pos_end_data]
-        if len(mfs_subset) == 0:
-            mfs_subset = np.array(mfs_i)
-        else:
-            mfs_subset = np.vstack((mfs_subset, mfs_i))
-    else:
-        print "IS NANNN"
+mfs_subset = compute_subset(measures_matrix, mfs_normalized, mfs_pos_start_data,
+                            mfs_pos_end_data)
 
 print "MFS_SUBSET: ", mfs_subset.shape
 print "MEASURES_SUBSET: ", measures_subset.shape
@@ -148,6 +157,15 @@ mfs_pos_end_data = 21
 print "Correlations with Sandbox MFS Adaptive..."
 compute_correlations(measures_matrix, mfs_sandbox_adaptive, mfs_pos_start_data,
                                         mfs_pos_end_data)
+
+
+mfs_sandbox_subset = compute_subset(measures_matrix, mfs_sandbox_adaptive,
+                                    mfs_pos_start_data, mfs_pos_end_data)
+
+print "MFS_SUBSET: ", mfs_subset.shape
+print "MEASURES_SUBSET: ", measures_subset.shape
+
+compute_linear_model(mfs_sandbox_subset, measures_subset)
 
 
 
