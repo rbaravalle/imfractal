@@ -1,101 +1,153 @@
-from os import listdir
-from os.path import isfile, join
 import numpy as np
-import sys, getopt
-import csv
 from imfractal import *
+from numpy import recfromcsv
+import scipy
+import math
+
+# for Fexp
+fexp_names = np.load(data_path + 'bioAsset_meta.npy')
+
+# Adaptive Metadata and mfs
+measures = recfromcsv(data_path + 'default_BioAsset_Adaptive.csv', delimiter=',')
+mfs = recfromcsv('exps/data/mfs_holder_BioAsset.csv', delimiter=',')
+mfs_normalized = recfromcsv('exps/data/BioAssetAdaptiveThresh/mfs_holder_BioAsset.csv', delimiter=',')
+mfs_sandbox_adaptive = np.load('exps/data/BioAssetAdaptiveThresh/mfs_Sandbox_BioAsset_adaptive_0.75.npy')
+
+def compute_linear_model(mfs, measures):
+    from sklearn.linear_model import Ridge
+    from sklearn import linear_model
+
+    # try different ones
+    clf = Ridge(alpha = 1.0)
+    #clf = RidgeCV(alphas=[0.1, 1.0, 10.0])
+    #clf = linear_model.LinearRegression()
+
+    # explain fexp using BMD + the MFS data
+    fexp = measures[:, measures.shape[1]-1]
+
+    bmd = measures[:, 0]
+    bmd = bmd.reshape((bmd.shape[0], 1))
+
+    #print "BMD: ", bmd
+    #print "FEXP: ", fexp
+    #print "MFS; ", mfs
+
+    #PCA
+    #from sklearn.decomposition import PCA
+    #pca = PCA(n_components=12)
+    #pca.fit(mfs)
+    #mfs_pca = pca.transform(mfs)
+
+    X = np.hstack((bmd, mfs))
+    clf.fit(X, fexp)
+
+    # Results
+    #print "Coefs:", clf.coef_
+    print "Score (R^2):", clf.score(X, fexp)
+
+def compute_correlations(measures_matrix, mfs, mfs_pos_start_data,
+                                        mfs_pos_end_data):
+    print mfs.shape
+
+    result = []
+
+    # convert from ugly format to matrix
+    mfs_matrix = []
+
+    for i in range(mfs.shape[0]):
+
+        mfs_i = tuple(mfs[i])
+        mfs_i = mfs_i[mfs_pos_start_data : mfs_pos_end_data + 1]
 
 
-test_usage_str = sys.argv[0] + " -p <path_mats>"
-
-meta_pos_filename = 2
-meta_pos_start_data = 0
-meta_pos_end_data = 17
-
-argv = sys.argv[1:]
-
-path_mats = ''
+        if len(mfs_matrix) == 0:
+            mfs_matrix = mfs_i
+        else:
+            mfs_matrix = np.vstack((mfs_matrix, mfs_i))
 
 
-try:
-    opts, args = getopt.getopt(argv, "h:p:", ["path_mats="])
-except getopt.GetoptError:
-    print test_usage_str
-    sys.exit(2)
+    correls = np.zeros((mfs_matrix.shape[1], measures_matrix.shape[1]))
+    # compute correlations
+    for d in range(mfs_matrix.shape[1]):
+        for m in range(measures_matrix.shape[1]):
+            correls[d, m] = scipy.stats.stats.spearmanr(mfs_matrix[:, d],
+                                                        measures_matrix[:, m])[0]
 
-for opt, arg in opts:
-    if opt == '-h':
-        print test_usage_str
-        sys.exit()
-    elif opt in ("-p", "--path_mats"):
-        path_mats = arg
-
-print path_mats
-
-if path_mats == '':
-    print "Please specify path to matlab matrices with option -p"
-    print test_usage_str
-    exit()
-
-slice_files = [f for f in listdir(path_mats) if isfile(join(path_mats, f)) and "Slices" in f]
-
-slice_files.sort()  # = sort(slice_files)
-
-#path = 'exps/data/'
-# one-to-one with slice_files
-#meta = np.load(data_path + 'bioAsset_meta.npy')
-meta_adaptive = np.load(data_path + 'bioAsset_meta_adaptive.npy')
-print "Meta adaptive shape: ", meta_adaptive.shape
+    #DEBUG CORRELATIONS:
+    #import matplotlib.pyplot as plt
+    #plt.plot(correls)
+    #plt.show()
+    print "Higher correlations: ", np.min(correls), np.max(correls)
 
 
-# subset of slice_files
-mfs_data = np.load(data_path + BASE_NAME + '.npy')
+measures_pos_start_data = 1
+measures_pos_end_data = 18
+
+measures_matrix = []
+
+for i in range(measures.shape[0]):
+    measures_i = tuple(measures[i])
+    measures_i = measures_i[measures_pos_start_data: measures_pos_end_data + 1]
+
+    if len(measures_matrix) == 0:
+        measures_matrix = np.array(measures_i)
+    else:
+        measures_matrix = np.vstack((measures_matrix, measures_i))
+
+print "MEASURES MATRIX: ", measures_matrix.shape
+
+################################################################
+
+mfs_pos_start_data = 1
+mfs_pos_end_data = 20
 
 
-result = np.array([])
+
+pos_fexp = 17 #check
+
+
+#print "Correlations with raw MFS..."
+#compute_correlations(measures, mfs)
+print "Correlations with normalized MFS..."
+compute_correlations(measures_matrix, mfs_normalized, mfs_pos_start_data,
+                                        mfs_pos_end_data)
+
+
+# obtain subsets of 17 scans for Fexp
+mfs_subset = np.array([])
+measures_subset = np.array([])
 
 i = 0
-idx = 0
 
-f = open(data_path + BASE_NAME + '.csv', 'wt')
 
-writer = csv.writer(f)
+for i in range(len(measures)):
+    if not(math.isnan(measures_matrix[i][pos_fexp])):
+        if len(measures_subset) == 0:
+            measures_subset = np.array(measures_matrix[i])
+        else:
+            measures_subset = np.vstack((measures_subset, measures_matrix[i]))
 
-line = ('Filename',)
+        mfs_i = tuple(mfs_normalized[i])
+        mfs_i = mfs_i[mfs_pos_start_data : mfs_pos_end_data]
+        if len(mfs_subset) == 0:
+            mfs_subset = np.array(mfs_i)
+        else:
+            mfs_subset = np.vstack((mfs_subset, mfs_i))
+    else:
+        print "IS NANNN"
 
-line += tuple(map(lambda x: "MFS " + str(x), range(mfs_data.shape[1])))
+print "MFS_SUBSET: ", mfs_subset.shape
+print "MEASURES_SUBSET: ", measures_subset.shape
 
-writer.writerow(line)
+compute_linear_model(mfs_subset, measures_subset)
 
-for slice_filename in slice_files:
 
-    [patient_scan, _] = slice_filename.split('.')
-    [meta_patient_scan, _] = meta[i][meta_pos_filename].split('.')
+mfs_pos_start_data = 0
+mfs_pos_end_data = 21
 
-    if patient_scan == meta_patient_scan:
-        print patient_scan, i, idx
-        data_i = np.array(mfs_data[i])
+print "Correlations with Sandbox MFS Adaptive..."
+compute_correlations(measures_matrix, mfs_sandbox_adaptive, mfs_pos_start_data,
+                                        mfs_pos_end_data)
 
-        import math
 
-        # generating correlations only for Failure load reported cases
-        if not (math.isnan(float(meta[i][3]))):
 
-            for d in range(meta_pos_start_data, meta_pos_end_data + 1):
-                data_i = np.hstack((data_i, np.array(meta_adaptive[idx][d])))
-
-            if len(result) == 0:
-                result = data_i
-            else:
-                result = np.vstack((result, data_i))
-
-            line = (patient_scan,)
-            line += tuple(mfs_data[i])
-            writer.writerow(line)
-            idx += 1
-
-        i += 1
-
-print "Shape: ", result.shape
-print "Saving ", data_path + BASE_NAME + '_and_standard_params.npy'
-np.save(data_path + BASE_NAME + '_and_standard_params.npy', result)
