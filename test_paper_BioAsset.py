@@ -14,6 +14,7 @@ mfs_normalized = recfromcsv('exps/data/BioAssetAdaptiveThresh/mfs_holder_BioAsse
 mfs_sandbox_adaptive = np.load('exps/data/BioAssetAdaptiveThresh/mfs_Sandbox_BioAsset_adaptive_0.75.npy')
 # should be similar to mfs_sandbox_adaptive?
 mfs_sandbox_absolute_normalized = np.load('exps/data/mfs_Sandbox_BioAsset_normalized.npy')
+mfs_local = np.load('exps/data/mfs_holder_local_BioAsset.npy')
 
 pos_fexp = 17 #check
 
@@ -188,6 +189,24 @@ compute_correlations(measures_matrix, mfs, mfs_pos_start_data,
 # obtain subsets of 17 scans for Fexp
 
 mfs_subset = compute_subset(measures_matrix, mfs,
+                                    mfs_pos_start_data, mfs_pos_end_data)
+
+
+compute_linear_model(mfs_subset, measures_subset)
+
+print ""
+
+###############################################
+
+mfs_pos_start_data = 0
+mfs_pos_end_data = 20
+print "Correlations with Local MFS..."
+compute_correlations(measures_matrix, mfs_local, mfs_pos_start_data,
+                                        mfs_pos_end_data)
+
+# obtain subsets of 17 scans for Fexp
+
+mfs_subset = compute_subset(measures_matrix, mfs_local,
                                     mfs_pos_start_data, mfs_pos_end_data)
 
 

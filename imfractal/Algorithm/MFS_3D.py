@@ -191,7 +191,7 @@ class MFS_3D (Algorithm):
         return a
 
 
-    def getFDs(self):
+    def getFDs(self, data = []):
         """
         @param string filename : volume location
         @param string file_mask : mask volume location
@@ -199,20 +199,22 @@ class MFS_3D (Algorithm):
         @author: Rodrigo Baravalle. Code ported from Matlab and extended to 3D
         """
 
-        # data is a 3D grayscale volume
-        data = self.openMatlab('S', self.filename, True)
-        data_mask = self.openMatlab('M', self.file_mask, True)
+        if len(data) == 0:
 
-        # Masking
-        data = data * (data_mask > 0)
+            # data is a 3D grayscale volume
+            data = self.openMatlab('S', self.filename, True)
+            data_mask = self.openMatlab('M', self.file_mask, True)
 
-        # Other multifractal measures
-        if self.params['gradient'] == True:
-            data = self.gradient(data)
-        else:
-            if self.params['laplacian'] == True:
-                print "laplacian!"
-                data = self.laplacian(data)
+            # Masking
+            data = data * (data_mask > 0)
+
+            # Other multifractal measures
+            if self.params['gradient'] == True:
+                data = self.gradient(data)
+            else:
+                if self.params['laplacian'] == True:
+                    print "laplacian!"
+                    data = self.laplacian(data)
 
         #Using [0..255] to denote the intensity profile of the image
         grayscale_box = [0, 255]

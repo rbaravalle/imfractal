@@ -60,9 +60,9 @@ def do_test(_path):
         "seven": "no",
         "eight": 'S',
         "nine": 'M',
-        "threshold": 100,
+        "threshold": 124,
         "total_pixels":6000,
-        "adaptive" : True, # adaptive threshold (only for not holder)
+        "adaptive" : False, # adaptive threshold (only for not holder)
         "laplacian": APPLY_LAPLACIAN,
         "gradient" : APPLY_GRADIENT
     }
@@ -107,6 +107,9 @@ def do_test(_path):
             mfss[i] = aux.getFDs(slice_filename)
         else:
             aux = MFS_3D()
+            if LOCAL:
+                aux = Local_MFS_3D()
+
             aux.setDef(1, dims, 3, slice_filename, mask_filename, params)
             mfss[i] = aux.getFDs()
 

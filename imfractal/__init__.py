@@ -33,6 +33,8 @@ import Algorithm.MFS
 import Algorithm.Singularity
 import Algorithm.Boxdimension
 import Algorithm.MFS_3D
+import Algorithm.Local_MFS_3D
+
 
 #SandboxCL = Algorithm.SandboxCL.SandboxCL
 Sandbox = Algorithm.Sandbox.Sandbox
@@ -40,12 +42,14 @@ CSandbox = Algorithm.CSandbox.CSandbox
 CSandbox3D = Algorithm.CSandbox3D.CSandbox3D
 MFS = Algorithm.MFS.MFS
 MFS_3D = Algorithm.MFS_3D.MFS_3D
+Local_MFS_3D = Algorithm.Local_MFS_3D.Local_MFS_3D
 Singularity = Algorithm.Singularity.Singularity
 Boxdimension = Algorithm.Boxdimension.Boxdimension
 
 # Global Variables
 
 MFS_HOLDER = True
+LOCAL = True
 # only one of the following equals true, or none
 APPLY_LAPLACIAN = False
 APPLY_GRADIENT = False
@@ -70,8 +74,12 @@ if MFS_HOLDER :
 
 else:
     ADAPTIVE_STR = '_adaptive_0.75'
+    ADAPTIVE_STR = '_normalized_input'
 
-data_path = "exps/data/"
+if LOCAL:
+    MFS_STR = MFS_STR+'_local'
+
+data_path = "exps/data"
 
 BASE_NAME = 'mfs' + MFS_STR + TRANSFORMED_INPUT_STR + '_BioAsset' + ADAPTIVE_STR
 
