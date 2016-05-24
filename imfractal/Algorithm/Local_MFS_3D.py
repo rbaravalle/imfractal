@@ -167,5 +167,23 @@ class Local_MFS_3D (Algorithm):
                 print "laplacian!"
                 data = base_MFS.laplacian(data)
 
-        return base_MFS.getFDs(data[0:10, 0:10])
+        xs, ys, zs = data.shape
+
+        num_divisions = 4
+
+        xs_d = xs / num_divisions
+        ys_d = ys / num_divisions
+        zs_d = zs / num_divisions
+
+        local_mfs = np.zeros((num_divisions, num_divisions, num_divisions, 20))
+
+        for i in range(num_divisions):
+            for j in range(num_divisions):
+                for k in range(num_divisions):
+                    local_mfs[i, j, k] = base_MFS.getFDs(
+                          data[i * xs_d : (i + 1)*xs_d,
+                               j * ys_d : (j + 1)*ys_d,
+                               k * zs_d : (k + 1)*zs_d])
+
+        return np.mean(local_mfs, axis = 3)
 
