@@ -8,10 +8,12 @@ import math
 #fexp_names = np.load(data_path + 'bioAsset_meta.npy')
 
 # Adaptive Metadata and mfs
-measures = recfromcsv(data_path + 'default_BioAsset_Adaptive.csv', delimiter=',')
+measures = recfromcsv('exps/data/BioAssetAdaptiveThresh/default_BioAsset_Adaptive.csv', delimiter=',')
 mfs = np.load('exps/data/mfs_holder_BioAsset_raw.npy')
 mfs_normalized = recfromcsv('exps/data/BioAssetAdaptiveThresh/mfs_holder_BioAsset.csv', delimiter=',')
 mfs_sandbox_adaptive = np.load('exps/data/BioAssetAdaptiveThresh/mfs_Sandbox_BioAsset_adaptive_0.75.npy')
+# should be similar to mfs_sandbox_adaptive?
+mfs_sandbox_absolute_normalized = np.load('exps/data/mfs_Sandbox_BioAsset_normalized.npy')
 
 pos_fexp = 17 #check
 
@@ -155,6 +157,25 @@ print "MEASURES_SUBSET: ", measures_subset.shape
 
 compute_linear_model(mfs_sandbox_subset, measures_subset)
 print ""
+
+###########################################
+mfs_pos_start_data = 0
+mfs_pos_end_data = 21
+
+print "Correlations with Sandbox_Absolute MFS_normalized ..."
+compute_correlations(measures_matrix, mfs_sandbox_absolute_normalized, mfs_pos_start_data,
+                                        mfs_pos_end_data, True)
+
+
+mfs_sandbox_absolute_subset = compute_subset(measures_matrix, mfs_sandbox_absolute_normalized,
+                                    mfs_pos_start_data, mfs_pos_end_data)
+
+print "MFS_SUBSET: ", mfs_subset.shape
+print "MEASURES_SUBSET: ", measures_subset.shape
+
+compute_linear_model(mfs_sandbox_absolute_subset, measures_subset)
+print ""
+
 
 ###############################################
 
