@@ -35,12 +35,12 @@ from MFS_3D import *
 
 
 
-class Local_MFS_3D (Algorithm):
+class Local_MFS_Pyramid_3D (Algorithm):
 
     """
     :3D implementation of Local MFS through holder exponents f(alpha)
     :Several MFS are computed on a single domain, from which then
-    :a set of operations produces features
+    :a set of operations produces features (Pyramid version)
     :version: 1.0
     :author: Rodrigo Baravalle
     """
@@ -167,45 +167,58 @@ class Local_MFS_3D (Algorithm):
                 print "laplacian!"
                 data = base_MFS.laplacian(data)
 
-        xs, ys, zs = data.shape
+        result = []
+        import scipy.ndimage.interpolation
+        data_orig = data
+        for i in range(5):
 
-        num_divisions = 8
+            xs, ys, zs = data.shape
 
-        xs_d = xs / num_divisions
-        ys_d = ys / num_divisions
-        zs_d = zs / num_divisions
+            num_divisions = 1
 
-        dims = 6
+            xs_d = xs / num_divisions
+            ys_d = ys / num_divisions
+            zs_d = zs / num_divisions
 
-        local_mfs = np.zeros((num_divisions, num_divisions, num_divisions, dims))
+            dims = 6
 
-        min_diff =  10000.0
-        max_diff = -10000.0
+            local_mfs = np.zeros((num_divisions, num_divisions, num_divisions, 20))
 
-        for i in range(num_divisions):
-            for j in range(num_divisions):
-                for k in range(num_divisions):
-                    print "NEXT LOCAL MFS...", i*num_divisions*num_divisions + j*num_divisions + k
-                    mfs = base_MFS.getFDs(
-                          data[i * xs_d : (i + 1)*xs_d,
-                               j * ys_d : (j + 1)*ys_d,
-                               k * zs_d : (k + 1)*zs_d])
-                    local_mfs[i, j, k] = mfs
+            min_diff =  10000.0
+            max_diff = -10000.0
 
-                    d = np.max(mfs) - np.min(mfs)
+            for i in range(num_divisions):
+                for j in range(num_divisions):
+                    for k in range(num_divisions):
+                        print "NEXT LOCAL MFS...", i*num_divisions*num_divisions + j*num_divisions + k
+                        mfs = base_MFS.getFDs(
+                              data[i * xs_d : (i + 1)*xs_d,
+                                   j * ys_d : (j + 1)*ys_d,
+                                   k * zs_d : (k + 1)*zs_d])
 
-                    if d < min_diff:
-                        min_diff = d
+                        print mfs
 
-                    if d > max_diff:
-                        max_diff = d
+                        local_mfs[i, j, k] = mfs
 
-        max_fa = np.max(local_mfs)
-        min_fa = np.min(local_mfs)
-        std_fa = np.std(local_mfs)
-        mean_fa = np.mean(local_mfs)
+                        d = np.max(mfs) - np.min(mfs)
 
-        return np.array([max_fa, min_fa,
-                         mean_fa, std_fa,
-                         max_diff, min_diff])
+                        if d < min_diff:
+                            min_diff = d
 
+                        if d > max_diff:
+                            max_diff = d
+
+            max_fa = np.max(local_mfs)
+            min_fa = np.min(local_mfs)
+            std_fa = np.std(local_mfs)
+            mean_fa = np.mean(local_mfs)
+
+            result = np.hstack(( np.array([max_fa, min_fa,
+                             mean_fa, std_fa,
+                             max_diff, min_diff]) ,
+                                 result))
+
+            # downscale volume to its half
+            data = scipy.ndimage.interpolation.zoom(data, 0.5, order=3)
+
+        return result

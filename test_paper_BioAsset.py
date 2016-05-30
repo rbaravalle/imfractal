@@ -4,6 +4,8 @@ from numpy import recfromcsv
 import scipy
 import math
 
+np.seterr(divide='ignore', invalid='ignore')
+
 # for Fexp
 #fexp_names = np.load(data_path + 'bioAsset_meta.npy')
 
@@ -15,8 +17,16 @@ mfs_sandbox_adaptive = np.load('exps/data/BioAssetAdaptiveThresh/mfs_Sandbox_Bio
 # should be similar to mfs_sandbox_adaptive?
 mfs_sandbox_absolute_normalized = np.load('exps/data/mfs_Sandbox_BioAsset_normalized.npy')
 mfs_local = np.load('exps/data/mfs_holder_local_BioAsset.npy')
+mfs_local_pyramid = np.load('exps/data/mfs_holder_local_BioAsset_pyramid.npy')
 
 pos_fexp = 17 #check
+
+def normalize(vector):
+    if np.std(vector) != 0:
+        return (vector - np.mean(vector))/ np.std(vector)
+    else:
+        print "std equals 0"
+        return vector
 
 def compute_linear_model(mfs, measures):
     from sklearn.linear_model import Ridge
@@ -45,10 +55,17 @@ def compute_linear_model(mfs, measures):
 
     X = np.hstack((bmd, mfs))
     clf.fit(X, fexp)
-
     # Results
-    #print "Coefs:", clf.coef_
+    # print "Coefs:", clf.coef_
     print "Score (R^2):", clf.score(X, fexp)
+
+    X_normalized = X
+    for i in range(X.shape[1]):
+        X_normalized[:,i] = normalize(X_normalized[:,i])
+
+    clf.fit(X_normalized, fexp)
+
+    print "Normalized Variables - Score (R^2):", clf.score(X_normalized, fexp)
 
 def compute_correlations(measures_matrix, mfs, mfs_pos_start_data,
                                         mfs_pos_end_data, transform_mfs = True):
@@ -70,18 +87,45 @@ def compute_correlations(measures_matrix, mfs, mfs_pos_start_data,
 
     else: mfs_matrix = mfs
 
+
+
     correls = np.zeros((mfs_matrix.shape[1], measures_matrix.shape[1]))
     # compute correlations
     for d in range(mfs_matrix.shape[1]):
         for m in range(measures_matrix.shape[1]):
-            correls[d, m] = scipy.stats.stats.spearmanr(mfs_matrix[:, d],
+            corr = scipy.stats.stats.spearmanr(mfs_matrix[:, d],
                                                         measures_matrix[:, m])[0]
+            if not(math.isnan(corr)):
+                correls[d, m] = corr
+            else:
+                correls[d, m] = 0
 
     #DEBUG CORRELATIONS:
     #import matplotlib.pyplot as plt
     #plt.plot(correls)
     #plt.show()
     print "Higher correlations: ", np.min(correls), np.max(correls)
+
+    mfs_matrix_normalized = mfs_matrix.copy()
+    measures_matrix_normalized = measures_matrix.copy()
+    for i in range(mfs_matrix_normalized.shape[1]):
+        mfs_matrix_normalized[:, i] = normalize(mfs_matrix_normalized[:, i])
+
+    for i in range(measures_matrix_normalized.shape[1]):
+        measures_matrix_normalized[:, i] = normalize(measures_matrix_normalized[:, i])
+
+    correls_normalized = np.zeros((mfs_matrix_normalized.shape[1], measures_matrix_normalized.shape[1]))
+    # compute correlations
+    for d in range(mfs_matrix_normalized.shape[1]):
+        for m in range(measures_matrix_normalized.shape[1]):
+            corr = scipy.stats.stats.spearmanr(mfs_matrix_normalized[:, d],
+                                               measures_matrix_normalized[:, m])[0]
+            if not (math.isnan(corr)):
+                correls_normalized[d, m] = corr
+            else:
+                correls_normalized[d, m] = 0
+
+    print "Higher normalized correlations: ", np.min(correls_normalized), np.max(correls_normalized)
 
 def compute_subset(measures_matrix, mfs,
                    mfs_pos_start_data, mfs_pos_end_data):
@@ -197,9 +241,28 @@ compute_linear_model(mfs_subset, measures_subset)
 print ""
 
 ###############################################
+mfs_pos_start_data = 0
+mfs_pos_end_data = 6*5
+print "Correlations with Pyramid MFS (local or global) ..."
+compute_correlations(measures_matrix, mfs_local_pyramid, mfs_pos_start_data,
+                                        mfs_pos_end_data)
+
+# obtain subsets of 17 scans for Fexp
+
+mfs_subset = compute_subset(measures_matrix, mfs_local_pyramid,
+                                    mfs_pos_start_data, mfs_pos_end_data)
+
+
+compute_linear_model(mfs_subset, measures_subset)
+
+print ""
+
+
+
+###############################################
 
 mfs_pos_start_data = 0
-mfs_pos_end_data = 20
+mfs_pos_end_data = 6
 print "Correlations with Local MFS..."
 compute_correlations(measures_matrix, mfs_local, mfs_pos_start_data,
                                         mfs_pos_end_data)
@@ -213,5 +276,7 @@ mfs_subset = compute_subset(measures_matrix, mfs_local,
 compute_linear_model(mfs_subset, measures_subset)
 
 print ""
+
+
 
 

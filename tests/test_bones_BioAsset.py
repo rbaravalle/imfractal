@@ -42,6 +42,8 @@ def do_test(_path):
     dims = 21 # should be odd number! to include q = -x , ... q = 0, ..., q = x
     if MFS_HOLDER:
         dims = 20 # Holder 3D MFS
+        if LOCAL:
+            dims = 20
 
     # BioAsset bone's multifractal spectra database
 
@@ -72,7 +74,7 @@ def do_test(_path):
     mask_files = [f for f in listdir(_path) if isfile(join(_path, f)) and "Mask" in f]
     slice_files = [f for f in listdir(_path) if isfile(join(_path, f)) and "Slices" in f]
 
-    mfss = np.zeros([len(mask_files), dims])
+    mfss = np.zeros([len(mask_files), 30])
 
     mask_files = sort(mask_files)
     slice_files = sort(slice_files)
@@ -108,7 +110,7 @@ def do_test(_path):
         else:
             aux = MFS_3D()
             if LOCAL:
-                aux = Local_MFS_3D()
+                aux = Local_MFS_Pyramid_3D()
 
             aux.setDef(1, dims, 3, slice_filename, mask_filename, params)
             mfss[i] = aux.getFDs()

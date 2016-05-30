@@ -244,7 +244,7 @@ class MFS_3D (Algorithm):
         bw[0] = data + 1
 
         # DEBUG
-        print "BW: ", bw.shape
+        #print "BW: ", bw.shape
 
         k = 1
         if(self.ind_num > 1):
@@ -262,7 +262,7 @@ class MFS_3D (Algorithm):
                              k - 1 : temp.shape[2] - (1)]
 
 
-        print bw.min(), bw.max()
+        #print bw.min(), bw.max()
         bw = np.log10(bw)
         n1 = c[0] * c[0]
         n2 = bw[0] * c[0]
@@ -326,7 +326,7 @@ class MFS_3D (Algorithm):
         num = np.zeros(self.ite_num)
         MFS = np.zeros(self.f_num)
         for k in range(1, self.f_num+1):
-            print k, self.f_num
+            #print k, self.f_num
             IM = np.zeros(IM.shape)
             IM = (Idx_IM == k).choose(Idx_IM, 255 + k)
             IM = (IM<255 + k).choose(IM, 0)
