@@ -213,10 +213,13 @@ class Local_MFS_Pyramid_3D (Algorithm):
             std_fa = np.std(local_mfs)
             mean_fa = np.mean(local_mfs)
 
-            result = np.hstack(( np.array([max_fa, min_fa,
-                             mean_fa, std_fa,
-                             max_diff, min_diff]) ,
-                                 result))
+            #result = np.hstack(( np.array([max_fa, min_fa,
+            #                 mean_fa, std_fa,
+            #                 max_diff, min_diff]) ,
+            #                     result))
+
+            # Pure MFS (Global) Pyramid
+            result = np.hstack((local_mfs[0,0,0], result))
 
             # downscale volume to its half
             data = scipy.ndimage.interpolation.zoom(data, 0.5, order=3)

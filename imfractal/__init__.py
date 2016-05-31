@@ -54,7 +54,7 @@ MFS_HOLDER = True
 LOCAL = True
 # only one of the following equals true, or none
 APPLY_LAPLACIAN = False
-APPLY_GRADIENT = True
+APPLY_GRADIENT = False
 
 
 
@@ -81,7 +81,7 @@ else:
 if LOCAL:
     MFS_STR = MFS_STR+'_local'
 
-data_path = "exps/data"
+data_path = "exps/data/"
 
 BASE_NAME = 'mfs' + MFS_STR + TRANSFORMED_INPUT_STR + '_BioAsset' + ADAPTIVE_STR
 

@@ -18,6 +18,7 @@ mfs_sandbox_adaptive = np.load('exps/data/BioAssetAdaptiveThresh/mfs_Sandbox_Bio
 mfs_sandbox_absolute_normalized = np.load('exps/data/mfs_Sandbox_BioAsset_normalized.npy')
 mfs_local = np.load('exps/data/mfs_holder_local_BioAsset.npy')
 mfs_local_pyramid = np.load('exps/data/mfs_holder_local_BioAsset_pyramid.npy')
+mfs_gradient_pyramid = np.load('exps/data/mfs_holder_pyramid_gradient_BioAsset.npy')
 
 pos_fexp = 17 #check
 
@@ -270,6 +271,24 @@ compute_correlations(measures_matrix, mfs_local, mfs_pos_start_data,
 # obtain subsets of 17 scans for Fexp
 
 mfs_subset = compute_subset(measures_matrix, mfs_local,
+                                    mfs_pos_start_data, mfs_pos_end_data)
+
+
+compute_linear_model(mfs_subset, measures_subset)
+
+print ""
+
+###############################################
+
+mfs_pos_start_data = 0
+mfs_pos_end_data = 6
+print "Correlations with Pyramid Gradient MFS..."
+compute_correlations(measures_matrix, mfs_gradient_pyramid, mfs_pos_start_data,
+                                        mfs_pos_end_data)
+
+# obtain subsets of 17 scans for Fexp
+
+mfs_subset = compute_subset(measures_matrix, mfs_gradient_pyramid,
                                     mfs_pos_start_data, mfs_pos_end_data)
 
 

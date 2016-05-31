@@ -41,11 +41,12 @@ def handle_args(argv):
 
     compile_cython = False
     path_mats = ''
+    output_filename = ''
 
     try:
-        opts, args = getopt.getopt(argv, "hc:p:", ["compile_cython=", "path_mats="])
+        opts, args = getopt.getopt(argv, "hc:p:o:", ["compile_cython=", "path_mats=", "output_filename="])
     except getopt.GetoptError:
-        print test_name + " -c <compile_cython> -p <path_mats>"
+        print test_name + " -c <compile_cython> -p <path_mats> -o <output_filename>"
         sys.exit(2)
 
     for opt, arg in opts:
@@ -56,12 +57,17 @@ def handle_args(argv):
             compile_cython = arg
         elif opt in ("-p", "--path_mats"):
             path_mats = arg
-
-    print path_mats
+        elif opt in ("-o", "--output_filename"):
+            output_filename = arg
 
     if path_mats == '' :
         print "Please specify path to matlab matrices with option -p"
         print test_name + " -c <compile_cython> -p <path_mats>"
+        exit()
+
+    if output_filename == '' :
+        print "No output filename specified. Using default filename"
+        output_filename = "test_bones_output"
         exit()
 
     if compile_cython in ("True", "T", "true", "t"):
@@ -81,11 +87,11 @@ def handle_args(argv):
             print command3
             os.system(command3)
 
-    return path_mats
+    return path_mats, output_filename
 
 if __name__ == "__main__":
-    path_mats = handle_args(sys.argv[1:])
+    path_mats, output_filename = handle_args(sys.argv[1:])
 
     import tests.test_bones_BioAsset as tbba
-    tbba.do_test(path_mats)
+    tbba.do_test(path_mats, output_filename)
 

@@ -35,9 +35,7 @@ sys.path.append(os.path.join(os.path.dirname(sys.path[0]),'imfractal', 'imfracta
 import qs3D
 
 
-def do_test(_path):
-
-    print "PATH: " + _path
+def do_test(_path, _output_filename):
 
     dims = 21 # should be odd number! to include q = -x , ... q = 0, ..., q = x
     if MFS_HOLDER:
@@ -116,12 +114,13 @@ def do_test(_path):
             mfss[i] = aux.getFDs()
 
         # in case something goes wrong, save computed mfs up to here
-        np.save(data_path + BASE_NAME + '_BioAsset', mfss)
+        np.save(data_path + _output_filename)
 
         i += 1
 
 
-    np.save(data_path + BASE_NAME + '_BioAsset', mfss)
+    print "Data saved to ", data_path + _output_filename
+    np.save(data_path + _output_filename, mfss)
 
 
     
