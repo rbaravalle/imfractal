@@ -53,12 +53,12 @@ Boxdimension = Algorithm.Boxdimension.Boxdimension
 # Global Variables
 
 MFS_HOLDER = True
-LOCAL = True
+LOCAL = False
 # only one of the following equals true, or none
 APPLY_LAPLACIAN = False
 APPLY_GRADIENT = False
 # 2.5 D
-SLICES_MFS = True
+SLICES_MFS = False
 
 
 

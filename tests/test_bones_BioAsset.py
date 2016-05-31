@@ -60,7 +60,7 @@ def do_test(_path, _output_filename):
         "seven": "no",
         "eight": 'S',
         "nine": 'M',
-        "threshold": 124,
+        "threshold": 200,
         "total_pixels":6000,
         "adaptive" : False, # adaptive threshold (only for not holder)
         "laplacian": APPLY_LAPLACIAN,
@@ -72,7 +72,7 @@ def do_test(_path, _output_filename):
     mask_files = [f for f in listdir(_path) if isfile(join(_path, f)) and "Mask" in f]
     slice_files = [f for f in listdir(_path) if isfile(join(_path, f)) and "Slices" in f]
 
-    mfss = np.zeros([len(mask_files), 100])
+    mfss = np.zeros([len(mask_files), 20])
 
     mask_files = sort(mask_files)
     slice_files = sort(slice_files)

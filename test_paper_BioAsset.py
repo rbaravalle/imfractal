@@ -24,7 +24,7 @@ mfs_slices_y = np.load('exps/data/mfs_holder_slices_y_BioAsset.npy')
 mfs_slices_z = np.load('exps/data/mfs_holder_slices_z_BioAsset.npy')
 mfs_pure_pyramid = np.load('exps/data/mfs_pure_pyramid_BioAsset.npy')
 mfs_pure_pyramid_gradient = np.load('exps/data/mfs_pure_pyramid_gradient_BioAsset.npy')
-
+mfs_sigmoid = np.load('exps/data/mfs_holder_sigmoid_BioAsset.npy')
 
 
 
@@ -387,6 +387,21 @@ compute_linear_model(mfs_subset, measures_subset)
 
 print ""
 
+###############################################
+
+mfs_pos_start_data = 0
+mfs_pos_end_data = 20
+print "Correlations with Sigmoid MFS..."
+compute_correlations(measures_matrix, mfs_sigmoid, mfs_pos_start_data,
+                                        mfs_pos_end_data)
+
+mfs_subset = compute_subset(measures_matrix, mfs_sigmoid,
+                                    mfs_pos_start_data, mfs_pos_end_data)
+
+
+compute_linear_model(mfs_subset, measures_subset)
+
+print ""
 
 
 

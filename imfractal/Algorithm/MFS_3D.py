@@ -30,6 +30,7 @@ import numpy as np
 from math import log10
 import scipy.signal
 import scipy.io as sio
+from scipy.stats import norm
 
 
 class MFS_3D (Algorithm):
@@ -218,6 +219,9 @@ class MFS_3D (Algorithm):
 
         #Using [0..255] to denote the intensity profile of the image
         grayscale_box = [0, 255]
+
+        #sigmoid function
+        data = norm.cdf(data, loc=200.0, scale=100.0);
 
         #Preprocessing: default intensity value of image ranges from 0 to 255
         if abs(data).max()< 1:
