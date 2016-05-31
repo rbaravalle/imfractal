@@ -72,7 +72,7 @@ def do_test(_path, _output_filename):
     mask_files = [f for f in listdir(_path) if isfile(join(_path, f)) and "Mask" in f]
     slice_files = [f for f in listdir(_path) if isfile(join(_path, f)) and "Slices" in f]
 
-    mfss = np.zeros([len(mask_files), 30])
+    mfss = np.zeros([len(mask_files), 100])
 
     mask_files = sort(mask_files)
     slice_files = sort(slice_files)
@@ -109,12 +109,17 @@ def do_test(_path, _output_filename):
             aux = MFS_3D()
             if LOCAL:
                 aux = Local_MFS_Pyramid_3D()
-
-            aux.setDef(1, dims, 3, slice_filename, mask_filename, params)
-            mfss[i] = aux.getFDs()
+            if SLICES_MFS:
+                aux = MFS_3D_Slices()
+                aux.setDef(1, dims, 3, slice_filename, mask_filename, params)
+                ax = 2 # X axis
+                mfss[i] = aux.getFDs(ax)
+            else:
+                aux.setDef(1, dims, 3, slice_filename, mask_filename, params)
+                mfss[i] = aux.getFDs()
 
         # in case something goes wrong, save computed mfs up to here
-        np.save(data_path + _output_filename)
+        np.save(data_path + _output_filename, mfss)
 
         i += 1
 

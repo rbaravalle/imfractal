@@ -44,7 +44,7 @@ class MFS (Algorithm):
     def __init__(self):
         pass
 
-    def setDef(self,ind,f,ite,filen):
+    def setDef(self,ind,f,ite):
 
         # parameters: ind -> determines how many levels are used when computing the density 
         #                          choose 1 for using  directly the image measurement im or
@@ -75,17 +75,26 @@ class MFS (Algorithm):
         return g / g.sum()
 
 
-    def getFDs(self, filename):
+    def getFDs(self, filename, data = []):
         """
         @param string filename : image location
         @return [float] : multi fractal dimentions
         @author: Rodrigo Baravalle. Code ported from Matlab
         """
 
-        im = Image.open(filename)
-        # Preprocessing: if IM is a color image convert it to a gray image 
-        im = im.convert("L")
-        im = np.array(im.getdata()).reshape(im.size)
+
+        im = []
+        if filename != '':
+            im = Image.open(filename)
+            # Preprocessing: if IM is a color image convert it to a gray image
+            im = im.convert("L")
+            im = np.array(im.getdata()).reshape(im.size)
+        else:
+            if len(data) > 0:
+                im = data
+            else:
+                print "Must specify either a filename or a numpy array"
+                exit()
 
 
         #Using [0..255] to denote the intensity profile of the image

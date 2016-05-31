@@ -19,6 +19,14 @@ mfs_sandbox_absolute_normalized = np.load('exps/data/mfs_Sandbox_BioAsset_normal
 mfs_local = np.load('exps/data/mfs_holder_local_BioAsset.npy')
 mfs_local_pyramid = np.load('exps/data/mfs_holder_local_BioAsset_pyramid.npy')
 mfs_gradient_pyramid = np.load('exps/data/mfs_holder_pyramid_gradient_BioAsset.npy')
+mfs_slices_x = np.load('exps/data/mfs_holder_slices_x_BioAsset.npy')
+mfs_slices_y = np.load('exps/data/mfs_holder_slices_y_BioAsset.npy')
+mfs_slices_z = np.load('exps/data/mfs_holder_slices_z_BioAsset.npy')
+mfs_pure_pyramid = np.load('exps/data/mfs_pure_pyramid_BioAsset.npy')
+mfs_pure_pyramid_gradient = np.load('exps/data/mfs_pure_pyramid_gradient_BioAsset.npy')
+
+
+
 
 pos_fexp = 17 #check
 
@@ -289,6 +297,89 @@ compute_correlations(measures_matrix, mfs_gradient_pyramid, mfs_pos_start_data,
 # obtain subsets of 17 scans for Fexp
 
 mfs_subset = compute_subset(measures_matrix, mfs_gradient_pyramid,
+                                    mfs_pos_start_data, mfs_pos_end_data)
+
+
+compute_linear_model(mfs_subset, measures_subset)
+
+print ""
+
+###############################################
+
+mfs_pos_start_data = 0
+mfs_pos_end_data = 100
+print "Correlations with Slices X 2.5D MFS..."
+compute_correlations(measures_matrix, mfs_slices_x, mfs_pos_start_data,
+                                        mfs_pos_end_data)
+
+# obtain subsets of 17 scans for Fexp
+
+mfs_subset = compute_subset(measures_matrix, mfs_slices_x,
+                                    mfs_pos_start_data, mfs_pos_end_data)
+
+
+compute_linear_model(mfs_subset, measures_subset)
+
+print ""
+
+###############################################
+
+mfs_pos_start_data = 0
+mfs_pos_end_data = 100
+print "Correlations with Slices Y 2.5D MFS..."
+compute_correlations(measures_matrix, mfs_slices_y, mfs_pos_start_data,
+                                        mfs_pos_end_data)
+
+mfs_subset = compute_subset(measures_matrix, mfs_slices_y,
+                                    mfs_pos_start_data, mfs_pos_end_data)
+
+
+compute_linear_model(mfs_subset, measures_subset)
+
+print ""
+
+
+###############################################
+
+mfs_pos_start_data = 0
+mfs_pos_end_data = 100
+print "Correlations with Slices Z 2.5D MFS..."
+compute_correlations(measures_matrix, mfs_slices_z, mfs_pos_start_data,
+                                        mfs_pos_end_data)
+
+mfs_subset = compute_subset(measures_matrix, mfs_slices_z,
+                                    mfs_pos_start_data, mfs_pos_end_data)
+
+
+compute_linear_model(mfs_subset, measures_subset)
+
+print ""
+
+###############################################
+
+mfs_pos_start_data = 0
+mfs_pos_end_data = 100
+print "Correlations with Pure Pyramid MFS..."
+compute_correlations(measures_matrix, mfs_pure_pyramid, mfs_pos_start_data,
+                                        mfs_pos_end_data)
+
+mfs_subset = compute_subset(measures_matrix, mfs_pure_pyramid,
+                                    mfs_pos_start_data, mfs_pos_end_data)
+
+
+compute_linear_model(mfs_subset, measures_subset)
+
+print ""
+
+###############################################
+
+mfs_pos_start_data = 0
+mfs_pos_end_data = 100
+print "Correlations with Pure Pyramid Gradient MFS..."
+compute_correlations(measures_matrix, mfs_pure_pyramid_gradient, mfs_pos_start_data,
+                                        mfs_pos_end_data)
+
+mfs_subset = compute_subset(measures_matrix, mfs_pure_pyramid_gradient,
                                     mfs_pos_start_data, mfs_pos_end_data)
 
 
