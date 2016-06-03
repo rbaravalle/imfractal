@@ -221,7 +221,7 @@ class MFS_3D (Algorithm):
         grayscale_box = [0, 255]
 
         #sigmoid function
-        data = norm.cdf(data, loc=200.0, scale=100.0);
+        #data = norm.cdf(data, loc=200.0, scale=100.0);
 
         #Preprocessing: default intensity value of image ranges from 0 to 255
         if abs(data).max()< 1:

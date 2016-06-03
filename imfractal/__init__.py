@@ -36,6 +36,7 @@ import Algorithm.MFS_3D
 import Algorithm.Local_MFS_3D
 import Algorithm.Local_MFS_Pyramid_3D
 import Algorithm.MFS_3D_Slices
+import Algorithm.Stats_MFS_3D
 
 
 #SandboxCL = Algorithm.SandboxCL.SandboxCL
@@ -46,6 +47,7 @@ MFS = Algorithm.MFS.MFS
 MFS_3D = Algorithm.MFS_3D.MFS_3D
 MFS_3D_Slices = Algorithm.MFS_3D_Slices.MFS_3D_Slices
 Local_MFS_3D = Algorithm.Local_MFS_3D.Local_MFS_3D
+Stats_MFS_3D = Algorithm.Stats_MFS_3D.Stats_MFS_3D
 Local_MFS_Pyramid_3D = Algorithm.Local_MFS_Pyramid_3D.Local_MFS_Pyramid_3D
 Singularity = Algorithm.Singularity.Singularity
 Boxdimension = Algorithm.Boxdimension.Boxdimension
@@ -53,12 +55,13 @@ Boxdimension = Algorithm.Boxdimension.Boxdimension
 # Global Variables
 
 MFS_HOLDER = True
-LOCAL = False
+LOCAL = True
 # only one of the following equals true, or none
 APPLY_LAPLACIAN = False
 APPLY_GRADIENT = False
 # 2.5 D
 SLICES_MFS = False
+Stats_MFS = False
 
 
 

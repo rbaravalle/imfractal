@@ -35,11 +35,11 @@ from MFS_3D import *
 
 
 
-class Local_MFS_3D (Algorithm):
+class Stats_MFS_3D (Algorithm):
 
     """
-    :3D implementation of Local MFS through holder exponents f(alpha)
-    :Several MFS are computed on a single domain, from which then
+    :Statistics of 3D implementation of MFS through holder exponents f(alpha)
+    :The MFS is computed on the domain, from which then
     :a set of operations produces features
     :version: 1.0
     :author: Rodrigo Baravalle
@@ -142,7 +142,7 @@ class Local_MFS_3D (Algorithm):
         """
         @param string filename : volume location
         @param string file_mask : mask volume location
-        @return [float] : 3D (local) multi fractal dimentions
+        @return [float] : Statistics from 3D  multi fractal dimentions
         @author: Rodrigo Baravalle.
         """
 
@@ -168,52 +168,25 @@ class Local_MFS_3D (Algorithm):
                 data = base_MFS.laplacian(data)
 
         xs, ys, zs = data.shape
-        print xs, ys, zs
 
-        num_divisions = 8
 
-        #xs_d = xs / num_divisions
-        #ys_d = ys / num_divisions
-        #zs_d = zs / num_divisions
+        mfs = base_MFS.getFDs(data)
 
-        dims = 20
+        max_fa = np.max(mfs)
+        min_fa = np.min(mfs)
+        std_fa = np.std(mfs)
+        mean_fa = np.mean(mfs)
+        median_fa = np.median(mfs)
+        sum_fa = np.sum(mfs)
+        skew = scipy.stats.skew(mfs)
+        kurtosis = scipy.stats.kurtosis(mfs)
+        variation = scipy.stats.variation(mfs)
+        var = scipy.stats.tvar(mfs)
 
-        local_mfs = np.zeros((xs, ys, zs, dims))
 
-        #min_diff =  10000.0
-        #max_diff = -10000.0
-
-        # window size
-        w = 6
-
-        for i in range(xs):
-            for j in range(ys):
-                for k in range(zs):
-                    print i, j, k
-                    print max(0, k - w)
-                    print min(k + w, zs - 1)
-                    mfs = base_MFS.getFDs(
-                          data[max(0, i - w) : min(i + w, xs - 1),
-                               max(0, j - w): min(j + w, ys - 1),
-                               max(0, k - w): min(k + w, zs - 1)])
-                    local_mfs[i, j, k] = mfs
-
-                    #d = np.max(mfs) - np.min(mfs)
-
-                    #if d < min_diff:
-                    #    min_diff = d
-
-                    #if d > max_diff:
-                        #max_diff = d
-
-        return np.mean(local_mfs, axis=(0,1,2))
-
-        #max_fa = np.max(local_mfs)
-        #min_fa = np.min(local_mfs)
-        #std_fa = np.std(local_mfs)
-        #mean_fa = np.mean(local_mfs)
-
-        #return np.array([max_fa, min_fa,
-        #                 mean_fa, std_fa,
-        #                 max_diff, min_diff])
+        return np.array([max_fa, min_fa,
+                         mean_fa, std_fa,
+                         median_fa, sum_fa,
+                         skew, kurtosis,
+                         variation, var])
 
