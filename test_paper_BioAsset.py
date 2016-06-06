@@ -165,8 +165,11 @@ def compute_linear_model(mfs, measures, output_file="standarized.csv"):
 
     res =  compute_best_aicc(X, fexp)
     print "AICc, dimension, R2: ", res[0], ' bmd + ', res[1], res[2]
+    print "AICc p-value (significance): ", 1.0 / np.exp((aic - res[0])/2.0)
     print "AICc, dimensions, R2: ", res[3],' bmd + ',  res[4], res[5]
+    print "AICc p-value (significance): ", 1.0 / np.exp((aic - res[3]) / 2.0)
     print "AICc, dimensions, R2: ", res[6],' bmd + ',  res[7], res[8]
+    print "AICc p-value (significance): ", 1.0 / np.exp((aic - res[6]) / 2.0)
 
     return
     X_normalized = X
