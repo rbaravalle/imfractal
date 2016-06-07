@@ -163,7 +163,7 @@ def compute_linear_model(mfs, measures, output_file="standarized.csv"):
     aic = aicc(res.llf, res.nobs, res.params.shape[0])
     print "BMD AICc, dimension, R2: " , aic, ' bmd ', res.rsquared_adj
 
-    res =  compute_best_aicc(X, fexp)
+    res = compute_best_aicc(X, fexp)
     print "AICc, dimension, R2: ", res[0], ' bmd + ', res[1], res[2]
     print "AICc p-value (significance): ", 1.0 / np.exp((aic - res[0])/2.0)
     print "AICc, dimensions, R2: ", res[3],' bmd + ',  res[4], res[5]
@@ -176,20 +176,21 @@ def compute_linear_model(mfs, measures, output_file="standarized.csv"):
     for i in range(X.shape[1]):
         X_normalized[:,i] = normalize(X_normalized[:,i])
 
-    clf.fit(X_normalized, fexp)
+    res_n = compute_best_aicc(X_normalized, fexp)
+    print "AICc, dimension, R2: ", res_n[0], ' bmd + ', res_n[1], res_n[2]
+    print "AICc p-value (significance): ", 1.0 / np.exp((aic - res_n[0]) / 2.0)
+    print "AICc, dimensions, R2: ", res_n[3], ' bmd + ', res_n[4], res_n[5]
+    print "AICc p-value (significance): ", 1.0 / np.exp((aic - res_n[3]) / 2.0)
+    print "AICc, dimensions, R2: ", res_n[6], ' bmd + ', res_n[7], res_n[8]
+    print "AICc p-value (significance): ", 1.0 / np.exp((aic - res_n[6]) / 2.0)
 
+    #print ""
 
-    print ""
+    #print "Normalized Variables - Score (R^2):", clf.score(X_normalized, fexp)
 
-    print "Normalized Variables - Score (R^2):", clf.score(X_normalized, fexp)
-
-    X_2 = statsmodels.tools.tools.add_constant(X_normalized)
-    model_2 = sm.OLS(fexp, X_2)
-    res_2 = model_2.fit()
-
-    print "R^2 adj", res.rsquared_adj
-    print "AICc: ", aicc(res_2.llf, res_2.nobs, res_2.params.shape[0])
-    #print "AIC: ", res.aic
+    #X_2 = statsmodels.tools.tools.add_constant(X_normalized)
+    #model_2 = sm.OLS(fexp, X_2)
+    #res_2 = model_2.fit()
 
     np.savetxt(data_path + output_file, X_normalized, delimiter=",")
 
@@ -299,270 +300,95 @@ for i in range(len(measures)):
 
 ##############################################
 
+str_method = [
+    "Normalized MFS",
+    "MFS",
+    "Pyramid MFS (local or global) ...",
+    "Sandbox MFS Adaptive",
+    "Sandbox_Absolute MFS_normalized ...",
+    "Local MFS",
+    "Sigmoid MFS",
+    "10-MFS",
+    "5-MFS",
+    "Stats MFS Holder",
+    "Pyramid MFS",
+    "Pyramid Gradient MFS",
+    "Slices X MFS",
+    "Slices Y MFS",
+    "Slices Z MFS",
+    "Pure Pyramid Gradient MFS"
+]
+method_array = [
+    mfs_normalized,
+    mfs,
+    mfs_local_pyramid,
+    mfs_sandbox_adaptive,
+    mfs_sandbox_absolute_normalized,
+    mfs_local,
+    mfs_sigmoid,
+    mfs_holder_10,
+    mfs_holder_5,
+    stats_mfs_holder,
+    mfs_pure_pyramid,
+    mfs_gradient_pyramid,
+    mfs_slices_x,
+    mfs_slices_y,
+    mfs_slices_z,
+    mfs_pure_pyramid_gradient
+]
+
+
+num_array_begin = [
+    1,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+]
+
+num_array_end = [
+    20,
+    20,
+    30,
+    21,
+    21,
+    6,
+    20,
+    10,
+    5,
+    5,
+    100,
+    100,
+    100,
+    100,
+    100,
+    100
+]
+
+for i in range(len(method_array)):
+    print "Correlations with " + str_method[i]
+
+    compute_correlations(measures_matrix, method_array[i], num_array_begin[i],
+                                            num_array_end[i], True)
+
+
+    mfs_subset = compute_subset(measures_matrix, method_array[i], num_array_begin[i],
+                                num_array_end[i])
+
+    #np.savetxt('pyramid.csv', mfs_subset, delimiter=",")
+
+    compute_linear_model(mfs_subset, measures_subset)
+    print ""
 
-mfs_pos_start_data = 1
-mfs_pos_end_data = 20
-print "Correlations with normalized MFS..."
-compute_correlations(measures_matrix, mfs_normalized, mfs_pos_start_data,
-                                        mfs_pos_end_data, True)
 
-
-mfs_subset = compute_subset(measures_matrix, mfs_normalized, mfs_pos_start_data,
-                            mfs_pos_end_data)
-
-
-compute_linear_model(mfs_subset, measures_subset)
-print ""
-###########################################
-#mfs_pos_start_data = 0
-#mfs_pos_end_data = 21
-
-#print "Correlations with Sandbox MFS Adaptive..."
-#compute_correlations(measures_matrix, mfs_sandbox_adaptive, mfs_pos_start_data,
-#                                        mfs_pos_end_data, True)
-
-
-#mfs_sandbox_subset = compute_subset(measures_matrix, mfs_sandbox_adaptive,
-#                                    mfs_pos_start_data, mfs_pos_end_data)
-
-#compute_linear_model(mfs_sandbox_subset, measures_subset)
-#print ""
-
-###########################################
-#mfs_pos_start_data = 0
-#mfs_pos_end_data = 21
-
-#print "Correlations with Sandbox_Absolute MFS_normalized ..."
-#compute_correlations(measures_matrix, mfs_sandbox_absolute_normalized, mfs_pos_start_data,
-#                                        mfs_pos_end_data, True)
-
-
-#mfs_sandbox_absolute_subset = compute_subset(measures_matrix, mfs_sandbox_absolute_normalized,
-#                                    mfs_pos_start_data, mfs_pos_end_data)
-
-
-#compute_linear_model(mfs_sandbox_absolute_subset, measures_subset)
-#print ""
-
-
-###############################################
-
-mfs_pos_start_data = 0
-mfs_pos_end_data = 20
-print "Correlations with MFS..."
-compute_correlations(measures_matrix, mfs, mfs_pos_start_data,
-                                        mfs_pos_end_data)
-
-# obtain subsets of 17 scans for Fexp
-
-mfs_subset = compute_subset(measures_matrix, mfs,
-                                    mfs_pos_start_data, mfs_pos_end_data)
-
-
-compute_linear_model(mfs_subset, measures_subset, 'mfs_normalized')
-
-print ""
-
-###############################################
-#mfs_pos_start_data = 0
-#mfs_pos_end_data = 6*5
-#print "Correlations with Pyramid MFS (local or global) ..."
-#compute_correlations(measures_matrix, mfs_local_pyramid, mfs_pos_start_data,
-#                                        mfs_pos_end_data)
-
-#mfs_subset = compute_subset(measures_matrix, mfs_local_pyramid,
-#                                    mfs_pos_start_data, mfs_pos_end_data)
-
-
-#compute_linear_model(mfs_subset, measures_subset)
-
-#print ""
-
-
-
-###############################################
-
-#mfs_pos_start_data = 0
-#mfs_pos_end_data = 6
-#print "Correlations with Local MFS..."
-#compute_correlations(measures_matrix, mfs_local, mfs_pos_start_data,
-#                                        mfs_pos_end_data)
-
-# obtain subsets of 17 scans for Fexp
-
-#mfs_subset = compute_subset(measures_matrix, mfs_local,
-#                                    mfs_pos_start_data, mfs_pos_end_data)
-
-
-#compute_linear_model(mfs_subset, measures_subset)
-
-#print ""
-
-###############################################
-
-#mfs_pos_start_data = 0
-#mfs_pos_end_data = 6
-#print "Correlations with Pyramid Gradient MFS..."
-#compute_correlations(measures_matrix, mfs_gradient_pyramid, mfs_pos_start_data,
-#                                        mfs_pos_end_data)
-
-# obtain subsets of 17 scans for Fexp
-
-#mfs_subset = compute_subset(measures_matrix, mfs_gradient_pyramid,
-#                                    mfs_pos_start_data, mfs_pos_end_data)
-
-
-#compute_linear_model(mfs_subset, measures_subset)
-
-#print ""
-
-###############################################
-
-#mfs_pos_start_data = 0
-#mfs_pos_end_data = 100
-#print "Correlations with Slices X 2.5D MFS..."
-#compute_correlations(measures_matrix, mfs_slices_x, mfs_pos_start_data,
-#                                        mfs_pos_end_data)
-
-# obtain subsets of 17 scans for Fexp
-
-#mfs_subset = compute_subset(measures_matrix, mfs_slices_x,
-#                                    mfs_pos_start_data, mfs_pos_end_data)
-
-
-#compute_linear_model(mfs_subset, measures_subset)
-
-#print ""
-
-###############################################
-
-#mfs_pos_start_data = 0
-#mfs_pos_end_data = 100
-#print "Correlations with Slices Y 2.5D MFS..."
-#compute_correlations(measures_matrix, mfs_slices_y, mfs_pos_start_data,
-#                                        mfs_pos_end_data)
-
-#mfs_subset = compute_subset(measures_matrix, mfs_slices_y,
-#                                    mfs_pos_start_data, mfs_pos_end_data)
-
-
-#compute_linear_model(mfs_subset, measures_subset)
-
-#print ""
-
-
-###############################################
-
-#mfs_pos_start_data = 0
-#mfs_pos_end_data = 100
-#print "Correlations with Slices Z 2.5D MFS..."
-#compute_correlations(measures_matrix, mfs_slices_z, mfs_pos_start_data,
-#                                        mfs_pos_end_data)
-
-#mfs_subset = compute_subset(measures_matrix, mfs_slices_z,
-#                                    mfs_pos_start_data, mfs_pos_end_data)
-
-
-#compute_linear_model(mfs_subset, measures_subset)
-
-#print ""
-
-###############################################
-
-mfs_pos_start_data = 0
-mfs_pos_end_data = 100
-print "Correlations with Pure Pyramid MFS..."
-compute_correlations(measures_matrix, mfs_pure_pyramid, mfs_pos_start_data,
-                                        mfs_pos_end_data)
-
-mfs_subset = compute_subset(measures_matrix, mfs_pure_pyramid,
-                                    mfs_pos_start_data, mfs_pos_end_data)
-
-np.savetxt('pyramid.csv', mfs_subset, delimiter=",")
-
-
-compute_linear_model(mfs_subset, measures_subset)
-
-print ""
-
-###############################################
-
-#mfs_pos_start_data = 0
-#mfs_pos_end_data = 100
-#print "Correlations with Pure Pyramid Gradient MFS..."
-#compute_correlations(measures_matrix, mfs_pure_pyramid_gradient, mfs_pos_start_data,
-#                                        mfs_pos_end_data)
-
-#mfs_subset = compute_subset(measures_matrix, mfs_pure_pyramid_gradient,
-#                                    mfs_pos_start_data, mfs_pos_end_data)
-
-
-#compute_linear_model(mfs_subset, measures_subset)
-
-#print ""
-
-###############################################
-
-#mfs_pos_start_data = 0
-#mfs_pos_end_data = 20
-#print "Correlations with Sigmoid MFS..."
-#compute_correlations(measures_matrix, mfs_sigmoid, mfs_pos_start_data,
-#                                        mfs_pos_end_data)
-
-#mfs_subset = compute_subset(measures_matrix, mfs_sigmoid,
-#                                    mfs_pos_start_data, mfs_pos_end_data)
-
-
-#compute_linear_model(mfs_subset, measures_subset)
-
-#print ""
-
-
-###############################################
-
-#mfs_pos_start_data = 0
-#mfs_pos_end_data = 10
-#print "Correlations with MFS Holder (10 Dimentions)..."
-#compute_correlations(measures_matrix, mfs_holder_10, mfs_pos_start_data,
-#                                        mfs_pos_end_data)
-
-#mfs_subset = compute_subset(measures_matrix, mfs_holder_10,
-#                                    mfs_pos_start_data, mfs_pos_end_data)
-
-
-#compute_linear_model(mfs_subset, measures_subset)
-
-#print ""
-
-
-###############################################
-
-#mfs_pos_start_data = 0
-#mfs_pos_end_data = 5
-#print "Correlations with MFS Holder (5 Dimentions)..."
-#compute_correlations(measures_matrix, mfs_holder_5, mfs_pos_start_data,
-#                                        mfs_pos_end_data)
-
-#mfs_subset = compute_subset(measures_matrix, mfs_holder_5,
-#                                    mfs_pos_start_data, mfs_pos_end_data)
-
-
-#compute_linear_model(mfs_subset, measures_subset)
-
-#print ""
-
-###############################################
-
-mfs_pos_start_data = 0
-mfs_pos_end_data = 5
-print "Correlations with Stats MFS Holder..."
-compute_correlations(measures_matrix, stats_mfs_holder, mfs_pos_start_data,
-                                        mfs_pos_end_data)
-
-mfs_subset = compute_subset(measures_matrix, stats_mfs_holder,
-                                    mfs_pos_start_data, mfs_pos_end_data)
-
-
-compute_linear_model(mfs_subset, measures_subset)
-
-print ""
