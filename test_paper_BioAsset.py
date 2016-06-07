@@ -33,6 +33,11 @@ mfs_sigmoid = np.load('exps/data/mfs_holder_sigmoid_BioAsset.npy')
 mfs_holder_10 = np.load('exps/data/mfs_holder_10_BioAsset.npy')
 mfs_holder_5 = np.load('exps/data/mfs_holder_5_BioAsset.npy')
 stats_mfs_holder = np.load('exps/data/stats_mfs_holder_BioAsset.npy')
+stats_mfs_pyramid = np.load('exps/data/mfs_stats_pyramid.npy')
+stats_mfs_pyramid_gradient = np.load('exps/data/mfs_stats_pyramid_gradient.npy')
+stats_mfs_slices_x = np.load('exps/data/stats_mfs_slices_x.npy')
+stats_mfs_slices_y = np.load('exps/data/stats_mfs_slices_y.npy')
+stats_mfs_slices_z = np.load('exps/data/stats_mfs_slices_z.npy')
 
 
 pos_fexp = 17 #check
@@ -60,7 +65,7 @@ def compute_best_aicc(X, fexp):
     best_r2_ijk = -1
 
 
-    for i in range(1, X.shape[1]):
+    for i in range(2, X2.shape[1]):
         Xi = X2[:, [0, 1, i]]
 
         model = sm.OLS(fexp, Xi)
@@ -70,11 +75,11 @@ def compute_best_aicc(X, fexp):
 
         if aic < best_aicc :
             best_aicc = aic
-            best_i = i
+            best_i = i-2
             best_r2 = res.rsquared_adj
 
-    for i in range(1, X.shape[1]):
-        for j in range(i+1, X.shape[1]):
+    for i in range(2, X2.shape[1]):
+        for j in range(i+1, X2.shape[1]):
             Xij = X2[:, [0, 1, i, j]]
 
 
@@ -85,13 +90,13 @@ def compute_best_aicc(X, fexp):
 
             if aic < best_aicc2:
                 best_aicc2 = aic
-                best_i_j = [i, j]
+                best_i_j = [i-2, j-2]
                 best_r2_ij = res.rsquared_adj
 
 
-    for i in range(1, X.shape[1]):
-        for j in range(i+1, X.shape[1]):
-            for k in range(j + 1, X.shape[1]):
+    for i in range(2, X2.shape[1]):
+        for j in range(i+1, X2.shape[1]):
+            for k in range(j + 1, X2.shape[1]):
                 Xijk = X2[:, [0, 1, i, j, k]]
 
 
@@ -102,7 +107,7 @@ def compute_best_aicc(X, fexp):
 
                 if aic < best_aicc3:
                     best_aicc3 = aic
-                    best_i_j_k = [i, j, k]
+                    best_i_j_k = [i-2, j-2, k-2]
                     best_r2_ijk = res.rsquared_adj
 
     return best_aicc, best_i, best_r2,\
@@ -161,17 +166,18 @@ def compute_linear_model(mfs, measures, output_file="standarized.csv"):
     res = model.fit()
 
     aic = aicc(res.llf, res.nobs, res.params.shape[0])
-    print "BMD AICc, dimension, R2: " , aic, ' bmd ', res.rsquared_adj
+    r2 = res.rsquared_adj
+    #print "BMD AICc, dimension, R2: " , aic, ' bmd ', r2
 
     res = compute_best_aicc(X, fexp)
-    print "AICc, dimension, R2: ", res[0], ' bmd + ', res[1], res[2]
-    print "AICc p-value (significance): ", 1.0 / np.exp((aic - res[0])/2.0)
-    print "AICc, dimensions, R2: ", res[3],' bmd + ',  res[4], res[5]
-    print "AICc p-value (significance): ", 1.0 / np.exp((aic - res[3]) / 2.0)
-    print "AICc, dimensions, R2: ", res[6],' bmd + ',  res[7], res[8]
-    print "AICc p-value (significance): ", 1.0 / np.exp((aic - res[6]) / 2.0)
+    #print "AICc, dimension, R2: ", res[0], ' bmd + ', res[1], res[2]
+    #print "AICc p-value (significance): ", 1.0 / np.exp((aic - res[0])/2.0)
+    #print "AICc, dimensions, R2: ", res[3],' bmd + ',  res[4], res[5]
+    #print "AICc p-value (significance): ", 1.0 / np.exp((aic - res[3]) / 2.0)
+    #print "AICc, dimensions, R2: ", res[6],' bmd + ',  res[7], res[8]
+    #print "AICc p-value (significance): ", 1.0 / np.exp((aic - res[6]) / 2.0)
 
-    return
+    return aic, r2, res
     X_normalized = X
     for i in range(X.shape[1]):
         X_normalized[:,i] = normalize(X_normalized[:,i])
@@ -194,6 +200,7 @@ def compute_linear_model(mfs, measures, output_file="standarized.csv"):
 
     np.savetxt(data_path + output_file, X_normalized, delimiter=",")
 
+
 def compute_correlations(measures_matrix, mfs, mfs_pos_start_data,
                                         mfs_pos_end_data, transform_mfs = True):
     print "///////////////////////"
@@ -203,7 +210,10 @@ def compute_correlations(measures_matrix, mfs, mfs_pos_start_data,
     # convert from ugly format to matrix
     mfs_matrix = []
 
-    if transform_mfs:
+    #print mfs.shape
+
+    #if transform_mfs:
+    if len(mfs.shape) == 1:
         for i in range(mfs.shape[0]):
             mfs_i = tuple(mfs[i])
             mfs_i = mfs_i[mfs_pos_start_data : mfs_pos_end_data + 1]
@@ -217,6 +227,8 @@ def compute_correlations(measures_matrix, mfs, mfs_pos_start_data,
     else: mfs_matrix = mfs
 
 
+    #print mfs_matrix.shape
+    #print measures_matrix.shape
 
     correls = np.zeros((mfs_matrix.shape[1], measures_matrix.shape[1]))
     # compute correlations
@@ -233,7 +245,9 @@ def compute_correlations(measures_matrix, mfs, mfs_pos_start_data,
     #import matplotlib.pyplot as plt
     #plt.plot(correls)
     #plt.show()
-    print "Higher correlations: ", np.min(correls), np.max(correls)
+    #print "Higher correlations: ", np.min(correls), np.max(correls)
+
+    return np.min(correls), np.max(correls)
 
     mfs_matrix_normalized = mfs_matrix.copy()
     measures_matrix_normalized = measures_matrix.copy()
@@ -302,17 +316,22 @@ for i in range(len(measures)):
 
 str_method = [
     "Normalized MFS",
+    "Stats Pyramid MFS",
+    "Stats Pyramid Gradient MFS",
+    "Stats MFS Slices X",
+    "Stats MFS Slices Y",
+    "Stats MFS Slices Z",
     "MFS",
-    "Pyramid MFS (local or global) ...",
-    "Sandbox MFS Adaptive",
-    "Sandbox_Absolute MFS_normalized ...",
-    "Local MFS",
-    "Sigmoid MFS",
-    "10-MFS",
-    "5-MFS",
+    #"Pyramid MFS (local or global) ...",
+    #"Sandbox MFS Adaptive",
+    #"Sandbox_Absolute MFS_normalized ...",
+    #"Local MFS",
+    #"Sigmoid MFS",
+    #"10-MFS",
+    #"5-MFS",
     "Stats MFS Holder",
     "Pyramid MFS",
-    "Pyramid Gradient MFS",
+    #"Pyramid Gradient MFS",
     "Slices X MFS",
     "Slices Y MFS",
     "Slices Z MFS",
@@ -320,17 +339,22 @@ str_method = [
 ]
 method_array = [
     mfs_normalized,
+    stats_mfs_pyramid,
+    stats_mfs_pyramid_gradient,
+    stats_mfs_slices_x,
+    stats_mfs_slices_y,
+    stats_mfs_slices_z,
     mfs,
-    mfs_local_pyramid,
-    mfs_sandbox_adaptive,
-    mfs_sandbox_absolute_normalized,
-    mfs_local,
-    mfs_sigmoid,
-    mfs_holder_10,
-    mfs_holder_5,
+    #mfs_local_pyramid,
+    #mfs_sandbox_adaptive,
+    #mfs_sandbox_absolute_normalized,
+    #mfs_local,
+    #mfs_sigmoid,
+    #mfs_holder_10,
+    #mfs_holder_5,
     stats_mfs_holder,
     mfs_pure_pyramid,
-    mfs_gradient_pyramid,
+    #mfs_gradient_pyramid,
     mfs_slices_x,
     mfs_slices_y,
     mfs_slices_z,
@@ -346,49 +370,70 @@ num_array_begin = [
     0,
     0,
     0,
+    #0,
+    #0,
+    #0,
+    #0,
+    #0,
+    #0,
+    #0,
     0,
     0,
     0,
     0,
     0,
     0,
-    0,
-    0,
-    0
+    #0
 ]
 
 num_array_end = [
     20,
+    50,
+    50,
+    50,
+    50,
+    50,
     20,
-    30,
-    21,
-    21,
-    6,
-    20,
+    #30,
+    #21,
+    #21,
+    #6,
+    #20,
+    #10,
+    #5,
     10,
-    5,
-    5,
     100,
     100,
     100,
     100,
     100,
-    100
+    #100
 ]
 
+print "               #num AICc  dimension(s)  R^2  p-value, etc",
 for i in range(len(method_array)):
-    print "Correlations with " + str_method[i]
 
-    compute_correlations(measures_matrix, method_array[i], num_array_begin[i],
+    c1, c2 = compute_correlations(measures_matrix, method_array[i], num_array_begin[i],
                                             num_array_end[i], True)
 
+    print str_method[i]
+    print " #", num_array_end[i]
 
-    mfs_subset = compute_subset(measures_matrix, method_array[i], num_array_begin[i],
+    if(len(method_array[i]) > 17):
+        mfs_subset = compute_subset(measures_matrix, method_array[i], num_array_begin[i],
                                 num_array_end[i])
+    else:
+        mfs_subset = method_array[i]
 
     #np.savetxt('pyramid.csv', mfs_subset, delimiter=",")
 
-    compute_linear_model(mfs_subset, measures_subset)
-    print ""
+    aic, r2, res = compute_linear_model(mfs_subset, measures_subset)
+
+
+    print aic, 'bmd', r2
+    print res[0], res[2], ' bmd + ', res[1], ",", 1.0 / np.exp((aic - res[0])/2.0)
+    print res[3], res[5], ' bmd + ', res[4], ",", 1.0 / np.exp((aic - res[3]) / 2.0)
+    print res[6], res[8], ' bmd + ', res[7], ",", 1.0 / np.exp((aic - res[6]) / 2.0)
+
 
 

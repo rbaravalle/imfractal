@@ -29,11 +29,92 @@ from pylab import *
 
 import sys
 import os
+import scipy.stats
 
-sys.path.append(os.path.join(os.path.dirname(sys.path[0]),'imfractal', 'imfractal',  "Algorithm"))
+sys.path.append(os.path.join(os.path.dirname(sys.path[0]), 'imfractal', 'imfractal',  "Algorithm"))
 
 import qs3D
+from numpy import recfromcsv
 
+def stats_test(_output_filename, input_filename):
+    _,  extension = os.path.splitext(input_filename)
+
+    if extension == 'csv':
+        data = recfromcsv(input_filename, delimiter=',')
+        first_f = 1
+    else:
+        data = np.load(input_filename)
+        first_f = 0
+
+    dims = 50
+    mfss = np.zeros([len(data), dims])
+
+    for i in range(len(data)):
+
+        print i
+
+        if extension == 'csv':
+            mfs = np.array(tuple(data[i])[first_f:])#.astype(np.float32)
+        else:
+            mfs = data[i]
+
+        if len(mfs) < 100:
+            max_fa = np.max(mfs)
+            min_fa = np.min(mfs)
+            std_fa = np.std(mfs)
+            mean_fa = np.mean(mfs)
+            median_fa = np.median(mfs)
+            sum_fa = np.sum(mfs)
+            variation = scipy.stats.variation(mfs)
+            var = scipy.stats.tvar(mfs)
+            skew = scipy.stats.skew(mfs)
+            kurtosis = scipy.stats.kurtosis(mfs)
+
+            mfss[i] = np.array([max_fa, min_fa,
+                                mean_fa, std_fa,
+                                median_fa, sum_fa,
+                                skew, kurtosis,
+                                variation, var])
+
+
+        else:
+            tmp = np.array([])
+
+            for l in range(5):
+                max_fa = np.max(mfs[l*20 : (l+1)*20 - 1])
+                min_fa = np.min(mfs[l*20 : (l+1)*20 - 1])
+                std_fa = np.std(mfs[l*20 : (l+1)*20 - 1])
+                mean_fa = np.mean(mfs[l*20 : (l+1)*20 - 1])
+                median_fa = np.median(mfs[l*20 : (l+1)*20 - 1])
+                sum_fa = np.sum(mfs[l*20 : (l+1)*20 - 1])
+                variation = scipy.stats.variation(mfs[l*20 : (l+1)*20 - 1])
+                var = scipy.stats.tvar(mfs[l*20 : (l+1)*20 - 1])
+                skew = scipy.stats.skew(mfs[l*20 : (l+1)*20 - 1])
+                kurtosis = scipy.stats.kurtosis(mfs[l*20 : (l+1)*20 - 1])
+
+                tmp = np.hstack((tmp,
+                            np.array([max_fa, min_fa,
+                                    mean_fa, std_fa,
+                                    median_fa, sum_fa,
+                                    skew, kurtosis,
+                                    variation, var])))
+
+
+           # for l in range(5):
+            #    skews[l] = scipy.stats.skew(mfs[l*20 : (l+1)*20 - 1])
+            #    kurtosiss[l] = scipy.stats.kurtosis(mfs[l*20 : (l+1)*20 - 1])
+
+            #skew = np.mean(skews)
+            #kurtosis = np.mean(kurtosiss)
+
+            mfss[i] = tmp
+
+
+        print mfss[i], i
+
+        np.save(data_path + _output_filename, mfss)
+
+    print "Saved ", data_path + _output_filename
 
 def do_test(_path, _output_filename):
 

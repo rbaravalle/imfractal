@@ -42,11 +42,12 @@ def handle_args(argv):
     compile_cython = False
     path_mats = ''
     output_filename = ''
+    input_filename = ''
 
     try:
-        opts, args = getopt.getopt(argv, "hc:p:o:", ["compile_cython=", "path_mats=", "output_filename="])
+        opts, args = getopt.getopt(argv, "hc:p:o:i:", ["compile_cython=", "path_mats=", "output_filename=", "input_filename="])
     except getopt.GetoptError:
-        print test_name + " -c <compile_cython> -p <path_mats> -o <output_filename>"
+        print test_name + " -c <compile_cython> -p <path_mats> -o <output_filename> -i <input_filename>"
         sys.exit(2)
 
     for opt, arg in opts:
@@ -59,16 +60,17 @@ def handle_args(argv):
             path_mats = arg
         elif opt in ("-o", "--output_filename"):
             output_filename = arg
+        elif opt in ("-i", "--input_filename"):
+            input_filename = arg
 
-    if path_mats == '' :
-        print "Please specify path to matlab matrices with option -p"
-        print test_name + " -c <compile_cython> -p <path_mats>"
-        exit()
 
     if output_filename == '' :
         print "No output filename specified. Using default filename"
         output_filename = "test_bones_output"
-        exit()
+
+    if input_filename == '':
+        print "No input filename specified. Using regular test"
+
 
     if compile_cython in ("True", "T", "true", "t"):
         import os
@@ -87,11 +89,22 @@ def handle_args(argv):
             print command3
             os.system(command3)
 
-    return path_mats, output_filename
+    return path_mats, output_filename, input_filename
 
 if __name__ == "__main__":
-    path_mats, output_filename = handle_args(sys.argv[1:])
+    path_mats, output_filename, input_filename = handle_args(sys.argv[1:])
+
+
+    if path_mats == '' :
+        if input_filename == '':
+            print "Please specify path to matlab matrices with option -p"
+            print test_name + " -c <compile_cython> -p <path_mats>"
+            exit()
+
 
     import tests.test_bones_BioAsset as tbba
-    tbba.do_test(path_mats, output_filename)
+    if input_filename == '':
+        tbba.do_test(path_mats, output_filename)
+    else:
+        tbba.stats_test(output_filename, input_filename)
 
