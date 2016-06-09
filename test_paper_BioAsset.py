@@ -49,6 +49,36 @@ def normalize(vector):
         print "std equals 0"
         return vector
 
+def compute_robust_r2(y, X, total_model):
+    # leave-one-out cross validation
+    # (robust R^2 = cross-validated R^2)
+
+    # Predictive Error Sum of Squares (PRESS)
+    # Total Sum of Squares (TSS)
+    # http://www.moleculardescriptors.eu/tutorials/T5_moleculardescriptors_models.pdf
+
+    PRESS = 0.0
+    TSS = 0.0
+
+    # average experimental response
+    y_line = np.mean(y)
+
+    for i in range(X.shape[0]):
+        arr = np.arange(X.shape[0])
+        mask = np.ones(arr.shape, dtype=bool)
+        mask[i] = 0
+
+        model = sm.OLS(y[mask], X[mask])
+        model = model.fit()
+
+        p = model.predict(X[i])
+        t_p = total_model.predict(X[i])
+
+        PRESS += (y[i] - p) * (y[i] - p)
+        TSS   += (y[i] - y_line) * (y[i] - y_line)
+
+    return 1.0 - PRESS / TSS
+
 def compute_best_aicc(X, fexp):
     X2 = statsmodels.tools.tools.add_constant(X)
 
@@ -66,6 +96,9 @@ def compute_best_aicc(X, fexp):
     best_rmse = 100000
     best_rmse2 = 100000
     best_rmse3 = 100000
+    best_rob_r2 = 0.0
+    best_rob_r2_ij = 0.0
+    best_rob_r2_ijk = 0.0
 
 
     for i in range(2, X2.shape[1]):
@@ -81,6 +114,7 @@ def compute_best_aicc(X, fexp):
             best_i = i-2
             best_r2 = res.rsquared_adj
             best_rmse = np.sqrt(res.mse_resid)
+            best_rob_r2 = compute_robust_r2(fexp, Xi, res)
 
     for i in range(2, X2.shape[1]):
         for j in range(i+1, X2.shape[1]):
@@ -97,6 +131,7 @@ def compute_best_aicc(X, fexp):
                 best_i_j = [i-2, j-2]
                 best_r2_ij = res.rsquared_adj
                 best_rmse2 = np.sqrt(res.mse_resid)
+                best_rob_r2_ij = compute_robust_r2(fexp, Xij, res)
 
 
     for i in range(2, X2.shape[1]):
@@ -115,10 +150,11 @@ def compute_best_aicc(X, fexp):
                     best_i_j_k = [i-2, j-2, k-2]
                     best_r2_ijk = res.rsquared_adj
                     best_rmse3 = np.sqrt(res.mse_resid)
+                    best_rob_r2_ijk = compute_robust_r2(fexp, Xijk, res)
 
-    return best_aicc, best_i, best_r2, best_rmse,\
-           best_aicc2, best_i_j, best_r2_ij, best_rmse2,\
-           best_aicc3, best_i_j_k, best_r2_ijk, best_rmse3
+    return best_aicc, best_i, best_r2, best_rob_r2, best_rmse,\
+           best_aicc2, best_i_j, best_r2_ij, best_rob_r2_ij, best_rmse2,\
+           best_aicc3, best_i_j_k, best_r2_ijk, best_rob_r2_ijk, best_rmse3
 
 def compute_linear_model(mfs, measures, output_file="standarized.csv"):
     from sklearn.linear_model import Ridge
@@ -178,9 +214,13 @@ def compute_linear_model(mfs, measures, output_file="standarized.csv"):
     model = sm.OLS(fexp, X2)
     res = model.fit()
 
+    model_bmd = sm.OLS(fexp, Xbmd)
+    model_bmd = model_bmd.fit()
+
     aic = aicc(res.llf, res.nobs, res.params.shape[0])
     r2 = res.rsquared_adj
     rmsee = np.sqrt(res.mse_resid)
+    rob_r2 = compute_robust_r2(fexp, Xbmd, model_bmd)
     #print "BMD AICc, dimension, R2: " , aic, ' bmd ', r2
 
     res = compute_best_aicc(X, fexp)
@@ -191,18 +231,19 @@ def compute_linear_model(mfs, measures, output_file="standarized.csv"):
     #print "AICc, dimensions, R2: ", res[6],' bmd + ',  res[7], res[8]
     #print "AICc p-value (significance): ", 1.0 / np.exp((aic - res[6]) / 2.0)
 
-    return aic, r2, rmsee, res
-    X_normalized = X
-    for i in range(X.shape[1]):
-        X_normalized[:,i] = normalize(X_normalized[:,i])
+    return aic, r2, rob_r2, rmsee, res
 
-    res_n = compute_best_aicc(X_normalized, fexp)
-    print "AICc, dimension, R2: ", res_n[0], ' bmd + ', res_n[1], res_n[2]
-    print "AICc p-value (significance): ", 1.0 / np.exp((aic - res_n[0]) / 2.0)
-    print "AICc, dimensions, R2: ", res_n[3], ' bmd + ', res_n[4], res_n[5]
-    print "AICc p-value (significance): ", 1.0 / np.exp((aic - res_n[3]) / 2.0)
-    print "AICc, dimensions, R2: ", res_n[6], ' bmd + ', res_n[7], res_n[8]
-    print "AICc p-value (significance): ", 1.0 / np.exp((aic - res_n[6]) / 2.0)
+    #X_normalized = X
+    #for i in range(X.shape[1]):
+    #    X_normalized[:,i] = normalize(X_normalized[:,i])
+
+    #res_n = compute_best_aicc(X_normalized, fexp)
+    #print "AICc, dimension, R2: ", res_n[0], ' bmd + ', res_n[1], res_n[2]
+    #print "AICc p-value (significance): ", 1.0 / np.exp((aic - res_n[0]) / 2.0)
+    #print "AICc, dimensions, R2: ", res_n[3], ' bmd + ', res_n[4], res_n[5]
+    #print "AICc p-value (significance): ", 1.0 / np.exp((aic - res_n[3]) / 2.0)
+    #print "AICc, dimensions, R2: ", res_n[6], ' bmd + ', res_n[7], res_n[8]
+    #print "AICc p-value (significance): ", 1.0 / np.exp((aic - res_n[6]) / 2.0)
 
     #print ""
 
@@ -439,34 +480,40 @@ for i in range(len(method_array)):
 
     #np.savetxt('pyramid.csv', mfs_subset, delimiter=",")
 
-    aic, r2, rmsee, res = compute_linear_model(mfs_subset, measures_subset)
+    aic, r2, rob_r2, rmsee, res = compute_linear_model(mfs_subset, measures_subset)
 
     aic_s = "%.4f" % aic
     rmsee = "%.4f" % rmsee
     r2 = "%.4f" % r2
+    rob_r2 = "%.4f" % rob_r2
 
     aicc1 = "%.4f" % res[0]
-    aicc2 = "%.4f" % res[4]
-    aicc3 = "%.4f" % res[8]
+    aicc2 = "%.4f" % res[5]
+    aicc3 = "%.4f" % res[10]
     r2_1 = "%.4f" % res[2]
-    r2_2 = "%.4f" % res[6]
-    r2_3 = "%.4f" % res[10]
+    r2_2 = "%.4f" % res[7]
+    r2_3 = "%.4f" % res[12]
     dims_1 = res[1]
-    dims_2 = res[5]
-    dims_3 = res[9]
+    dims_2 = res[6]
+    dims_3 = res[11]
     p1 = "%.7f" % np.exp((min(aic, res[0])-max(aic, res[0])) / 2.0)
-    p2 = "%.7f" % np.exp((min(aic, res[4])-max(aic, res[4])) / 2.0)
-    p3 = "%.7f" % np.exp((min(aic, res[8])-max(aic, res[8])) / 2.0)
-    rmse1 = "%.5f" % res[3]
-    rmse2 = "%.5f" % res[7]
-    rmse3 = "%.5f" % res[11]
+    p2 = "%.7f" % np.exp((min(aic, res[5])-max(aic, res[5])) / 2.0)
+    p3 = "%.7f" % np.exp((min(aic, res[10])-max(aic, res[10])) / 2.0)
+    rmse1 = "%.5f" % res[4]
+    rmse2 = "%.5f" % res[9]
+    rmse3 = "%.5f" % res[14]
+
+    rob_r2_1 = "%.4f" % res[3]
+    rob_r2_2 = "%.4f" % res[8]
+    rob_r2_3 = "%.4f" % res[13]
 
 
-    print "AICC     -   Adj R^2  -     DIMS          - p-value   -   RMSE"
-    print aic_s, ' |',  r2,   '    | bmd   ', "           | --------- | ", rmsee
-    print aicc1, ' |',  r2_1, '    | bmd + ', dims_1, "         |", p1, "| ", rmse1
-    print aicc2, ' |',  r2_2, '    | bmd + ', dims_2, "    |", p2, "| ", rmse2
-    print aicc3, ' |',  r2_3, '    | bmd + ', dims_3, "|", p3, "| ", rmse3
+
+    print "AICC     -  Adj R^2 -   Rob. R^2  -   DIMS            - p-value   -   RMSE"
+    print aic_s, ' |',  r2,   '  |',  rob_r2,   '     | bmd   ', "           | --------- | ", rmsee
+    print aicc1, ' |',  r2_1, '  |',  rob_r2_1, '     | bmd + ', dims_1, "         |", p1, "| ", rmse1
+    print aicc2, ' |',  r2_2, '  |',  rob_r2_2, '     | bmd + ', dims_2, "    |", p2, "| ", rmse2
+    print aicc3, ' |',  r2_3, '  |',  rob_r2_3, '     | bmd + ', dims_3, "|", p3, "| ", rmse3
 
 
 
