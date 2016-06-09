@@ -7,7 +7,7 @@ import pandas
 from pandas import DataFrame, Series
 import statsmodels.formula.api as sm
 import statsmodels
-from statsmodels.tools.eval_measures import aicc, bic, hqic
+from statsmodels.tools.eval_measures import aicc, bic, hqic, rmse
 
 np.seterr(divide='ignore', invalid='ignore')
 
@@ -63,6 +63,9 @@ def compute_best_aicc(X, fexp):
     best_r2_ij = -1
     best_r2 = -1
     best_r2_ijk = -1
+    best_rmse = 100000
+    best_rmse2 = 100000
+    best_rmse3 = 100000
 
 
     for i in range(2, X2.shape[1]):
@@ -77,6 +80,7 @@ def compute_best_aicc(X, fexp):
             best_aicc = aic
             best_i = i-2
             best_r2 = res.rsquared_adj
+            best_rmse = np.sqrt(res.mse_resid)
 
     for i in range(2, X2.shape[1]):
         for j in range(i+1, X2.shape[1]):
@@ -92,6 +96,7 @@ def compute_best_aicc(X, fexp):
                 best_aicc2 = aic
                 best_i_j = [i-2, j-2]
                 best_r2_ij = res.rsquared_adj
+                best_rmse2 = np.sqrt(res.mse_resid)
 
 
     for i in range(2, X2.shape[1]):
@@ -109,10 +114,11 @@ def compute_best_aicc(X, fexp):
                     best_aicc3 = aic
                     best_i_j_k = [i-2, j-2, k-2]
                     best_r2_ijk = res.rsquared_adj
+                    best_rmse3 = np.sqrt(res.mse_resid)
 
-    return best_aicc, best_i, best_r2,\
-           best_aicc2, best_i_j, best_r2_ij,\
-           best_aicc3, best_i_j_k, best_r2_ijk
+    return best_aicc, best_i, best_r2, best_rmse,\
+           best_aicc2, best_i_j, best_r2_ij, best_rmse2,\
+           best_aicc3, best_i_j_k, best_r2_ijk, best_rmse3
 
 def compute_linear_model(mfs, measures, output_file="standarized.csv"):
     from sklearn.linear_model import Ridge
@@ -158,8 +164,15 @@ def compute_linear_model(mfs, measures, output_file="standarized.csv"):
     # BMD ALONE
 
 
+    import statsmodels.robust.robust_linear_model
     Xbmd = X[:, [0]]
     X2 = statsmodels.tools.tools.add_constant(Xbmd)
+
+    #huber_t = sm.RLM(fexp, X2, M=statsmodels.robust.norms.HuberT())
+    #m = huber_t.fit()
+    #print m.rsquared
+    #print m.summary()
+    #exit()
 
 
     model = sm.OLS(fexp, X2)
@@ -167,6 +180,7 @@ def compute_linear_model(mfs, measures, output_file="standarized.csv"):
 
     aic = aicc(res.llf, res.nobs, res.params.shape[0])
     r2 = res.rsquared_adj
+    rmsee = np.sqrt(res.mse_resid)
     #print "BMD AICc, dimension, R2: " , aic, ' bmd ', r2
 
     res = compute_best_aicc(X, fexp)
@@ -177,7 +191,7 @@ def compute_linear_model(mfs, measures, output_file="standarized.csv"):
     #print "AICc, dimensions, R2: ", res[6],' bmd + ',  res[7], res[8]
     #print "AICc p-value (significance): ", 1.0 / np.exp((aic - res[6]) / 2.0)
 
-    return aic, r2, res
+    return aic, r2, rmsee, res
     X_normalized = X
     for i in range(X.shape[1]):
         X_normalized[:,i] = normalize(X_normalized[:,i])
@@ -410,14 +424,12 @@ num_array_end = [
     #100
 ]
 
-print "               #num AICc  dimension(s)  R^2  p-value, etc",
 for i in range(len(method_array)):
 
     c1, c2 = compute_correlations(measures_matrix, method_array[i], num_array_begin[i],
                                             num_array_end[i], True)
 
-    print str_method[i]
-    print " #", num_array_end[i]
+    print str_method[i],  " #", num_array_end[i]
 
     if(len(method_array[i]) > 17):
         mfs_subset = compute_subset(measures_matrix, method_array[i], num_array_begin[i],
@@ -427,13 +439,34 @@ for i in range(len(method_array)):
 
     #np.savetxt('pyramid.csv', mfs_subset, delimiter=",")
 
-    aic, r2, res = compute_linear_model(mfs_subset, measures_subset)
+    aic, r2, rmsee, res = compute_linear_model(mfs_subset, measures_subset)
+
+    aic_s = "%.4f" % aic
+    rmsee = "%.4f" % rmsee
+    r2 = "%.4f" % r2
+
+    aicc1 = "%.4f" % res[0]
+    aicc2 = "%.4f" % res[4]
+    aicc3 = "%.4f" % res[8]
+    r2_1 = "%.4f" % res[2]
+    r2_2 = "%.4f" % res[6]
+    r2_3 = "%.4f" % res[10]
+    dims_1 = res[1]
+    dims_2 = res[5]
+    dims_3 = res[9]
+    p1 = "%.7f" % np.exp((min(aic, res[0])-max(aic, res[0])) / 2.0)
+    p2 = "%.7f" % np.exp((min(aic, res[4])-max(aic, res[4])) / 2.0)
+    p3 = "%.7f" % np.exp((min(aic, res[8])-max(aic, res[8])) / 2.0)
+    rmse1 = "%.5f" % res[3]
+    rmse2 = "%.5f" % res[7]
+    rmse3 = "%.5f" % res[11]
 
 
-    print aic, 'bmd', r2
-    print res[0], res[2], ' bmd + ', res[1], ",", 1.0 / np.exp((aic - res[0])/2.0)
-    print res[3], res[5], ' bmd + ', res[4], ",", 1.0 / np.exp((aic - res[3]) / 2.0)
-    print res[6], res[8], ' bmd + ', res[7], ",", 1.0 / np.exp((aic - res[6]) / 2.0)
+    print "AICC     -   Adj R^2  -     DIMS          - p-value   -   RMSE"
+    print aic_s, ' |',  r2,   '    | bmd   ', "           | --------- | ", rmsee
+    print aicc1, ' |',  r2_1, '    | bmd + ', dims_1, "         |", p1, "| ", rmse1
+    print aicc2, ' |',  r2_2, '    | bmd + ', dims_2, "    |", p2, "| ", rmse2
+    print aicc3, ' |',  r2_3, '    | bmd + ', dims_3, "|", p3, "| ", rmse3
 
 
 
