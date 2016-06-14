@@ -46,7 +46,7 @@ def stats_test(_output_filename, input_filename):
         data = np.load(input_filename)
         first_f = 0
 
-    dims = 50
+    dims = 15
     mfss = np.zeros([len(data), dims])
 
     for i in range(len(data)):
@@ -69,35 +69,45 @@ def stats_test(_output_filename, input_filename):
             var = scipy.stats.tvar(mfs)
             skew = scipy.stats.skew(mfs)
             kurtosis = scipy.stats.kurtosis(mfs)
+            arg_max = np.argmax(mfs)
+            arg_min = np.argmin(mfs)
+            diff = np.max(mfs) - np.min(mfs)
+            first_f = mfs[0]
+            last_f = mfs[-1]
 
             mfss[i] = np.array([max_fa, min_fa,
                                 mean_fa, std_fa,
                                 median_fa, sum_fa,
                                 skew, kurtosis,
-                                variation, var])
+                                variation, var,
+                                arg_max, arg_min, diff,
+                                last_f, first_f])
 
 
         else:
             tmp = np.array([])
 
             for l in range(5):
-                max_fa = np.max(mfs[l*20 : (l+1)*20 - 1])
-                min_fa = np.min(mfs[l*20 : (l+1)*20 - 1])
-                std_fa = np.std(mfs[l*20 : (l+1)*20 - 1])
-                mean_fa = np.mean(mfs[l*20 : (l+1)*20 - 1])
-                median_fa = np.median(mfs[l*20 : (l+1)*20 - 1])
-                sum_fa = np.sum(mfs[l*20 : (l+1)*20 - 1])
-                variation = scipy.stats.variation(mfs[l*20 : (l+1)*20 - 1])
-                var = scipy.stats.tvar(mfs[l*20 : (l+1)*20 - 1])
-                skew = scipy.stats.skew(mfs[l*20 : (l+1)*20 - 1])
-                kurtosis = scipy.stats.kurtosis(mfs[l*20 : (l+1)*20 - 1])
+                mmfs = mfs[l*20 : (l+1)*20 - 1]
+                max_fa = np.max(mmfs)
+                min_fa = np.min(mmfs)
+                std_fa = np.std(mmfs)
+                mean_fa = np.mean(mmfs)
+                median_fa = np.median(mmfs)
+                sum_fa = np.sum(mmfs)
+                variation = scipy.stats.variation(mmfs)
+                var = scipy.stats.tvar(mmfs)
+                skew = scipy.stats.skew(mmfs)
+                kurtosis = scipy.stats.kurtosis(mmfs)
+                arg_max = np.argmax(mmfs)
+                arg_min = np.argmin(mmfs)
 
                 tmp = np.hstack((tmp,
                             np.array([max_fa, min_fa,
                                     mean_fa, std_fa,
                                     median_fa, sum_fa,
                                     skew, kurtosis,
-                                    variation, var])))
+                                    variation, var, arg_max, arg_min])))
 
 
            # for l in range(5):
