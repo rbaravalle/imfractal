@@ -32,6 +32,7 @@ def csvToNumpy(X):
 
 # Adaptive Metadata and mfs
 measures = recfromcsv('exps/data/BioAssetAdaptiveThresh/default_BioAsset_Adaptive.csv', delimiter=',')
+measures_npy = csvToNumpy(measures)
 mfs = np.load('exps/data/mfs_holder_BioAsset_raw.npy')
 mfs_normalized = recfromcsv('exps/data/BioAssetAdaptiveThresh/mfs_holder_BioAsset.csv', delimiter=',')
 mfs_normalized = csvToNumpy(mfs_normalized)
@@ -52,6 +53,8 @@ mfs_holder_5 = np.load('exps/data/mfs_holder_5_BioAsset.npy')
 
 mfs_gradient = recfromcsv('exps/data/mfs_holder_gradient_BioAsset.csv', delimiter=',')
 mfs_gradient = csvToNumpy(mfs_gradient)
+
+mfs_laplacian = np.load('exps/data/mfs_laplacian.npy')
 
 stats_mfs_holder = np.load('exps/data/stats_mfs_holder_BioAsset.npy')
 stats_mfs_holder2 = np.load('exps/data/mfs_stats_2.npy')
@@ -457,6 +460,7 @@ for i in range(len(measures)):
 
 str_method = [
     "MFS",
+    "Standard Measures",
     #"Normalized MFS",
     #"Gradient MFS",
     #"Normalized MFS",
@@ -483,6 +487,7 @@ str_method = [
 ]
 method_array = [
     mfs,
+    measures_npy[:, :-2],
     #mfs_normalized,
     #mfs_gradient,
     #mfs_normalized,
