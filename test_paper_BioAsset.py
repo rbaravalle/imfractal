@@ -258,9 +258,9 @@ def compute_linear_model(mfs, measures, output_file="standarized.csv"):
     #clf = linear_model.LinearRegression()
 
     # explain fexp using BMD + the MFS data
-    fexp = measures[:, measures.shape[1]-1]
 
     bmd = measures[:, 0]
+    fexp = measures[:, measures.shape[1]-1]
     bmd = bmd.reshape((bmd.shape[0], 1))
 
     #print "BMD: ", bmd
@@ -547,8 +547,43 @@ mask1 = mask1.astype(np.int32)
 #print mask1
 
 
+print "Standard Measures intra-correlations:"
+c1, c2, c = compute_correlations(measures_matrix, measures_matrix)
 
 
+np.set_printoptions(suppress=True)
+print c
+
+print "Multifractal Skewness - Standard Measures : correlations:"
+skew_levels = stats_mfs_pyramid_gradient[:, [6,36,46]]
+c1, c2, c = compute_correlations(measures_matrix, skew_levels)
+
+np.set_printoptions(suppress=True)
+print c
+
+print "Multifractal Skewness intra-correlations:"
+skew_levels = stats_mfs_pyramid_gradient[:, [6,36,46]]
+c1, c2, c = compute_correlations(skew_levels, skew_levels)
+
+np.set_printoptions(suppress=True)
+print c
+
+fexp = np.array(measures_matrix[:, measures_matrix.shape[1] - 1]).reshape(measures_matrix.shape[0],1)
+rest = np.hstack((skew_levels, measures_matrix))
+
+rest_subset = compute_subset(measures_matrix, rest, 0, rest.shape[1])
+fexp_subset = compute_subset(measures_matrix, fexp, 0, fexp.shape[1])
+
+print "FEXP", fexp
+
+print "Fexp against all correlations:"
+skew_levels = stats_mfs_pyramid_gradient[:, [6,36,46]]
+c1, c2, c = compute_correlations(fexp_subset, rest_subset)
+
+np.set_printoptions(suppress=True)
+print c
+
+exit()
 #print "Std Measures: ", compute_correlations(measures_matrix, measures_matrix)
 
 for i in range(len(method_array)):
@@ -559,7 +594,7 @@ for i in range(len(method_array)):
 
 
 
-    if True:
+    if False:
         #mask1 = np.array([0,6,9,19]) #np.hstack((np.array(np.arange(1, 7)), np.array([16])))
         if method_array[i].shape[1] == 20:
             method_array[i] = method_array[i][:, mask1]
