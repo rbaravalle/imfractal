@@ -428,6 +428,103 @@ def compute_subset(measures_matrix, mfs,
 
     return mfs_subset
 
+#################################################################
+# Paper figures
+
+# Figure : MFS Sandbox of volume 1_2
+fsize = 15
+mfs1_2 = mfs_sandbox_adaptive[1]
+x1 = -10
+x2 = 10
+x = np.arange(x1, x2+1)
+plt.ylim((2.2, 3.5))
+plt.xlim(x1,x2)
+plt.ylabel('$D_{q}$',fontsize=fsize)
+plt.xlabel('Generalised dimension',fontsize=fsize)
+
+print len(x), len(mfs1_2)
+
+plt.plot(x, mfs1_2, '*-', linewidth=2.0)
+plt.show()
+
+# Figure: MFS Holder of volume 1_2
+
+xt = np.arange(1,20,2)
+alpha = [   6.,   19.,   32.,   45.,   58.,   71.,   84.,   97.,  110.,  123. , 136. , 149.,
+162.,  175.,  188.,  201. , 214. , 227. , 240.  ,253.]
+alpha = map(lambda i:"%.2f" % float(i/255.), alpha)
+
+alpha = alpha[0:len(alpha):2]
+
+plt.xticks(xt,alpha) # translate
+
+fsize = 15
+mfs1_2 = mfs[1]
+#x1 = -10
+#x2 = 10
+#x = np.arange(x1, x2+1)
+plt.ylim((0.0, 3.0))
+#plt.xlim(x1,x2)
+plt.ylabel(r'$f(\alpha)$', fontsize=fsize)
+plt.xlabel(r'$\alpha$', fontsize=fsize)
+
+x = np.arange(len(mfs1_2))
+plt.plot(map(lambda i: i+1, x), mfs1_2, '*-', linewidth=2.0)
+plt.show()
+
+
+# Figure: MFS Pyramid of volume 1_2
+fsize = 15
+mfs1_2 = mfs_pure_pyramid[1]
+
+# reverse (bug)
+
+a = mfs1_2[:20]
+b = mfs1_2[20:40]
+c = mfs1_2[40:60]
+d = mfs1_2[60:80]
+e = mfs1_2[80:]
+
+mfs1_2 = np.hstack((e,d,c,b,a))
+
+#x1 = -10
+#x2 = 10
+#x = np.arange(x1, x2+1)
+plt.ylim((0.0, 3.0))
+#plt.xlim(x1,x2)
+plt.ylabel(r'$f(\alpha)$', fontsize=fsize)
+#plt.xlabel(r'$\alpha$', fontsize=fsize)
+
+#x = np.arange(len(mfs1_2))
+plt.plot(mfs1_2, '*-', linewidth=2.0)
+plt.show()
+
+# Figure: Gradient MFS Pyramid of volume 1_2
+fsize = 15
+mfs1_2 = mfs_pure_pyramid_gradient[1]
+
+a = mfs1_2[:20]
+b = mfs1_2[20:40]
+c = mfs1_2[40:60]
+d = mfs1_2[60:80]
+e = mfs1_2[80:]
+
+mfs1_2 = np.hstack((e,d,c,b,a))
+#x1 = -10
+#x2 = 10
+#x = np.arange(x1, x2+1)
+plt.ylim((0.0, 3.0))
+#plt.xlim(x1,x2)
+plt.ylabel(r'$f(\alpha)$', fontsize=fsize)
+#plt.xlabel(r'$\alpha$', fontsize=fsize)
+
+#x = np.arange(len(mfs1_2))
+plt.plot(mfs1_2, '*-', linewidth=2.0)
+plt.show()
+
+exit()
+
+#################################################################
 
 measures_pos_start_data = 1
 measures_pos_end_data = 18

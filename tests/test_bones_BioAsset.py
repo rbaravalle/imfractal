@@ -202,7 +202,8 @@ def do_test(_path, _output_filename):
         else:
             aux = MFS_3D()
             if LOCAL:
-                aux = Local_MFS_3D()
+                #aux = Local_MFS_3D()
+                aux = Local_MFS_Pyramid_3D()
                 aux.setDef(1, 20, 3, slice_filename, mask_filename, params)
                 mfss[i] = aux.getFDs()
             #if Stats_MFS:
@@ -220,6 +221,8 @@ def do_test(_path, _output_filename):
             #    mfss[i] = aux.getFDs()
 
         # in case something goes wrong, save computed mfs up to here
+        print "Data partially saved to ", data_path + _output_filename + ".npy"
+
         np.save(data_path + _output_filename, mfss)
 
         i += 1

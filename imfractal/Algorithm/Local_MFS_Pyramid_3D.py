@@ -167,8 +167,36 @@ class Local_MFS_Pyramid_3D (Algorithm):
                 print "laplacian!"
                 data = base_MFS.laplacian(data)
 
-        result = []
         import scipy.ndimage.interpolation
+
+        if False: # for the paper
+            import ntpath
+            filee = ntpath.basename(self.filename)
+            if filee == 'BA01_120_2Slices.mat':
+                data2 = data[130,:,:]
+                #import Image
+                #img = Image.fromarray(data[40])
+                #image = Image.open(fname).convert("L")
+                #arr = np.asarray(image)
+                import matplotlib.pyplot as plt
+
+                f = plt.figure()
+                plt.subplots_adjust(hspace=.001, wspace=.001)
+
+                for i in range(5):
+                    f.add_subplot(1,5,i+1)
+                    plt.axis('off')
+                    f.tight_layout()
+
+                    plt.imshow(data2, cmap='bone')
+                    data2 = scipy.ndimage.interpolation.zoom(data2, 0.5, order=3)
+
+                plt.show()
+                #img.show()
+                exit()
+            else: return
+
+        result = []
         data_orig = data
         for i in range(5):
 
@@ -223,5 +251,7 @@ class Local_MFS_Pyramid_3D (Algorithm):
 
             # downscale volume to its half
             data = scipy.ndimage.interpolation.zoom(data, 0.5, order=3)
+
+
 
         return result
