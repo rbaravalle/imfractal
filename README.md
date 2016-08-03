@@ -21,7 +21,8 @@ Optionally, the classification test requires:
 * In Debian/Ubuntu, just install the required Python packages:
 
 
-    apt-get install python-numpy python-scipy python-sklearn
+    apt-get install python-numpy python-scipy python-sklearn;
+
     pip install cython
 
 ## Example
