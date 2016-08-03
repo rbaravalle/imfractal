@@ -1,7 +1,7 @@
 imfractal
 =======
 
-An open source (BSD) library to compute (multi)fractal dimensions of images written in Python. Different implementations of the multifractal formalism are present, e.g., the Sandbox method, the MFS and the Singularity multifractal spectrum. The support for the use of the pyopencl library is in process of development.
+An open source (BSD) library to compute (multi)fractal dimensions of images and volumes written in Python. Different implementations of the multifractal formalism are present, e.g., the Sandbox method, and the Singularity or Lipschitz-H\"older multifractal spectrum.
 
 ## Required dependencies for imfractal:
 
@@ -10,7 +10,9 @@ An open source (BSD) library to compute (multi)fractal dimensions of images writ
 * Scipy 0.7 or higher       (http://www.scipy.org/)
 * PIL 1.1.7 or higher       (http://www.pythonware.com/products/pil/)
 
-Optionaly, the classification test requires:
+* For the accelerated version of the Sandbox method you need cython (http://cython.org/)
+
+Optionally, the classification test requires:
 
 * scikit-learn 0.10.0 or higher (http://scikit-learn.org/)
 
@@ -20,6 +22,7 @@ Optionaly, the classification test requires:
 
 
     apt-get install python-numpy python-scipy python-sklearn
+    pip install cython
 
 ## Example
 
@@ -27,6 +30,5 @@ The most interesting example is a classifier to distiguish [bread images](https:
 
 ## Multifractal Spectrums implemented (so far)
 
-1. Singularity Multifractal spectrum (Haussdorf dimentions through Hölder exponents)
-2. Sandbox Multifractal spectrum
-3. Multifractal spectrum (MFS)
+1. Singularity Multifractal spectrum (Haussdorf dimentions through Hölder exponents) (2D, 3D)
+2. Sandbox Multifractal spectrum (2D, 3D)
