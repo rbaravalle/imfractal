@@ -1,5 +1,5 @@
 """
-Copyright (c) 2013 Rodrigo Baravalle
+Copyright (c) 2016 Rodrigo Baravalle
 All rights reserved.
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -26,8 +26,13 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #from Path import Path
 import Algorithm.Sandbox
-import Algorithm.CSandbox
-import Algorithm.CSandbox3D
+
+cython = False
+
+if(cython):
+    import Algorithm.CSandbox
+    import Algorithm.CSandbox3D
+
 #import Algorithm.SandboxCL
 import Algorithm.MFS
 import Algorithm.Singularity
@@ -41,8 +46,11 @@ import Algorithm.Stats_MFS_3D
 
 #SandboxCL = Algorithm.SandboxCL.SandboxCL
 Sandbox = Algorithm.Sandbox.Sandbox
-CSandbox = Algorithm.CSandbox.CSandbox
-CSandbox3D = Algorithm.CSandbox3D.CSandbox3D
+
+if(cython):
+    CSandbox = Algorithm.CSandbox.CSandbox
+    CSandbox3D = Algorithm.CSandbox3D.CSandbox3D
+
 MFS = Algorithm.MFS.MFS
 MFS_3D = Algorithm.MFS_3D.MFS_3D
 MFS_3D_Slices = Algorithm.MFS_3D_Slices.MFS_3D_Slices
