@@ -51,8 +51,9 @@ mfs_sigmoid = np.load('exps/data/mfs_holder_sigmoid_BioAsset.npy')
 mfs_holder_10 = np.load('exps/data/mfs_holder_10_BioAsset.npy')
 mfs_holder_5 = np.load('exps/data/mfs_holder_5_BioAsset.npy')
 
-mfs_gradient = recfromcsv('exps/data/mfs_holder_gradient_BioAsset.csv', delimiter=',')
-mfs_gradient = csvToNumpy(mfs_gradient)
+#mfs_gradient = recfromcsv('exps/data/mfs_holder_gradient_BioAsset.csv', delimiter=',')
+#mfs_gradient = csvToNumpy(mfs_gradient)
+mfs_gradient = np.load('exps/data/mfs_gradient.npy')
 
 mfs_laplacian = np.load('exps/data/mfs_laplacian.npy')
 
@@ -433,7 +434,7 @@ def compute_subset(measures_matrix, mfs,
 
 # Figure : MFS Sandbox of volume 1_2
 fsize = 15
-mfs1_2 = mfs_sandbox_adaptive[1]
+mfs1_2 = mfs_sandbox_absolute_normalized[1] #mfs_sandbox_adaptive[1]
 x1 = -10
 x2 = 10
 x = np.arange(x1, x2+1)
@@ -522,7 +523,7 @@ plt.ylabel(r'$f(\alpha)$', fontsize=fsize)
 plt.plot(mfs1_2, '*-', linewidth=2.0)
 plt.show()
 
-exit()
+#exit()
 
 #################################################################
 
@@ -556,23 +557,23 @@ for i in range(len(measures)):
 ##############################################
 
 str_method = [
-    "MFS",
-    "Standard Measures",
+    #"MFS",
+    #"Standard Measures",
     #"Normalized MFS",
-    #"Gradient MFS",
+    "Gradient MFS",
     #"Normalized MFS",
-    "Stats Pyramid MFS",
+    #"Stats Pyramid MFS",
     #"Pyramid MFS (local or global) ...",
-    #"Sandbox MFS Adaptive",
-    #"Sandbox_Absolute MFS_normalized ...",
+    "Sandbox MFS Adaptive",
+    "Sandbox_Absolute MFS_normalized ...",
     #"Local MFS",
     #"Sigmoid MFS",
     #"10-MFS",
     #"5-MFS",
     "Stats MFS Holder",
     "Stats MFS Holder 2",
-    "Pyramid MFS",
-    #"Pyramid Gradient MFS",
+    #"Pyramid MFS",
+    "Pyramid Gradient MFS",
     #"Slices X MFS",
     #"Slices Y MFS",
     #"Slices Z MFS",
@@ -583,23 +584,23 @@ str_method = [
     #"Stats MFS Slices Z",
 ]
 method_array = [
-    mfs,
-    measures_npy[:, :-2],
+    #mfs,
+    #measures_npy[:, :-2],
     #mfs_normalized,
-    #mfs_gradient,
+    mfs_gradient,
     #mfs_normalized,
-    stats_mfs_pyramid,
+    #stats_mfs_pyramid,
     #mfs_local_pyramid,
-    #mfs_sandbox_adaptive,
-    #mfs_sandbox_absolute_normalized,
+    mfs_sandbox_adaptive,
+    mfs_sandbox_absolute_normalized,
     #mfs_local,
     #mfs_sigmoid,
     #mfs_holder_10,
     #mfs_holder_5,
     stats_mfs_holder,
     stats_mfs_holder2,
-    mfs_pure_pyramid,
-    #mfs_gradient_pyramid,
+    #mfs_pure_pyramid,
+    mfs_gradient_pyramid,
     #mfs_slices_x,
     #mfs_slices_y,
     #mfs_slices_z,
@@ -672,22 +673,31 @@ rest_subset = compute_subset(measures_matrix, rest, 0, rest.shape[1])
 fexp_subset = compute_subset(measures_matrix, fexp, 0, fexp.shape[1])
 
 print "FEXP", fexp
+print fexp.shape
+
+indexes = []
+for i in range(len(fexp)):
+    if not(np.isnan(fexp[i])): indexes.append(i)
+
+indexes = np.array(indexes).astype(np.uint32)
+
+print indexes
 
 print "Fexp against all correlations:"
 skew_levels = stats_mfs_pyramid_gradient[:, [6,36,46]]
-c1, c2, c = compute_correlations(fexp_subset, rest_subset)
+#c1, c2, c = compute_correlations(fexp_subset, rest_subset)
 
 np.set_printoptions(suppress=True)
-print c
+#print c
 
-exit()
+#exit()
 #print "Std Measures: ", compute_correlations(measures_matrix, measures_matrix)
 
 for i in range(len(method_array)):
 
-    c1, c2, _ = compute_correlations(measures_matrix, method_array[i])
+    #c1, c2, _ = compute_correlations(measures_matrix, method_array[i])
 
-    print str_method[i], " Min, Max correlations with #", measures_matrix.shape, "std measures: ", c1, c2
+    #print str_method[i], " Min, Max correlations with #", measures_matrix.shape, "std measures: ", c1, c2
 
 
 
