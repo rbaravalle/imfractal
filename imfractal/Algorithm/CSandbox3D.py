@@ -157,16 +157,17 @@ class CSandbox3D (Algorithm):
 
 
     # get multifractal dimensions
-    def getFDs(self,filename):
+    def getFDs(self,filename, data=[]):
 
-        fmask = self.params["mask_filename"]
-        threshold = self.params["threshold"]
-        adaptive = self.params["adaptive"]
-        data = self.openMatlab(self.params["eight"], filename, threshold, adaptive)
-        data_mask = self.openMatlab(self.params["nine"], fmask, threshold)
+        if len(data) == 0:
+            fmask = self.params["mask_filename"]
+            threshold = self.params["threshold"]
+            adaptive = self.params["adaptive"]
+            data = self.openMatlab(self.params["eight"], filename, threshold, adaptive)
+            data_mask = self.openMatlab(self.params["nine"], fmask, threshold)
 
-        # Masking
-        data = data * (data_mask > 0)
+            # Masking
+            data = data * (data_mask > 0)
 
         # debug
         # print "MAX, MIN: ", np.max(data), np.min(data)
