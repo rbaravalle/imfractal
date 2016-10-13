@@ -24,6 +24,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 from imfractal import MFS_3D as MFS
+import matplotlib.pyplot as plt
 
 import time
 import numpy as np
@@ -66,9 +67,25 @@ def do_test():
 
     i = MFS()
     i.setDef(1,20,3,'', '', params)
-    print "Calculating Lipschitz-Holder 3D Multifractal Spectrum... (checkerboard)"
+    print "Computing Lipschitz-Holder 3D Multifractal Spectrum... (monofractal checkerboard)"
     t =  time.clock()
     fds = i.getFDs(checker)
     t =  time.clock()-t
     print "Time 3D MFS: ", t
     print fds
+
+    plt.title('Monofractal')
+    plt.ylim((0.0, 3.2))
+    plt.plot(fds, 'x', label = 'Mono')
+    
+    multif = np.load('exps/data/img3d.npy')
+    print "Computing Lipschitz-Holder 3D Multifractal Spectrum... (multifractal)"
+    t =  time.clock()
+    fds = i.getFDs(multif)
+    t =  time.clock()-t
+    print "Time 3D MFS: ", t
+    print fds
+
+    plt.plot(fds,'-', label = 'Multi')
+    plt.legend()
+    plt.show()

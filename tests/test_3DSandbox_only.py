@@ -24,6 +24,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 from imfractal import CSandbox3D
+import matplotlib.pyplot as plt
 
 import time
 import numpy as np
@@ -67,9 +68,26 @@ def do_test():
     aux = CSandbox3D(21)
     aux.setDef(40, 1.02, True, params)
 
-    print "Calculating Sandbox 3D Multifractal Spectrum... (checkerboard)"
+    print "Computing Sandbox 3D Multifractal Spectrum... (checkerboard)"
     t =  time.clock()
     fds = aux.getFDs('', checker)
     t =  time.clock()-t
     print "Time 3D MFS: ", t
     print fds
+
+    plt.title('Monofractal')
+    plt.ylim((1.0, 3.5))
+    plt.plot(fds, 'x', label = 'Mono')
+    
+    multif = np.load('exps/data/img3d.npy')
+    print "Computing Sandbox 3D Multifractal Spectrum... (artificial multifractal)"
+    thresh = 70
+    t =  time.clock()
+    fds = aux.getFDs('', multif > thresh)
+    t =  time.clock()-t
+    print "Time 3D MFS: ", t
+    print fds
+
+    plt.plot(fds,'-', label = 'Multi')
+    plt.legend()
+    plt.show()
