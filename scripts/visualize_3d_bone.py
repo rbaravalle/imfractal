@@ -27,6 +27,15 @@ DEBUG =True
 #stack = np.zeros((w,d,h),dtype=np.uint8)
 stack = np.load("../exps/data/bone_sample.npy")
 
+HISTOGRAM = False
+if(HISTOGRAM):
+    hist = np.histogram(stack, bins=range(np.amin(stack), np.amax(stack)))
+
+    np.save("hist.npy", hist)
+    import matplotlib.pyplot as plt
+    plt.hist(hist[0], bins=range(np.amin(stack), np.amax(stack)))
+    plt.show()
+
 #for i in l:
 #    im = Image.open(i)
 #    temp = np.asarray(im, dtype=int)
@@ -43,7 +52,11 @@ if DEBUG :
     print 'min value',res1
 
 #convert the stack in the right dtype
-stack = np.min(stack) + stack
+stack = np.clip(stack, -210,296)
+
+#stack = np.where(stack < -210, stack, 0)
+#stack = np.where(stack > 296, stack, 0)
+stack = -np.amin(stack) + stack
 #stack = np.clip(stack, np.amin(stack),1500)
 
 
@@ -53,8 +66,18 @@ if DEBUG :
     res1 = np.amin(stack)
     print 'min value',res1
 
-stack = 255*(stack / np.amax(stack))
+print stack
+stack = np.array(255.0*(stack / np.amax(stack).astype(np.float32))).astype(np.uint8)
+print stack
 
+HIST2 = False
+if HIST2:
+    hist = np.histogram(stack, bins=range(np.amin(stack), np.amax(stack)))
+
+    np.save("hist2.npy", hist)
+    import matplotlib.pyplot as plt
+    plt.hist(hist[0], bins=range(np.amin(stack), np.amax(stack)))
+    plt.show()
 
 if DEBUG :
     res = np.amax(stack)
@@ -64,6 +87,8 @@ if DEBUG :
 
 
 stack = np.require(stack,dtype=np.uint8)
+
+
 
 if DEBUG :
     res = np.amax(stack)
@@ -94,20 +119,16 @@ dataImporter.SetWholeExtent(0, h-1, 0, d-1, 0, w-1)
 alphaChannelFunc = vtk.vtkPiecewiseFunction()
 colorFunc = vtk.vtkColorTransferFunction()
 
-l = 0.1
 for i in range(256):
-    #alphaChannelFunc.AddPoint(i, i/127.0)
-    if i > 1:
-        #print ""
-    	colorFunc.AddRGBPoint(i,l*0.5,l*0.5,l*0.4)
-        alphaChannelFunc.AddPoint(i, i/127.0)
-    else:
-        alphaChannelFunc.AddPoint(i, 0.05)
-        colorFunc.AddRGBPoint(i,0.8,0.8,0.8)
+    colorFunc.AddRGBPoint(i, i/255.0,i/255.0,(i/500.0)+i/255.0)
+    alphaChannelFunc.AddPoint(i, i/500.0)
+    #else:
+    #    alphaChannelFunc.AddPoint(i, 0.001)
+    #    colorFunc.AddRGBPoint(i,0.8,0.8,0.8)
 
 # for our test sample, we set the black opacity to 0 (transparent) so as
 #to see the sample  
-alphaChannelFunc.AddPoint(255, 0.0)
+alphaChannelFunc.AddPoint(255, 1.0)
 colorFunc.AddRGBPoint(255,1.0,1.0,1.0)
 
 volumeProperty = vtk.vtkVolumeProperty()
