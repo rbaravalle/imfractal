@@ -43,8 +43,26 @@ if DEBUG :
     print 'min value',res1
 
 #convert the stack in the right dtype
-#stack = np.min(stack) + stack
+stack = np.min(stack) + stack
+#stack = np.clip(stack, np.amin(stack),1500)
+
+
+if DEBUG :
+    res = np.amax(stack)
+    print 'max value',res
+    res1 = np.amin(stack)
+    print 'min value',res1
+
 stack = 255*(stack / np.amax(stack))
+
+
+if DEBUG :
+    res = np.amax(stack)
+    print 'max value',res
+    res1 = np.amin(stack)
+    print 'min value',res1
+
+
 stack = np.require(stack,dtype=np.uint8)
 
 if DEBUG :
@@ -75,13 +93,22 @@ dataImporter.SetWholeExtent(0, h-1, 0, d-1, 0, w-1)
 
 alphaChannelFunc = vtk.vtkPiecewiseFunction()
 colorFunc = vtk.vtkColorTransferFunction()
+
+l = 0.1
 for i in range(256):
-    alphaChannelFunc.AddPoint(i, i/255.0)
-    colorFunc.AddRGBPoint(i,1.0-i/255.0,1.0-i/255.0,1.0-i/255.0)
+    #alphaChannelFunc.AddPoint(i, i/127.0)
+    if i > 1:
+        #print ""
+    	colorFunc.AddRGBPoint(i,l*0.5,l*0.5,l*0.4)
+        alphaChannelFunc.AddPoint(i, i/127.0)
+    else:
+        alphaChannelFunc.AddPoint(i, 0.05)
+        colorFunc.AddRGBPoint(i,0.8,0.8,0.8)
+
 # for our test sample, we set the black opacity to 0 (transparent) so as
 #to see the sample  
-alphaChannelFunc.AddPoint(0, 0.0)
-colorFunc.AddRGBPoint(0,1.0,1.0,1.0)
+alphaChannelFunc.AddPoint(255, 0.0)
+colorFunc.AddRGBPoint(255,1.0,1.0,1.0)
 
 volumeProperty = vtk.vtkVolumeProperty()
 volumeProperty.SetColor(colorFunc)
@@ -116,7 +143,7 @@ renderInteractor.SetRenderWindow(renderWin)
 # We add the volume to the renderer ...
 renderer.AddVolume(volume)
 # ... set background color to white ...
-renderer.SetBackground(0,0,0)
+renderer.SetBackground(0.2,0.2,0.2)
 # ... and set window size.
 renderWin.SetSize(550, 550)
 renderWin.SetMultiSamples(4)
