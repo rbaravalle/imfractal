@@ -2,6 +2,8 @@ import Image
 import numpy as np
 import os
 from imfractal import *
+import time
+import matplotlib.pyplot as plt
 
 def load_synthetic_volume():
     im = np.asarray(Image.open('/home/rodrigo/result/porous.tga0').convert("L"))
@@ -63,5 +65,54 @@ def main():
 
     print "Data: ", data.shape
     print "Synthetic: ", synth.shape
+
+    params = {
+        "zero": 1,
+        "one": 0.75,
+        "two": 3.7,
+        "three": 1,
+        "four": 15,
+        "five": 0,
+        "mask_filename": '',
+        "seven": "no",
+        "eight": 'S',
+        "nine": 'M',
+        "threshold": 200,
+        "total_pixels":6000,
+        "adaptive" : False, # adaptive threshold (only for not holder)
+        "laplacian": False,
+        "gradient" : False
+    }
+
+    aux = CSandbox3D(21)
+    aux.setDef(40, 1.02, True, params)
+
+    plt.title('Comparison')
+    plt.ylim((0.0, 3.2))
+
+    print "Computing Sandbox 3D Multifractal Spectrum... (real)"
+    t =  time.clock()
+    fds = aux.getFDs('', data)
+    t =  time.clock()-t
+    print "Time 3D MFS: ", t
+    print fds
+
+    plt.plot(fds,'-', label = 'Real')
+
+    print "Computing Sandbox 3D Multifractal Spectrum... (synthetic)"
+    t =  time.clock()
+    fds = aux.getFDs('', synth)
+    t =  time.clock()-t
+    print "Time 3D MFS: ", t
+    print fds
+
+
+    plt.plot(fds, 'x', label = 'Synth')
+
+
+
+
+    plt.legend()
+    plt.show()
 
 main()
