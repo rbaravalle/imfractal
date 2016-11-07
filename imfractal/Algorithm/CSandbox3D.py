@@ -188,8 +188,11 @@ class CSandbox3D (Algorithm):
 
         Nx, Ny, Nz = data.shape
 
-        white_pixels = np.array([])
+        white_pixels = np.zeros(((Nx-1-2*P) * (Ny-1-2*P) * (Nz-1-2*P), 3))
 
+        print "Selecting points.."
+
+        h = 0
         for i in range(P, Nx-1-P):
             for j in range(P, Ny-1-P):
                 for k in range(P, Nz-1-P):
@@ -198,11 +201,14 @@ class CSandbox3D (Algorithm):
                     # points shouldn't be close to the borders, in order for the windows to have the same size
 
                     if(data[i][j][k] > 0):
-                        if len(white_pixels) == 0:
-                            white_pixels = np.array([i, j, k])
-                        else:
-                            white_pixels = np.vstack((white_pixels, [i, j, k]))
+                        white_pixels[h][0] = i
+                        white_pixels[h][1] = j
+                        white_pixels[h][2] = k
+                        h+= 1
 
+        
+        white_pixels = white_pixels[:h]
+        print "Finished selecting points"
         if len(white_pixels) == 0 :
             print "EMPTY Volume!!!"
             return np.zeros(self.cant_dims, dtype=np.double)

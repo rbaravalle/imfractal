@@ -14,7 +14,7 @@ def load_synthetic_volume():
     
 
     for i in range(num_imgs):
-        arr[:,i,:] = np.asarray(Image.open('/home/rodrigo/result/porous.tga'+str(i)).convert("L"))
+        arr[i,:,:] = np.asarray(Image.open('/home/rodrigo/result/porous.tga'+str(i)).convert("L"))
 
 #    plt.imshow(Image.fromarray(arr[num_imgs/2]))
 #    plt.show()
