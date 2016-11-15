@@ -5,7 +5,7 @@ from imfractal import *
 import time
 import matplotlib.pyplot as plt
 
-def load_synthetic_volume():
+def load_synthetic_volume(mask):
     im = np.asarray(Image.open('/home/rodrigo/result/porous.tga0').convert("L"))
 
     num_imgs = len(os.listdir('/home/rodrigo/result/'))
@@ -16,8 +16,18 @@ def load_synthetic_volume():
     for i in range(num_imgs):
         arr[i,:,:] = np.asarray(Image.open('/home/rodrigo/result/porous.tga'+str(i)).convert("L"))
 
-#    plt.imshow(Image.fromarray(arr[num_imgs/2]))
-#    plt.show()
+
+
+    #padding, mask_ should be bigger than mask
+    print arr.shape
+    print mask.shape
+    mask_ = np.zeros(arr.shape)
+    mask_[:mask.shape[0], :mask.shape[1], :mask.shape[2]] = mask
+
+    arr = (255-arr) * (mask_ > 0)
+
+    plt.imshow(Image.fromarray(arr[num_imgs/2]))
+    plt.show()
     np.save('synth.npy', arr)
 
     return arr
@@ -38,8 +48,8 @@ def openMatlab(name, filename, threshold, adaptive = False):
         print "Amount of white pixels: ", a_v[len(a_v) - 1]
 
     # debug - to see the spongious structure
-    # plt.imshow((arr[:,:,50]), cmap=plt.gray())
-    # plt.show()
+    plt.imshow((arr[50,:,:]), cmap=plt.gray())
+    plt.show()
 
     return arr
 
@@ -53,15 +63,15 @@ def getFDs(filename, fmask):
 
     np.save('bone.npy', data)
 
-    return data
+    return data, data_mask
 
 def main():
 
     fname = '/home/rodrigo/Documentos/members.imaglabs.org/felix.thomsen/Rodrigo/BioAsset/mats/BA01_120_1Slices.mat'
     fmask = '/home/rodrigo/Documentos/members.imaglabs.org/felix.thomsen/Rodrigo/BioAsset/mats/BA01_120_1Mask.mat'
 
-    data = getFDs(fname, fmask)
-    synth = load_synthetic_volume()
+    data, mask = getFDs(fname, fmask)
+    synth = load_synthetic_volume(mask)
 
     print "Data: ", data.shape
     print "Synthetic: ", synth.shape
@@ -88,7 +98,7 @@ def main():
     aux.setDef(40, 1.02, True, params)
 
     plt.title('Comparison')
-    plt.ylim((0.0, 3.2))
+    plt.ylim((2.5, 3.5))
 
     print "Computing Sandbox 3D Multifractal Spectrum... (real)"
     t =  time.clock()
@@ -108,9 +118,6 @@ def main():
 
 
     plt.plot(fds, 'x', label = 'Synth')
-
-
-
 
     plt.legend()
     plt.show()
