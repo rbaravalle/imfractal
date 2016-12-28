@@ -26,9 +26,6 @@ def load_synthetic_volume(mask):
 
     arr = (255-arr) * (mask_ > 0)
 
-    plt.imshow(Image.fromarray(arr[num_imgs/2]))
-    plt.show()
-    np.save('synth.npy', arr)
 
     return arr
 
@@ -42,14 +39,6 @@ def openMatlab(name, filename, threshold, adaptive = False):
         #    threshold = self.determine_threshold(arr)
 
         arr = arr * (arr > threshold)
-
-        a_v = arr.cumsum()
-
-        print "Amount of white pixels: ", a_v[len(a_v) - 1]
-
-    # debug - to see the spongious structure
-    plt.imshow((arr[50,:,:]), cmap=plt.gray())
-    plt.show()
 
     return arr
 
@@ -67,11 +56,30 @@ def getFDs(filename, fmask):
 
 def main():
 
-    fname = '/home/rodrigo/Documentos/members.imaglabs.org/felix.thomsen/Rodrigo/BioAsset/mats/BA01_120_1Slices.mat'
-    fmask = '/home/rodrigo/Documentos/members.imaglabs.org/felix.thomsen/Rodrigo/BioAsset/mats/BA01_120_1Mask.mat'
+    fname = '/home/rodrigo/Documentos/members.imaglabs.org/felix.thomsen/Rodrigo/BioAsset/mats/BA02_120_1Slices.mat'
+    fmask = '/home/rodrigo/Documentos/members.imaglabs.org/felix.thomsen/Rodrigo/BioAsset/mats/BA02_120_1Mask.mat'
 
     data, mask = getFDs(fname, fmask)
     synth = load_synthetic_volume(mask)
+
+    a_v = data.cumsum()
+
+    print "Amount of white pixels: ", a_v[len(a_v) - 1]
+
+    # debug - to see the spongious structure
+    num_imgs = len(os.listdir('/home/rodrigo/result/'))
+
+    fig = plt.figure()
+    a=fig.add_subplot(1,2,1)
+    plt.imshow((data[num_imgs/2]), cmap=plt.gray())
+    plt.title('Real')
+    #plt.show()
+    a=fig.add_subplot(1,2,2)
+
+    plt.imshow(Image.fromarray(synth[num_imgs/2]))
+    plt.title('Synthetic')
+    plt.show()
+    np.save('synth.npy', synth)
 
     print "Data: ", data.shape
     print "Synthetic: ", synth.shape
@@ -120,6 +128,6 @@ def main():
     plt.plot(fds, 'x', label = 'Synth')
 
     plt.legend()
-    plt.show()
+    plt.savefig('test.png')
 
 main()
