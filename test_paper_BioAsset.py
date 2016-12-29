@@ -10,7 +10,75 @@ import statsmodels
 from statsmodels.tools.eval_measures import aicc, bic, hqic, rmse
 import matplotlib.pyplot as plt
 
+from matplotlib.mlab import griddata
+from mpl_toolkits.mplot3d import Axes3D
+
+
 np.seterr(divide='ignore', invalid='ignore')
+
+def ribbon1(data):
+    x=data[:,0]
+    fig=plt.figure()
+    ax=fig.gca(projection='3d')
+
+    for i in range(1,data.shape[1]-1,1):
+        y=data[:,i]
+        z=data[:,i+1]
+        xi=np.linspace(min(x),max(x))
+        yi=np.linspace(min(y),max(y))
+        X,Y=np.meshgrid(xi,yi)
+        Z=griddata(x,y,z,xi,yi)
+        ax.plot_surface(X,Y,Z,rstride=50,cstride=1,cmap='RdYlBu')
+        ax.set_zlim3d(np.min(Z),np.max(Z))
+
+    ax.set_zlim3d(0.0,3.0)
+    ax.set_title('Gradient')
+    ax.set_xlabel('')
+    ax.set_ylabel('')
+    ax.set_yticks([])
+    ax.set_zlabel('')
+    plt.show()
+
+def ribbon2(spectra, alpha, title):
+    import plotly.plotly as py
+    import plotly.graph_objs as go
+
+    import numpy as np
+
+    traces = []
+    y_raw = spectra[:, 0]
+    sample_size = spectra.shape[1]
+    for i in range(0, sample_size):
+        print i
+        z_raw = spectra[:, i]
+        x = []
+        y = []
+        z = []
+        ci = int(255/sample_size*i) # ci = "color index"
+        for j in range(0, len(z_raw)):
+            z.append([z_raw[j], z_raw[j]])
+            y.append([alpha[j], alpha[j]])
+            x.append([i, i+1])
+        traces.append(dict(
+            z=z,
+            x=x,
+            y=y,
+            colorscale=[ [i, 'rgb(%d,%d,255)'%(ci, ci)] for i in np.arange(0,1.1,0.1) ],
+            showscale=False,
+            type='surface',
+        ))
+
+    #traces = traces[::-1]
+
+    layout = go.Layout(
+        xaxis=dict(
+            autorange='reversed'
+        )
+    )
+
+    fig = go.Figure( data=traces, layout=layout )
+    py.iplot(fig, filename='ribbon-plot-python')
+
 
 def csvToNumpy(X):
 
@@ -262,7 +330,7 @@ def compute_linear_model(mfs, measures, output_file="standarized.csv"):
 
     bmd = measures[:, 0]
     fexp = measures[:, measures.shape[1]-1]
-    bmd = bmd.reshape((bmd.shape[0], 1))
+
 
     #print "BMD: ", bmd
     #print "FEXP: ", fexp
@@ -455,9 +523,11 @@ alpha = [   6.,   19.,   32.,   45.,   58.,   71.,   84.,   97.,  110.,  123. , 
 162.,  175.,  188.,  201. , 214. , 227. , 240.  ,253.]
 alpha = map(lambda i:"%.2f" % float(i/255.), alpha)
 
+alpha_orig = alpha
 alpha = alpha[0:len(alpha):2]
 
 plt.xticks(xt,alpha) # translate
+
 
 fsize = 15
 mfs1_2 = mfs[1]
@@ -523,7 +593,50 @@ plt.ylabel(r'$f(\alpha)$', fontsize=fsize)
 plt.plot(mfs1_2, '*-', linewidth=2.0)
 plt.show()
 
-#exit()
+ribbon = np.vstack((a, b, c, d, e))
+print "Shape ribbon:" , ribbon.shape
+ribbon2(ribbon.T, alpha_orig, 'Pyramid Gradient MFS')
+exit()
+
+####### 3D SCATTER BMD vs FEXP vs SK_{0}
+from mpl_toolkits.mplot3d import Axes3D
+
+indexes = np.load('exps/data/valid_fexp_indexes.npy')
+bmd17 = np.load('exps/data/bmd17.npy')
+fexp = np.load('exps/data/fexp.npy')
+sk0 = np.load('exps/data/sk0.npy')
+sk0_17 = sk0[indexes]
+
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+ax.scatter(fexp, bmd17, sk0_17)
+ax.set_xlabel('fexp')
+ax.set_ylabel('bmd')
+ax.set_zlabel('sk0')
+
+plt.show()
+
+# 2D Scatters
+plt.xlabel('BMD')
+plt.ylabel(r'F$^{exp}$')
+plt.scatter(bmd17, fexp)
+plt.show()
+
+#
+plt.xlabel(r'SK$_{0}$')
+plt.ylabel(r'F$^{exp}$')
+plt.scatter(sk0_17, fexp)
+plt.show()
+
+#
+plt.xlabel(r'SK$_{0}$')
+plt.ylabel('BMD')
+plt.scatter(sk0_17, bmd17)
+plt.show()
+
+
+
+
 
 #################################################################
 
@@ -561,24 +674,24 @@ str_method = [
     #"Standard Measures",
     #"Normalized MFS",
     "Gradient MFS",
+    "Stats Pyramid Gradient MFS",
     #"Normalized MFS",
     #"Stats Pyramid MFS",
     #"Pyramid MFS (local or global) ...",
-    "Sandbox MFS Adaptive",
-    "Sandbox_Absolute MFS_normalized ...",
+    #"Sandbox MFS Adaptive",
+    #"Sandbox_Absolute MFS_normalized ...",
     #"Local MFS",
     #"Sigmoid MFS",
     #"10-MFS",
     #"5-MFS",
     "Stats MFS Holder",
-    "Stats MFS Holder 2",
+    #"Stats MFS Holder 2",
     #"Pyramid MFS",
     "Pyramid Gradient MFS",
     #"Slices X MFS",
     #"Slices Y MFS",
     #"Slices Z MFS",
     "Pure Pyramid Gradient MFS",
-    "Stats Pyramid Gradient MFS",
     #"Stats MFS Slices X",
     #"Stats MFS Slices Y",
     #"Stats MFS Slices Z",
@@ -588,24 +701,24 @@ method_array = [
     #measures_npy[:, :-2],
     #mfs_normalized,
     mfs_gradient,
+    stats_mfs_pyramid_gradient,
     #mfs_normalized,
     #stats_mfs_pyramid,
     #mfs_local_pyramid,
-    mfs_sandbox_adaptive,
-    mfs_sandbox_absolute_normalized,
+    #mfs_sandbox_adaptive,
+    #mfs_sandbox_absolute_normalized,
     #mfs_local,
     #mfs_sigmoid,
     #mfs_holder_10,
     #mfs_holder_5,
     stats_mfs_holder,
-    stats_mfs_holder2,
+    #stats_mfs_holder2,
     #mfs_pure_pyramid,
     mfs_gradient_pyramid,
     #mfs_slices_x,
     #mfs_slices_y,
     #mfs_slices_z,
     mfs_pure_pyramid_gradient,
-    stats_mfs_pyramid_gradient,
     #stats_mfs_slices_x,
     #stats_mfs_slices_y,
     #stats_mfs_slices_z,
@@ -644,50 +757,56 @@ mask1 = np.sort(mask1)
 mask1 = mask1.astype(np.int32)
 #print mask1
 
+sk0 = stats_mfs_pyramid_gradient[:, 36:37]
+np.save('exps/data/sk0.npy', sk0)
 
-print "Standard Measures intra-correlations:"
-c1, c2, c = compute_correlations(measures_matrix, measures_matrix)
+exit()
+
+if(False):
+
+    print "Standard Measures intra-correlations:"
+    c1, c2, c = compute_correlations(measures_matrix, measures_matrix)
 
 
-np.set_printoptions(suppress=True)
-print c
+    np.set_printoptions(suppress=True)
+    print c
 
-print "Multifractal Skewness - Standard Measures : correlations:"
-skew_levels = stats_mfs_pyramid_gradient[:, [6,36,46]]
-c1, c2, c = compute_correlations(measures_matrix, skew_levels)
+    print "Multifractal Skewness - Standard Measures : correlations:"
+    skew_levels = stats_mfs_pyramid_gradient[:, [6,36,46]]
+    c1, c2, c = compute_correlations(measures_matrix, skew_levels)
 
-np.set_printoptions(suppress=True)
-print c
+    np.set_printoptions(suppress=True)
+    print c
 
-print "Multifractal Skewness intra-correlations:"
-skew_levels = stats_mfs_pyramid_gradient[:, [6,36,46]]
-c1, c2, c = compute_correlations(skew_levels, skew_levels)
+    print "Multifractal Skewness intra-correlations:"
+    skew_levels = stats_mfs_pyramid_gradient[:, [6,36,46]]
+    c1, c2, c = compute_correlations(skew_levels, skew_levels)
 
-np.set_printoptions(suppress=True)
-print c
+    np.set_printoptions(suppress=True)
+    print c
 
-fexp = np.array(measures_matrix[:, measures_matrix.shape[1] - 1]).reshape(measures_matrix.shape[0],1)
-rest = np.hstack((skew_levels, measures_matrix))
+    fexp = np.array(measures_matrix[:, measures_matrix.shape[1] - 1]).reshape(measures_matrix.shape[0],1)
+    rest = np.hstack((skew_levels, measures_matrix))
 
-rest_subset = compute_subset(measures_matrix, rest, 0, rest.shape[1])
-fexp_subset = compute_subset(measures_matrix, fexp, 0, fexp.shape[1])
+    rest_subset = compute_subset(measures_matrix, rest, 0, rest.shape[1])
+    fexp_subset = compute_subset(measures_matrix, fexp, 0, fexp.shape[1])
 
-print "FEXP", fexp
-print fexp.shape
+    print "FEXP", fexp
+    print fexp.shape
 
-indexes = []
-for i in range(len(fexp)):
-    if not(np.isnan(fexp[i])): indexes.append(i)
+    indexes = []
+    for i in range(len(fexp)):
+        if not(np.isnan(fexp[i])): indexes.append(i)
 
-indexes = np.array(indexes).astype(np.uint32)
+    indexes = np.array(indexes).astype(np.uint32)
 
-print indexes
+    print indexes
 
-print "Fexp against all correlations:"
-skew_levels = stats_mfs_pyramid_gradient[:, [6,36,46]]
-#c1, c2, c = compute_correlations(fexp_subset, rest_subset)
+    print "Fexp against all correlations:"
+    skew_levels = stats_mfs_pyramid_gradient[:, [6,36,46]]
+    #c1, c2, c = compute_correlations(fexp_subset, rest_subset)
 
-np.set_printoptions(suppress=True)
+    np.set_printoptions(suppress=True)
 #print c
 
 #exit()
