@@ -26,6 +26,8 @@ def load_synthetic_volume(mask):
 
     arr = (255-arr) * (mask_ > 0)
 
+    np.save('synth.npy', arr)
+
 
     return arr
 
@@ -54,14 +56,7 @@ def getFDs(filename, fmask):
 
     return data, data_mask
 
-def main():
-
-    fname = '/home/rodrigo/Documentos/members.imaglabs.org/felix.thomsen/Rodrigo/BioAsset/mats/BA02_120_1Slices.mat'
-    fmask = '/home/rodrigo/Documentos/members.imaglabs.org/felix.thomsen/Rodrigo/BioAsset/mats/BA02_120_1Mask.mat'
-
-    data, mask = getFDs(fname, fmask)
-    synth = load_synthetic_volume(mask)
-
+def show_plot(data, synth):
     a_v = data.cumsum()
 
     print "Amount of white pixels: ", a_v[len(a_v) - 1]
@@ -70,16 +65,34 @@ def main():
     num_imgs = len(os.listdir('/home/rodrigo/result/'))
 
     fig = plt.figure()
-    a=fig.add_subplot(1,2,1)
+    a=fig.add_subplot(2,2,1)
     plt.imshow((data[num_imgs/2]), cmap=plt.gray())
     plt.title('Real')
-    #plt.show()
-    a=fig.add_subplot(1,2,2)
+    a=fig.add_subplot(2,2,2)
 
     plt.imshow(Image.fromarray(synth[num_imgs/2]))
     plt.title('Synthetic')
+
+    a=fig.add_subplot(2,2,3)
+    plt.imshow((data[:, num_imgs/4, :]), cmap=plt.gray())
+    plt.title('Real')
+    a=fig.add_subplot(2,2,4)
+
+    plt.imshow(Image.fromarray(synth[:, num_imgs/4, :]))
+    plt.title('Synthetic')
     plt.show()
     np.save('synth.npy', synth)
+
+def main():
+
+    fname = '/home/rodrigo/Documentos/members.imaglabs.org/felix.thomsen/Rodrigo/BioAsset/mats/BA02_120_1Slices.mat'
+    fmask = '/home/rodrigo/Documentos/members.imaglabs.org/felix.thomsen/Rodrigo/BioAsset/mats/BA02_120_1Mask.mat'
+
+    data, mask = getFDs(fname, fmask)
+    synth = load_synthetic_volume(mask)
+
+
+    show_plot(data, synth)
 
     print "Data: ", data.shape
     print "Synthetic: ", synth.shape

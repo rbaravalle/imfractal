@@ -11,7 +11,11 @@ from statsmodels.tools.eval_measures import aicc, bic, hqic, rmse
 import matplotlib.pyplot as plt
 
 from matplotlib.mlab import griddata
+import itertools
+import numpy as np
+from matplotlib.mlab import griddata
 from mpl_toolkits.mplot3d import Axes3D
+from pylab import *
 
 
 np.seterr(divide='ignore', invalid='ignore')
@@ -60,6 +64,7 @@ def ribbon2(spectra, alpha, title):
             y.append([alpha[j], alpha[j]])
             x.append([i, i+1])
         traces.append(dict(
+            xsrc="xsrc",
             z=z,
             x=x,
             y=y,
@@ -70,15 +75,41 @@ def ribbon2(spectra, alpha, title):
 
     #traces = traces[::-1]
 
-    layout = go.Layout(
-        xaxis=dict(
-            autorange='reversed'
-        )
-    )
-
-    fig = go.Figure( data=traces, layout=layout )
+    fig = go.Figure( data=traces, layout={'title':'Pyramid Gradient MFS'})
     py.iplot(fig, filename='ribbon-plot-python')
 
+
+def ribbon3(spectra, alpha):
+    matplotlib.rcParams.update({'font.size':10})
+    fig=figure()
+    ax=fig.gca(projection='3d')
+    for i in range(0,spectra.shape[1]):
+        y=spectra[:,i]
+        x=sorted(range(1,len(y)+1)*2)
+        a=[i,i+1]*len(y)
+        b=list(itertools.chain(*zip(y,y)))
+        xi=np.linspace(min(x),max(x))
+        yi=np.linspace(min(a),max(a))
+        X,Y=np.meshgrid(xi/(len(x)*0.5),yi)
+        Z=griddata(x,a,b,xi,yi)
+        ax.plot_surface(X,Y,Z, rstride=50, cstride=1, cmap='Spectral')
+        ax.set_zlim3d(np.min(Z),np.max(Z))
+
+    ax.grid(False)
+    ax.w_xaxis.pane.set_visible(False)
+    ax.w_yaxis.pane.set_visible(False)
+    ax.w_zaxis.pane.set_color('gainsboro')
+    ax.set_title('Pyramid Gradient MFS')
+    ax.set_xlim3d(0,1)
+    ax.set_xticks(alpha)
+    ax.set_xticklabels(alpha)
+    ax.set_xlabel(r'$\alpha$')
+    #ax.set_yticks([0.5,1.5,2.5,3.5,4.5])
+    #ax.set_yticklabels(['1','2','3','4','5'])
+    ax.set_ylabel('Resolution')
+    ax.set_zlim3d(0,3)
+    ax.set_zlabel(r'$f(\alpha)$')
+    show()
 
 def csvToNumpy(X):
 
@@ -540,6 +571,7 @@ plt.ylabel(r'$f(\alpha)$', fontsize=fsize)
 plt.xlabel(r'$\alpha$', fontsize=fsize)
 
 x = np.arange(len(mfs1_2))
+plt.xticks(xt,alpha) # translate
 plt.plot(map(lambda i: i+1, x), mfs1_2, '*-', linewidth=2.0)
 plt.show()
 
@@ -556,6 +588,7 @@ c = mfs1_2[40:60]
 d = mfs1_2[60:80]
 e = mfs1_2[80:]
 
+plt.xticks(xt,alpha) # translate
 mfs1_2 = np.hstack((e,d,c,b,a))
 
 #x1 = -10
@@ -567,12 +600,20 @@ plt.ylabel(r'$f(\alpha)$', fontsize=fsize)
 #plt.xlabel(r'$\alpha$', fontsize=fsize)
 
 #x = np.arange(len(mfs1_2))
-plt.plot(mfs1_2, '*-', linewidth=2.0)
+#plt.plot(mfs1_2, '*-', linewidth=2.0)
+plt.plot(e, '*-', linewidth=2.0, label='0')
+plt.plot(d, '*-', linewidth=2.0, label='1')
+plt.plot(c, '*-', linewidth=2.0, label='2')
+plt.plot(b, '*-', linewidth=2.0, label='3')
+plt.plot(a, '*-', linewidth=2.0, label='4')
+plt.xlabel(r'$\alpha$', fontsize=fsize)
+plt.legend()
 plt.show()
 
 # Figure: Gradient MFS Pyramid of volume 1_2
 fsize = 15
 mfs1_2 = mfs_pure_pyramid_gradient[1]
+plt.xticks(xt,alpha) # translate
 
 a = mfs1_2[:20]
 b = mfs1_2[20:40]
@@ -581,22 +622,29 @@ d = mfs1_2[60:80]
 e = mfs1_2[80:]
 
 mfs1_2 = np.hstack((e,d,c,b,a))
+plt.plot(e, '*-', linewidth=2.0, label='0')
+plt.plot(d, '*-', linewidth=2.0, label='1')
+plt.plot(c, '*-', linewidth=2.0, label='2')
+plt.plot(b, '*-', linewidth=2.0, label='3')
+plt.plot(a, '*-', linewidth=2.0, label='4')
+plt.xlabel(r'$\alpha$', fontsize=fsize)
 #x1 = -10
 #x2 = 10
 #x = np.arange(x1, x2+1)
 plt.ylim((0.0, 3.0))
 #plt.xlim(x1,x2)
 plt.ylabel(r'$f(\alpha)$', fontsize=fsize)
+plt.legend()
 #plt.xlabel(r'$\alpha$', fontsize=fsize)
 
 #x = np.arange(len(mfs1_2))
-plt.plot(mfs1_2, '*-', linewidth=2.0)
+#plt.plot(mfs1_2, '*-', linewidth=2.0)
 plt.show()
 
-ribbon = np.vstack((a, b, c, d, e))
-print "Shape ribbon:" , ribbon.shape
-ribbon2(ribbon.T, alpha_orig, 'Pyramid Gradient MFS')
-exit()
+#ribbon = np.vstack((a, b, c, d, e))
+#print "Shape ribbon:" , ribbon.shape
+#ribbon2(ribbon.T, alpha_orig, 'Pyramid Gradient MFS')
+#exit()
 
 ####### 3D SCATTER BMD vs FEXP vs SK_{0}
 from mpl_toolkits.mplot3d import Axes3D
@@ -609,10 +657,26 @@ sk0_17 = sk0[indexes]
 
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
-ax.scatter(fexp, bmd17, sk0_17)
-ax.set_xlabel('fexp')
-ax.set_ylabel('bmd')
-ax.set_zlabel('sk0')
+p = ax.scatter(sk0_17, bmd17, fexp, s=(4*fexp**2)**2, c="r")
+ax.set_xlabel(r'$SK_{0}$')
+ax.set_ylabel('BMD')
+ax.set_zlabel(r'$F_{exp}$')
+
+plt.show()
+
+colors=['b', 'c', 'y', 'm', 'r']
+
+ax = plt.subplot(111, projection='3d')
+
+ax.plot(bmd17, sk0_17, fexp, color=colors[0], label='Fexp')
+#ax.plot(random(10), random(10), random(10), 'o', color=colors[0], label='LoLo')
+#ax.plot(random(10), random(10), random(10), 'o', color=colors[1], label='Lo')
+#ax.plot(random(10), random(10), random(10), 'o', color=colors[2], label='Average')
+#ax.plot(random(10), random(10), random(10), 'o', color=colors[3], label='Hi')
+#ax.plot(random(10), random(10), random(10), 'o', color=colors[4], label='HiHi')
+#ax.plot(random(10), random(10), random(10), 'x', color=colors[4], label='High Outlier')
+
+plt.legend(loc='upper left', numpoints=1, ncol=3, fontsize=8, bbox_to_anchor=(0, 0))
 
 plt.show()
 

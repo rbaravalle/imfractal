@@ -48,6 +48,7 @@ meta_adaptive = np.load(data_path + 'bioAsset_meta_adaptive.npy')
 print "Meta adaptive shape: ", meta_adaptive.shape
 
 
+print data_path + BASE_NAME + '.npy'
 # subset of slice_files
 mfs_data = np.load(data_path + BASE_NAME + '.npy')
 

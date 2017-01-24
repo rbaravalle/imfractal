@@ -52,9 +52,10 @@ slice_files.sort()  # = sort(slice_files)
 
 path = 'exps/data/'
 # one-to-one with slice_files
-meta = np.load(path + 'bioAsset_meta.npy')
+#meta = np.load(path + 'bioAsset_meta.npy')
 
 # subset of slice_files
+print path + 'mfs'+MFS_STR+TRANSFORMED_INPUT_STR +'_BioAsset.npy'
 mfs_data = np.load(path + 'mfs'+MFS_STR+TRANSFORMED_INPUT_STR +'_BioAsset.npy')
 
 
