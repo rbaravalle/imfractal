@@ -5,6 +5,8 @@ from imfractal import *
 import time
 import matplotlib.pyplot as plt
 
+show_figure = False
+
 def load_synthetic_volume(mask):
     im = np.asarray(Image.open('/home/rodrigo/result/porous.tga0').convert("L"))
 
@@ -64,23 +66,24 @@ def show_plot(data, synth):
     # debug - to see the spongious structure
     num_imgs = len(os.listdir('/home/rodrigo/result/'))
 
-    fig = plt.figure()
-    a=fig.add_subplot(2,2,1)
-    plt.imshow((data[num_imgs/2]), cmap=plt.gray())
-    plt.title('Real')
-    a=fig.add_subplot(2,2,2)
+    if(show_figure):
+        fig = plt.figure()
+        a=fig.add_subplot(2,2,1)
+        plt.imshow((data[num_imgs/2]), cmap=plt.gray())
+        plt.title('Real')
+        a=fig.add_subplot(2,2,2)
 
-    plt.imshow(Image.fromarray(synth[num_imgs/2]))
-    plt.title('Synthetic')
+        plt.imshow(Image.fromarray(synth[num_imgs/2]))
+        plt.title('Synthetic')
 
-    a=fig.add_subplot(2,2,3)
-    plt.imshow((data[:, num_imgs/4, :]), cmap=plt.gray())
-    plt.title('Real')
-    a=fig.add_subplot(2,2,4)
+        a=fig.add_subplot(2,2,3)
+        plt.imshow((data[:, num_imgs/4, :]), cmap=plt.gray())
+        plt.title('Real')
+        a=fig.add_subplot(2,2,4)
 
-    plt.imshow(Image.fromarray(synth[:, num_imgs/4, :]))
-    plt.title('Synthetic')
-    plt.show()
+        plt.imshow(Image.fromarray(synth[:, num_imgs/4, :]))
+        plt.title('Synthetic')
+        plt.show()
     np.save('synth.npy', synth)
 
 def main():
