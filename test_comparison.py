@@ -7,6 +7,16 @@ import matplotlib.pyplot as plt
 
 show_figure = False
 
+def distance(a, b):
+    if(len(a) != len(b)):
+        print "Warning: vector lengths are different!"
+
+    distance = 0.0
+    for i in range(len(a)):
+        distance += abs(a[i] - float(b[i]))
+
+    return distance
+
 def load_synthetic_volume(mask):
     im = np.asarray(Image.open('/home/rodrigo/result/porous.tga0').convert("L"))
 
@@ -86,7 +96,7 @@ def show_plot(data, synth):
         plt.show()
     np.save('synth.npy', synth)
 
-def main():
+def compare():
 
     fname = '/home/rodrigo/Documentos/members.imaglabs.org/felix.thomsen/Rodrigo/BioAsset/mats/BA02_120_1Slices.mat'
     fmask = '/home/rodrigo/Documentos/members.imaglabs.org/felix.thomsen/Rodrigo/BioAsset/mats/BA02_120_1Mask.mat'
@@ -126,24 +136,25 @@ def main():
 
     print "Computing Sandbox 3D Multifractal Spectrum... (real)"
     t =  time.clock()
-    fds = aux.getFDs('', data)
+    fds_real = aux.getFDs('', data)
     t =  time.clock()-t
     print "Time 3D MFS: ", t
-    print fds
+    print fds_real
 
-    plt.plot(fds,'-', label = 'Real')
+    plt.plot(fds_real,'-', label = 'Real')
 
     print "Computing Sandbox 3D Multifractal Spectrum... (synthetic)"
     t =  time.clock()
-    fds = aux.getFDs('', synth)
+    fds_synth = aux.getFDs('', synth)
     t =  time.clock()-t
     print "Time 3D MFS: ", t
-    print fds
+    print fds_synth
 
 
-    plt.plot(fds, 'x', label = 'Synth')
+    plt.plot(fds_synth, 'x', label = 'Synth')
 
     plt.legend()
-    plt.savefig('test.png')
+    plt.savefig('test_comparison.png')
 
-main()
+    return distance(fds_real, fds_synth), fds_synth, fds_real
+
