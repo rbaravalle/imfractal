@@ -96,7 +96,7 @@ def show_plot(data, synth):
         plt.show()
     np.save('synth.npy', synth)
 
-def compare():
+def compare(real_data):
 
     fname = '/home/rodrigo/Documentos/members.imaglabs.org/felix.thomsen/Rodrigo/BioAsset/mats/BA02_120_1Slices.mat'
     fmask = '/home/rodrigo/Documentos/members.imaglabs.org/felix.thomsen/Rodrigo/BioAsset/mats/BA02_120_1Mask.mat'
@@ -134,12 +134,15 @@ def compare():
     plt.title('Comparison')
     plt.ylim((2.5, 3.5))
 
-    print "Computing Sandbox 3D Multifractal Spectrum... (real)"
-    t =  time.clock()
-    fds_real = aux.getFDs('', data)
-    t =  time.clock()-t
-    print "Time 3D MFS: ", t
-    print fds_real
+    if(len(real_data) > 0):
+        fds_real = real_data
+    else:
+        print "Computing Sandbox 3D Multifractal Spectrum... (real)"
+        t =  time.clock()
+        fds_real = aux.getFDs('', data)
+        t =  time.clock()-t
+        print "Time 3D MFS: ", t
+        print fds_real
 
     plt.plot(fds_real,'-', label = 'Real')
 
