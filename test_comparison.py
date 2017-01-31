@@ -13,7 +13,10 @@ def distance(a, b):
 
     distance = 0.0
     for i in range(len(a)):
-        distance += abs(a[i] - float(b[i]))
+        if(i > 8):
+            distance += abs(a[i] - float(b[i]))
+        else:
+            distance += abs(a[i] - float(b[i])) * 0.25
 
     return distance
 
