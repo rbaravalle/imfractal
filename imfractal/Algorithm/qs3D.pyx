@@ -98,11 +98,11 @@ def aux(int P, int total, int Nx, int Ny, int Nz,
         np.ndarray[DTYPE_ti, ndim=3] intImg,
         int cant_dims):
 
-    cdef double summ, log_down_total_q1, q1
+    cdef double summ, q1, q11
     cdef int i, x, y, z, MR, ind, R, h, q, stepR, startR, half_dim
-    cdef float total_1 = float(total)
+    cdef float log_total_1 = np.log(1.0/float(total))
 
-    cdef int m0 = intImg[Nx-1][Ny-1][Nz-1]
+    cdef double log_m0 = np.log(intImg[Nx-1][Ny-1][Nz-1])
 
     stepR = 1
     startR = 1
@@ -123,7 +123,7 @@ def aux(int P, int total, int Nx, int Ny, int Nz,
         ind = 0
 
         if(q != 1):
-            log_down_total_q1 = np.log(pow(m0, -q1) * total_1) / q1
+            q11 = 1.0/q1
             for R in rvalues:
                 # ln< M(R)/M0 ** q-1 >
                 summ = 0.0
@@ -134,13 +134,10 @@ def aux(int P, int total, int Nx, int Ny, int Nz,
                     MR = count(x-R, y-R, z-R, x+R, y+R, z+R, intImg, Nx, Ny, Nz)
                     summ += pow(MR, q1)
 
-                c[ind] = np.log(summ)/q1 + log_down_total_q1 # equal to np.log(summ * down_total) / q1
+                c[ind] = summ # equal to np.log(summ * down_total) / q1
                 ind+=1
 
-        slope, _, _, _, _ = scipy.stats.linregress(sizes,c)
-
-        #if(q%5==0):
-            #plt.plot(sizes,c,'o', label = str(q))
+        slope, _, _, _, _ = scipy.stats.linregress(sizes, (np.log(c) + log_total_1) * q11 - log_m0)
 
         print slope, " , q: ", q
 
