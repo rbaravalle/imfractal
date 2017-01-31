@@ -131,7 +131,7 @@ def aux(int P, int total, int Nx, int Ny, int Nz,
                     y = points[i][1]
                     z = points[i][2]
                     MR = count(x-R, y-R, z-R, x+R, y+R, z+R, intImg, Nx, Ny, Nz)
-                    summ += down*np.power(MR, q1)
+                    summ += down*pow(MR, q1)
 
                 summ /= np.float32(total) # mean
                 c[ind] = np.log(summ)/q1
