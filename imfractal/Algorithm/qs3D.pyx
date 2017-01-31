@@ -98,7 +98,7 @@ def aux(int P, int total, int Nx, int Ny, int Nz,
         np.ndarray[DTYPE_ti, ndim=3] intImg,
         int cant_dims):
 
-    cdef double summ, down
+    cdef double summ, down, q1
     cdef int i, x, y, z, MR, ind, R, h, q, stepR, startR, half_dim
 
     cdef int m0 = intImg[Nx-1][Ny-1][Nz-1]
@@ -118,7 +118,8 @@ def aux(int P, int total, int Nx, int Ny, int Nz,
     half_dim = (cant_dims - 1 )/ 2
 
     for q from -half_dim <= q < half_dim + 1:
-        down = 1.0/np.power(m0, np.double(q - 1))
+        q1 = np.double(q - 1)
+        down = 1.0/np.power(m0, q1)
         ind = 0
 
         if(q != 1):
@@ -126,12 +127,14 @@ def aux(int P, int total, int Nx, int Ny, int Nz,
                 # ln< M(R)/M0 ** q-1 >
                 summ = 0.0
                 for i from 0 <= i < total:
-                    x, y, z = points[i]
+                    x = points[i][0]
+                    y = points[i][1]
+                    z = points[i][2]
                     MR = count(x-R, y-R, z-R, x+R, y+R, z+R, intImg, Nx, Ny, Nz)
-                    summ += down*np.power(MR, np.double(q-1))
+                    summ += down*np.power(MR, q1)
 
                 summ /= np.float32(total) # mean
-                c[ind] = np.log(summ)/np.float32(q-1)
+                c[ind] = np.log(summ)/q1
                 ind+=1
 
         slope, _, _, _, _ = scipy.stats.linregress(sizes,c)
