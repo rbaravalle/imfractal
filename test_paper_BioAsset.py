@@ -473,17 +473,20 @@ def compute_correlations(X, Y):#, mfs_pos_start_data,
     #print measures_matrix.shape
 
     correls = np.zeros((X.shape[1], Y.shape[1]))
+    pvals = np.zeros((X.shape[1], Y.shape[1]))
     # compute correlations
     for x in range(X.shape[1]):
         for y in range(Y.shape[1]):
-            corr = scipy.stats.stats.spearmanr(X[:, x],
-                                               Y[:, y])[0]
+            corr, pval = scipy.stats.spearmanr(X[:, x],
+                                               Y[:, y])
 
             if not(math.isnan(corr)):
                 correls[x, y] = corr
+                pvals[x, y] = pval
             else:
                 #print "Nan in correlations", x, y
                 correls[x, y] = 0
+                pvals[x, y] = pval
 
     #DEBUG CORRELATIONS:
     #import matplotlib.pyplot as plt
@@ -491,7 +494,7 @@ def compute_correlations(X, Y):#, mfs_pos_start_data,
     #plt.show()
     #print "Higher correlations: ", np.min(correls), np.max(correls)
 
-    return np.min(correls), np.max(correls), correls
+    return np.min(correls), np.max(correls), correls, pvals
 
     #mfs_matrix_normalized = mfs_matrix.copy()
     #measures_matrix_normalized = measures_matrix.copy()
@@ -655,48 +658,49 @@ fexp = np.load('exps/data/fexp.npy')
 sk0 = np.load('exps/data/sk0.npy')
 sk0_17 = sk0[indexes]
 
-fig = plt.figure()
-ax = fig.add_subplot(111, projection='3d')
-p = ax.scatter(sk0_17, bmd17, fexp, s=(4*fexp**2)**2, c="r")
-ax.set_xlabel(r'$SK_{0}$')
-ax.set_ylabel('BMD')
-ax.set_zlabel(r'$F_{exp}$')
+if(True):
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    p = ax.scatter(sk0_17, bmd17, fexp, s=(4*fexp**2)**2, c="r")
+    ax.set_xlabel(r'$SK_{0}$')
+    ax.set_ylabel('BMD')
+    ax.set_zlabel(r'$F_{exp}$')
 
-plt.show()
+    plt.show()
 
-colors=['b', 'c', 'y', 'm', 'r']
+    colors=['b', 'c', 'y', 'm', 'r']
 
-ax = plt.subplot(111, projection='3d')
+    ax = plt.subplot(111, projection='3d')
 
-ax.plot(bmd17, sk0_17, fexp, color=colors[0], label='Fexp')
-#ax.plot(random(10), random(10), random(10), 'o', color=colors[0], label='LoLo')
-#ax.plot(random(10), random(10), random(10), 'o', color=colors[1], label='Lo')
-#ax.plot(random(10), random(10), random(10), 'o', color=colors[2], label='Average')
-#ax.plot(random(10), random(10), random(10), 'o', color=colors[3], label='Hi')
-#ax.plot(random(10), random(10), random(10), 'o', color=colors[4], label='HiHi')
-#ax.plot(random(10), random(10), random(10), 'x', color=colors[4], label='High Outlier')
+    ax.plot(bmd17, sk0_17, fexp, color=colors[0], label='Fexp')
+    #ax.plot(random(10), random(10), random(10), 'o', color=colors[0], label='LoLo')
+    #ax.plot(random(10), random(10), random(10), 'o', color=colors[1], label='Lo')
+    #ax.plot(random(10), random(10), random(10), 'o', color=colors[2], label='Average')
+    #ax.plot(random(10), random(10), random(10), 'o', color=colors[3], label='Hi')
+    #ax.plot(random(10), random(10), random(10), 'o', color=colors[4], label='HiHi')
+    #ax.plot(random(10), random(10), random(10), 'x', color=colors[4], label='High Outlier')
 
-plt.legend(loc='upper left', numpoints=1, ncol=3, fontsize=8, bbox_to_anchor=(0, 0))
+    plt.legend(loc='upper left', numpoints=1, ncol=3, fontsize=8, bbox_to_anchor=(0, 0))
 
-plt.show()
+    plt.show()
 
-# 2D Scatters
-plt.xlabel('BMD')
-plt.ylabel(r'F$^{exp}$')
-plt.scatter(bmd17, fexp)
-plt.show()
+    # 2D Scatters
+    plt.xlabel('BMD')
+    plt.ylabel(r'F$^{exp}$')
+    plt.scatter(bmd17, fexp)
+    plt.show()
 
-#
-plt.xlabel(r'SK$_{0}$')
-plt.ylabel(r'F$^{exp}$')
-plt.scatter(sk0_17, fexp)
-plt.show()
+    #
+    plt.xlabel(r'SK$_{0}$')
+    plt.ylabel(r'F$^{exp}$')
+    plt.scatter(sk0_17, fexp)
+    plt.show()
 
-#
-plt.xlabel(r'SK$_{0}$')
-plt.ylabel('BMD')
-plt.scatter(sk0_17, bmd17)
-plt.show()
+    #
+    plt.xlabel(r'SK$_{0}$')
+    plt.ylabel('BMD')
+    plt.scatter(sk0_17, bmd17)
+    plt.show()
 
 
 
@@ -790,7 +794,7 @@ method_array = [
 
 #print "Auto-correlations:"
 #print "MFS: "
-c1, c2, c = compute_correlations(mfs, mfs)
+c1, c2, c, pv = compute_correlations(mfs, mfs)
 
 mask1 = []
 sums = []
@@ -824,30 +828,44 @@ mask1 = mask1.astype(np.int32)
 sk0 = stats_mfs_pyramid_gradient[:, 36:37]
 np.save('exps/data/sk0.npy', sk0)
 
-exit()
+#exit()
 
-if(False):
-
-    print "Standard Measures intra-correlations:"
-    c1, c2, c = compute_correlations(measures_matrix, measures_matrix)
-
+if(True):
 
     np.set_printoptions(suppress=True)
-    print c
+    print measures_matrix[0]
+
+    print "[0, 7, 5, 6, 2, 4]: BMD MIL Tb.Th	Tb.Sp BV/TV Tb.N"
+
+    idxs = [0, 7, 5, 6, 2, 4]
+    measures_matrix_2 = measures_matrix[:, idxs]
+
+    np.set_printoptions(suppress=True)
+    print measures_matrix_2
+
+    print "Standard Measures intra-correlations:"
+    print "BMD MIL Tb.Th	Tb.Sp BV/TV Tb.N"
+    c1, c2, c, pv = compute_correlations(measures_matrix_2, measures_matrix_2)
+
+    #np.set_printoptions(suppress=True)
+    print "CORRS: ", c
+    print "PVALS: ", pv
 
     print "Multifractal Skewness - Standard Measures : correlations:"
     skew_levels = stats_mfs_pyramid_gradient[:, [6,36,46]]
-    c1, c2, c = compute_correlations(measures_matrix, skew_levels)
+    c1, c2, c, pv = compute_correlations(measures_matrix_2, skew_levels)
 
     np.set_printoptions(suppress=True)
     print c
+    print "PVALS: ", pv
 
     print "Multifractal Skewness intra-correlations:"
     skew_levels = stats_mfs_pyramid_gradient[:, [6,36,46]]
-    c1, c2, c = compute_correlations(skew_levels, skew_levels)
+    c1, c2, c, pv = compute_correlations(skew_levels, skew_levels)
 
     np.set_printoptions(suppress=True)
     print c
+    print "PVALS: ", pv
 
     fexp = np.array(measures_matrix[:, measures_matrix.shape[1] - 1]).reshape(measures_matrix.shape[0],1)
     rest = np.hstack((skew_levels, measures_matrix))
@@ -868,12 +886,13 @@ if(False):
 
     print "Fexp against all correlations:"
     skew_levels = stats_mfs_pyramid_gradient[:, [6,36,46]]
-    #c1, c2, c = compute_correlations(fexp_subset, rest_subset)
+    c1, c2, c, pv = compute_correlations(fexp_subset*1000, rest_subset)
 
     np.set_printoptions(suppress=True)
-#print c
+    print c
+    print "PVALS: ", pv
 
-#exit()
+exit()
 #print "Std Measures: ", compute_correlations(measures_matrix, measures_matrix)
 
 for i in range(len(method_array)):
