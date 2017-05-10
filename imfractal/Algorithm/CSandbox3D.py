@@ -190,7 +190,7 @@ class CSandbox3D (Algorithm):
 
         white_pixels = np.zeros(((Nx-1-2*P) * (Ny-1-2*P) * (Nz-1-2*P), 3))
 
-        print "Selecting points.."
+        #print "Selecting points.."
 
         h = 0
         for i in range(P, Nx-1-P):
@@ -208,7 +208,7 @@ class CSandbox3D (Algorithm):
 
         
         white_pixels = white_pixels[:h]
-        print "Finished selecting points"
+        #print "Finished selecting points"
         if len(white_pixels) == 0 :
             print "EMPTY Volume!!!"
             return np.zeros(self.cant_dims, dtype=np.double)

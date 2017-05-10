@@ -1,3 +1,23 @@
+
+def compilecython():
+    import os
+    arr = [ "imfractal/imfractal/Algorithm/qs3D", "imfractal/imfractal/Algorithm/qs"]
+
+    for i in range(len(arr)):
+
+        command1 = "cython "+arr[i]+".pyx "
+        command2 = "gcc -c -fPIC -I/usr/include/python2.7/ "+arr[i]+".c"+" -o "+arr[i]+".o"
+        command3 = "gcc -shared "+arr[i]+".o -o "+arr[i]+".so"
+
+        print command1
+        os.system(command1)
+        print command2
+        os.system(command2)
+        print command3
+        os.system(command3)
+
+compilecython()
+
 import Image
 import numpy as np
 import os
@@ -34,10 +54,12 @@ def load_synthetic_volume(mask):
 
 
     #padding, mask_ should be bigger than mask
-    print arr.shape
-    print mask.shape
+    #print arr.shape
+    #print mask.shape
+
+
     mask_ = np.zeros(arr.shape)
-    mask_[:mask.shape[0], :mask.shape[1], :mask.shape[2]] = mask
+    mask_[:mask.shape[0], :mask.shape[1], :mask.shape[2]] = mask[:min(mask.shape[0], mask_.shape[0]), :,:]
 
     arr = (255-arr) * (mask_ > 0)
 
@@ -74,7 +96,7 @@ def getFDs(filename, fmask):
 def show_plot(data, synth):
     a_v = data.cumsum()
 
-    print "Amount of white pixels: ", a_v[len(a_v) - 1]
+    #print "Amount of white pixels: ", a_v[len(a_v) - 1]
 
     # debug - to see the spongious structure
     num_imgs = len(os.listdir('/home/rodrigo/result/'))
@@ -100,9 +122,10 @@ def show_plot(data, synth):
     np.save('synth.npy', synth)
 
 def compare(real_data):
-
-    fname = '/home/rodrigo/Documentos/members.imaglabs.org/felix.thomsen/Rodrigo/BioAsset/mats/BA02_120_1Slices.mat'
-    fmask = '/home/rodrigo/Documentos/members.imaglabs.org/felix.thomsen/Rodrigo/BioAsset/mats/BA02_120_1Mask.mat'
+#    path = '/home/rodrigo/Documentos/members.imaglabs.org/felix.thomsen/Rodrigo/BioAsset/mats/'
+    path = ''
+    fname = path+'BA02_120_1Slices.mat'
+    fmask = path+'BA02_120_1Mask.mat'
 
     data, mask = getFDs(fname, fmask)
     synth = load_synthetic_volume(mask)
@@ -110,8 +133,8 @@ def compare(real_data):
 
     show_plot(data, synth)
 
-    print "Data: ", data.shape
-    print "Synthetic: ", synth.shape
+    #print "Data: ", data.shape
+    #print "Synthetic: ", synth.shape
 
     params = {
         "zero": 1,
@@ -140,21 +163,21 @@ def compare(real_data):
     if(len(real_data) > 0):
         fds_real = real_data
     else:
-        print "Computing Sandbox 3D Multifractal Spectrum... (real)"
+        #print "Computing Sandbox 3D Multifractal Spectrum... (real)"
         t =  time.clock()
         fds_real = aux.getFDs('', data)
         t =  time.clock()-t
-        print "Time 3D MFS: ", t
-        print fds_real
+        #print "Time 3D MFS: ", t
+        #print fds_real
 
     plt.plot(fds_real,'-', label = 'Real')
 
-    print "Computing Sandbox 3D Multifractal Spectrum... (synthetic)"
+    #print "Computing Sandbox 3D Multifractal Spectrum... (synthetic)"
     t =  time.clock()
     fds_synth = aux.getFDs('', synth)
     t =  time.clock()-t
-    print "Time 3D MFS: ", t
-    print fds_synth
+    #print "Time 3D MFS: ", t
+    #print fds_synth
 
 
     plt.plot(fds_synth, 'x', label = 'Synth')

@@ -139,7 +139,7 @@ def aux(int P, int total, int Nx, int Ny, int Nz,
 
         slope, _, _, _, _ = scipy.stats.linregress(sizes, (np.log(c) + log_total_1) * q11 - log_m0)
 
-        print slope, " , q: ", q
+        #print slope, " , q: ", q
 
         res[h] = slope
         h+=1
