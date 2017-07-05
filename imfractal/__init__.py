@@ -27,7 +27,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #from Path import Path
 import Algorithm.Sandbox
 
-cython = False
+cython = True
 
 if(cython):
     import Algorithm.CSandbox
@@ -42,6 +42,7 @@ import Algorithm.Local_MFS_3D
 import Algorithm.Local_MFS_Pyramid_3D
 import Algorithm.MFS_3D_Slices
 import Algorithm.Stats_MFS_3D
+import Algorithm.Stats_MFS_Pyramid_3D
 
 
 #SandboxCL = Algorithm.SandboxCL.SandboxCL
@@ -57,6 +58,7 @@ MFS_3D_Slices = Algorithm.MFS_3D_Slices.MFS_3D_Slices
 Local_MFS_3D = Algorithm.Local_MFS_3D.Local_MFS_3D
 Stats_MFS_3D = Algorithm.Stats_MFS_3D.Stats_MFS_3D
 Local_MFS_Pyramid_3D = Algorithm.Local_MFS_Pyramid_3D.Local_MFS_Pyramid_3D
+Stats_MFS_Pyramid_3D = Algorithm.Stats_MFS_Pyramid_3D.Stats_MFS_Pyramid_3D
 Singularity = Algorithm.Singularity.Singularity
 Boxdimension = Algorithm.Boxdimension.Boxdimension
 
