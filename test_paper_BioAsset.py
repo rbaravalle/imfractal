@@ -126,8 +126,38 @@ def csvToNumpy(X):
 
     return X_res
 
+def openMatlab(typ, filename, threshold = 100, adaptive = False):
+
+    import scipy.io as sio
+    arr = np.array(sio.loadmat(filename)[typ])
+    if typ == "False":
+        if adaptive:
+            threshold = self.determine_threshold(arr)
+
+        arr = arr > threshold
+
+        a_v = arr.cumsum()
+
+        print "Amount of white pixels: ", a_v[len(a_v) - 1]
+
+    # debug - to see the spongious structure
+    # plt.imshow((arr[:,:,50]), cmap=plt.gray())
+    # plt.show()
+
+    return arr
+
+#def prec_and_acc(data, f):
+    #return f(data)
+
+
+
 # for Fexp
 #fexp_names = np.load(data_path + 'bioAsset_meta.npy')
+
+# Precision and accuracy test
+#precision_and_accuracy()
+#exit()
+
 
 # Adaptive Metadata and mfs
 measures = recfromcsv('exps/data/BioAssetAdaptiveThresh/default_BioAsset_Adaptive.csv', delimiter=',')
@@ -363,9 +393,9 @@ def compute_linear_model(mfs, measures, output_file="standarized.csv"):
     fexp = measures[:, measures.shape[1]-1]
 
 
-    #print "BMD: ", bmd
+    print "BMD: ", bmd.shape
     #print "FEXP: ", fexp
-    #print "MFS; ", mfs
+    print "MFS; ", mfs.shape
 
     #PCA
     #from sklearn.decomposition import PCA
@@ -373,7 +403,7 @@ def compute_linear_model(mfs, measures, output_file="standarized.csv"):
     #pca.fit(mfs)
     #mfs = pca.transform(mfs)
 
-    X = np.hstack((bmd, mfs))
+    X = np.hstack((bmd.reshape(bmd.shape[0], 1), mfs))
     #clf.fit(X, fexp)
     # Results
     # print "Coefs:", clf.coef_
@@ -655,7 +685,9 @@ from mpl_toolkits.mplot3d import Axes3D
 indexes = np.load('exps/data/valid_fexp_indexes.npy')
 bmd17 = np.load('exps/data/bmd17.npy')
 fexp = np.load('exps/data/fexp.npy')
-sk0 = np.load('exps/data/sk0.npy')
+sk0 = stats_mfs_pyramid_gradient[:, 36:37]
+#sk0 = np.load('exps/data/sk0.npy')
+print sk0.shape
 sk0_17 = sk0[indexes]
 
 if(True):
@@ -683,23 +715,37 @@ if(True):
     plt.legend(loc='upper left', numpoints=1, ncol=3, fontsize=8, bbox_to_anchor=(0, 0))
 
     plt.show()
+    from scipy import stats
+    matplotlib.rc('text', usetex=True) 
 
+    print "BMD17.SHAPE ", bmd17.shape
     # 2D Scatters
     plt.xlabel('BMD')
-    plt.ylabel(r'F$^{exp}$')
+    plt.ylabel(r'F$_{Failure}$')
     plt.scatter(bmd17, fexp)
+    #slope, intercept, r_value, p_value, std_err=stats.linregress(bmd17,fexp)
+    #yvals = np.linspace(fexp.min(),fexp.max())
+    #line = slope * yvals + intercept # This is the critical change
+    #plt.plot(yvals, line, 'r', label="Regression Line", antialiased=True)
+    plt.plot(np.unique(bmd17), np.poly1d(np.polyfit(bmd17, fexp, 1))(np.unique(bmd17)), 'r', label=r'Adj. R$^2$ 0.684, Rob.RMSE = 0.22')
+    plt.legend(loc=2)
     plt.show()
 
     #
-    plt.xlabel(r'SK$_{0}$')
-    plt.ylabel(r'F$^{exp}$')
+    sk0_17 = sk0_17.reshape((17,))
+    print "SK017.SHAPE ", sk0_17.shape
+    plt.xlabel(r"SK$_0$")
+    plt.ylabel(r'F$_{Failure}$')
     plt.scatter(sk0_17, fexp)
+    plt.plot(np.unique(sk0_17), np.poly1d(np.polyfit(sk0_17, fexp, 1))(np.unique(sk0_17)), 'r')
     plt.show()
 
     #
-    plt.xlabel(r'SK$_{0}$')
+    plt.xlabel(r'SK$_0$')
     plt.ylabel('BMD')
     plt.scatter(sk0_17, bmd17)
+    plt.plot(np.unique(sk0_17), np.poly1d(np.polyfit(sk0_17, bmd17, 1))(np.unique(sk0_17)), 'r')
+    plt.legend()
     plt.show()
 
 
@@ -741,7 +787,7 @@ str_method = [
     #"MFS",
     #"Standard Measures",
     #"Normalized MFS",
-    "Gradient MFS",
+    #"Gradient MFS",
     "Stats Pyramid Gradient MFS",
     #"Normalized MFS",
     #"Stats Pyramid MFS",
@@ -768,8 +814,8 @@ method_array = [
     #mfs,
     #measures_npy[:, :-2],
     #mfs_normalized,
-    mfs_gradient,
-    stats_mfs_pyramid_gradient,
+    #mfs_gradient,
+    stats_mfs_pyramid_gradient[:,46:47],
     #mfs_normalized,
     #stats_mfs_pyramid,
     #mfs_local_pyramid,
@@ -826,7 +872,7 @@ mask1 = mask1.astype(np.int32)
 #print mask1
 
 sk0 = stats_mfs_pyramid_gradient[:, 36:37]
-np.save('exps/data/sk0.npy', sk0)
+#np.save('exps/data/sk0.npy', sk0)
 
 #exit()
 
@@ -975,6 +1021,3 @@ for i in range(len(method_array)):
     print aicc1, ' |',  r2_1, '  |',  rob_r2_1, '  | bmd + ', dims_1, "         |", p1, "| ", rmse1,  "| ", rob_rmse1
     print aicc2, ' |',  r2_2, '  |',  rob_r2_2, '  | bmd + ', dims_2, "    |", p2, "| ", rmse2,  "| ", rob_rmse2
     print aicc3, ' |',  r2_3, '  |',  rob_r2_3, '  | bmd + ', dims_3, "|", p3, "| ", rmse3,  "| ", rob_rmse3
-
-
-
