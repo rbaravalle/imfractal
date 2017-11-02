@@ -53,6 +53,18 @@ dolphin_label=2
 
 dDFs  = 5
 
+YIQ = False
+
+def transform_and_eq_hist(im):
+
+    data = np.array(im.getdata()).reshape((im.size[0], im.size[1], 3))
+
+    data = data / 255.0
+
+    I = 0.595716*data[:,:,0] - 0.274453*data[:,:,1] - 0.321263*data[:,:,2]
+
+    return exposure.equalize_hist(I)
+
 def compute_MFS(path_sea, path_dolphin):
     dir_sea  = os.listdir(path_sea)
     dir_dolphin = os.listdir(path_dolphin)
@@ -68,11 +80,25 @@ def compute_MFS(path_sea, path_dolphin):
 
     for i in range(cant_sea):
         filename = path_sea + dir_sea[i]
-        seatrain[i] = ins.getFDs(filename)
+        if(YIQ):
+            # RGB -> YIQ
+            im = Image.open(filename)
+            im_eq = transform_and_eq_hist(im)
+            
+            seatrain[i] = ins.getFDs('', im_eq)
+        else:
+            seatrain[i] = ins.getFDs(filename)
 
     for i in range(cant_dolphin):
         filename = path_dolphin + dir_dolphin[i]
-        dolphintrain[i] = ins.getFDs(filename)
+        if(YIQ):
+            # RGB -> YIQ
+            im = Image.open(filename)
+            im_eq = transform_and_eq_hist(im)
+            
+            seatrain[i] = ins.getFDs('', im_eq)
+        else:
+            dolphintrain[i] = ins.getFDs(filename)
 
     return seatrain, dolphintrain
 
@@ -97,8 +123,8 @@ and os.path.isfile(data_path+"dolphintrain86.npy"):
 else:
     print "Computing MFSs at Resolution 86..."
     
-    path_sea = '/home/deby/spyderws/imfractal-master/images/sea/sample-point-sea86x86/'
-    path_dolphin = '/home/deby/spyderws/imfractal-master/images/sea/sample-point-dolphin86x86/'
+    path_sea = 'images/sea/sample-point-sea86x86/'
+    path_dolphin = 'images/sea/sample-point-dolphin86x86/'
       
     seatrain86, dolphintrain86 = compute_MFS(path_sea, path_dolphin)
 
@@ -258,4 +284,4 @@ def do_test():
     test_cross_val()
     test_train_predict()
     
-do_test()
+#do_test()

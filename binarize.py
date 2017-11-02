@@ -111,10 +111,13 @@ def binarize(filename_img_to_binarize, filename_model, windowSizes, coreSize):
 
         # loop over the sliding window for each layer of the pyramid
         for (col, row, window) in sliding_window(img_np, stepSize, windowSize=(winH,winW)):
+
+
         # if the window does not meet our desired window size, ignore it
             if window.shape[0] != winH or window.shape[1] != winW:
                 continue
-            mfs_window = ins.getFDs("",window)                
+            mfs_window = ins.getFDs("",window)
+            mfs_window = mfs_window.reshape(1, mfs_window.shape[0])
             predicted_value= clf.predict(mfs_window)
 #            print "row {} , col {} ".format(row,col)
 
