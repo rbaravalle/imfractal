@@ -37,38 +37,27 @@ from sklearn import cross_validation
 from sklearn import svm
 from sklearn.model_selection import train_test_split
 from sklearn.externals import joblib
+from skimage import exposure
 
 import numpy as np
 import scipy
 import matplotlib.pyplot as plt
 from scipy import misc
 from scipy.stats import mode
+import argparse
 
 model_directory = "model/"
-path_images = 'images/sea/first/'
-data_path = "exps/data/"
 
-filename_model_RF_tt=model_directory+"RF_tt_{}.pkl"
-filename_model_SVC_tt=model_directory+"SVC_tt_{}.pkl"
+# resolution, YIQ, amount of dfs
+filename_model_RF_tt=model_directory+"RF_tt_{}_{}_{}.pkl"
+filename_model_SVC_tt=model_directory+"SVC_tt_{}_{}_{}.pkl"
 
 sea_label=1
 dolphin_label=2
 
-dDFs  = 5
+true_values = ['t', 'T', '1', 1, 'true', 'True', 'TRUE']
 
-YIQ = False
 
-# detect resolutions
-dirs = os.listdir(path_images)
-resolutions = []
-
-for d in dirs:
-    if 'sea' in d:
-        _, resx = d.split('sea')
-        res, _ = resx.split('x')
-        resolutions.append(res)
-
-resolutions.sort(reverse = True)
 
 def transform_and_eq_hist(im):
 
@@ -80,22 +69,22 @@ def transform_and_eq_hist(im):
 
     return exposure.equalize_hist(I)
 
-def compute_MFS(path_sea, path_dolphin):
+def compute_MFS(path_sea, path_dolphin, dfs, yiq):
     dir_sea  = os.listdir(path_sea)
     dir_dolphin = os.listdir(path_dolphin)
 
     cant_sea = len(dir_sea)
     cant_dolphin = len(dir_dolphin)
 
-    seatrain_i = np.zeros((cant_sea, dDFs)).astype(np.float32)
-    dolphintrain_i = np.zeros((cant_dolphin, dDFs)).astype(np.float32)
+    seatrain_i = np.zeros((cant_sea, dfs)).astype(np.float32)
+    dolphintrain_i = np.zeros((cant_dolphin, dfs)).astype(np.float32)
 
     ins = MFS()
-    ins.setDef(1,dDFs,3)
+    ins.setDef(1,dfs,3)
 
     for i in range(cant_sea):
         filename = path_sea + dir_sea[i]
-        if(YIQ):
+        if(yiq in true_values):
             # RGB -> YIQ
             im = Image.open(filename)
             im_eq = transform_and_eq_hist(im)
@@ -106,12 +95,12 @@ def compute_MFS(path_sea, path_dolphin):
 
     for i in range(cant_dolphin):
         filename = path_dolphin + dir_dolphin[i]
-        if(YIQ):
+        if(yiq in true_values):
             # RGB -> YIQ
             im = Image.open(filename)
             im_eq = transform_and_eq_hist(im)
             
-            seatrain_i[i] = ins.getFDs('', im_eq)
+            dolphintrain_i[i] = ins.getFDs('', im_eq)
         else:
             dolphintrain_i[i] = ins.getFDs(filename)
 
@@ -120,34 +109,44 @@ def compute_MFS(path_sea, path_dolphin):
 
 
 
-def prepare_dataset(seatrain, dolphintrain):
-    i = 0 # FIX ME
-    for r in resolutions:
-        if os.path.isfile(data_path+"seatrain"+str(r)+".npy")  \
-        and os.path.isfile(data_path+"dolphintrain"+str(r)+".npy"):
-            print i, len(seatrain)
-            seatrain[i] = np.load(data_path+"seatrain"+str(r)+".npy")
-            dolphintrain[i] = np.load(data_path+"dolphintrain"+str(r)+".npy")
+def prepare_dataset(seatrain, dolphintrain, resolutions, args):
+    data_path = args.data_path[0]
+    path_images = args.path_images[0]
 
-        else:
-            print "Computing MFSs at Resolution "+str(r)+"..."
-            
-            path_sea = path_images+'sample-point-sea'+str(r)+'x'+str(r)+'/'
-            path_dolphin = path_images+'sample-point-dolphin'+str(r)+'x'+str(r)+'/'
-              
-            seatrain[i], dolphintrain[i] = compute_MFS(path_sea, path_dolphin)
+    print "Using", args.dfs[0], "MFS features"
+    print "Using Data Path:", data_path
+    print "Using Images Path:", path_images
 
-            np.save(data_path+"seatrain"+r+".npy", seatrain[i])
-            np.save(data_path+"dolphintrain"+r+".npy", dolphintrain[i])
 
-        i+=1
+
+    if args.yiq[0] in true_values:
+        print "Computing YIQ transformation"
+
+    for i in range(len(resolutions)):
+        r = resolutions[i]
+        #if os.path.isfile(data_path+"seatrain"+str(r)+".npy")  \
+        #and os.path.isfile(data_path+"dolphintrain"+str(r)+".npy"):
+
+        #    seatrain[i] = np.load(data_path+"seatrain"+str(r)+".npy")
+        #    dolphintrain[i] = np.load(data_path+"dolphintrain"+str(r)+".npy")
+
+        #else:
+        print "Computing MFSs at Resolution "+str(r)+"..."
+        
+        path_sea = path_images+'sample-point-sea'+str(r)+'x'+str(r)+'/'
+        path_dolphin = path_images+'sample-point-dolphin'+str(r)+'x'+str(r)+'/'
+          
+        seatrain[i], dolphintrain[i] = compute_MFS(path_sea, path_dolphin, args.dfs[0], args.yiq[0])
+
+        #np.save(data_path+"seatrain"+r+".npy", seatrain[i])
+        #np.save(data_path+"dolphintrain"+r+".npy", dolphintrain[i])
 
     
     return seatrain, dolphintrain
      
 
 
-def test_model_amount(train_size, seatrain_i, dolphintrain_i, resol):
+def test_model_amount(train_size, seatrain_i, dolphintrain_i, resol, args):
 
     if train_size == 0:
         return
@@ -168,15 +167,18 @@ def test_model_amount(train_size, seatrain_i, dolphintrain_i, resol):
     y_train = np.hstack((y_train_sea, y_train_do))
     y_test = np.hstack((y_test_sea, y_test_do))
 
+    yiq_str = "yiq" if args.yiq[0] in true_values else "no_yiq"
+    dfs_str = str(args.dfs[0])
+
     clf = cfr.fit(X_train, y_train)
-    outdir_clf=filename_model_RF_tt.format(resol)
+    outdir_clf=filename_model_RF_tt.format(resol, yiq_str, dfs_str)
     if not os.path.exists(model_directory):
         os.makedirs(model_directory)
     #print outdir_clf
     joblib.dump(clf, outdir_clf) 
         
     clf2 = cfr2.fit(X_train, y_train)
-    outdir_clf2=filename_model_SVC_tt.format(resol)
+    outdir_clf2=filename_model_SVC_tt.format(resol, yiq_str, dfs_str)
     #print outdir_clf2
     joblib.dump(clf2, outdir_clf2)
     
@@ -185,7 +187,7 @@ def test_model_amount(train_size, seatrain_i, dolphintrain_i, resol):
 
 
 
-def test_path(amount, seatrain_i, dolphintrain_i, resol):
+def test_path(amount, seatrain_i, dolphintrain_i, resol, args):
 
     cant_sea = len(seatrain_i)
     cant_dolphin = len(dolphintrain_i)
@@ -212,41 +214,57 @@ def test_path(amount, seatrain_i, dolphintrain_i, resol):
     
     print "RF, SVM: " + str( round(np.array(scores_rf).mean(),4) ) + " " + str( round(np.array(scores_svm).mean(),4) )
 
-def test_all_resolutions(amount, func, seatrain, dolphintrain):
-    i = 0
-    for r in resolutions:
+def test_all_resolutions(amount, func, seatrain, dolphintrain, resolutions, args):
+    for i in range(len(resolutions)):
+        r = resolutions[i]
         print r, 'x', r
-        func(amount, seatrain[i], dolphintrain[i], r)
-        i+=1
+        func(amount, seatrain[i], dolphintrain[i], r, args)
 
-def test_train_predict(seatrain, dolphintrain):
+def test_train_predict(seatrain, dolphintrain, resolutions, args):
     print " "
     print "########### Training-predicting test"
 
-    for a in range(5,60,5):
+    for a in range(5,60,10):
         print ""
         print a, " samples"
-        test_all_resolutions(a, test_model_amount, seatrain, dolphintrain)
+        test_all_resolutions(a, test_model_amount, seatrain, dolphintrain, resolutions, args)
 
 
-def test_cross_val(seatrain, dolphintrain):
+def test_cross_val(seatrain, dolphintrain, resolutions, args):
     print " "
     print "########### Results with 4-cross validation"
+    print ""
+    print "All samples"
 
-    for a in range(0,40,5):
-        print ""
-        if a == 0:
-            print "All samples"
-        else:
-            print a, " samples"
-        test_all_resolutions(a, test_path, seatrain, dolphintrain)
+    test_all_resolutions(0, test_path, seatrain, dolphintrain, resolutions, args)
   
     
 def do_test():
+    parser = argparse.ArgumentParser(description='Binarize an image using classifiers models')
+    parser.add_argument("-imgs", dest="path_images", type=str, required=True, nargs=1, help="Path with images to be tested")
+    parser.add_argument("-data", dest="data_path", type=str, required=True, nargs=1, help="Path where data will be saved")
+    parser.add_argument("-dfs", dest="dfs", type=int, required=True, nargs=1, help="Amount of MFS dimensions per MFS")
+    parser.add_argument("-yiq", dest="yiq", type=str, required=True, nargs=1, help="Convert data to YIQ, and use only I channel")
+    
+    args = parser.parse_args()
+
+    # detect resolutions
+    dirs = os.listdir(args.path_images[0])
+    resolutions = []
+
+    for d in dirs:
+        if 'sea' in d:
+            _, resx = d.split('sea')
+            res, _ = resx.split('x')
+            resolutions.append(res)
+
+    resolutions.sort(reverse = True)
+
     seatrain = [[] for i in range(len(resolutions))]
     dolphintrain = [[] for i in range(len(resolutions))]
 
-    seatrain, dolphintrain = prepare_dataset(seatrain, dolphintrain)
-    test_cross_val(seatrain, dolphintrain)
-    test_train_predict(seatrain, dolphintrain)
+    seatrain, dolphintrain = prepare_dataset(seatrain, dolphintrain, resolutions, args)
+
+    test_cross_val(seatrain, dolphintrain, resolutions, args)
+    test_train_predict(seatrain, dolphintrain, resolutions, args)
     
