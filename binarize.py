@@ -31,9 +31,7 @@ from scipy.stats import mode
 
 sea_label=1
 dolphin_label=2
-
-dDFs  = 5
-
+true_values = ['t', 'T', '1', 1, 'true', 'True', 'TRUE']
 
 parser = argparse.ArgumentParser(description='Binarize an image using classifiers models')
 parser.add_argument("-ws", dest="windowSizes", type=int, required=True, nargs='+', help="Sizes in pixels for sliding windows. Must be corresponding to the ws used in the classification model given")
@@ -42,8 +40,13 @@ parser.add_argument("-c", dest="classifier", type=str, required=True, nargs='+',
 parser.add_argument("-t", dest="training", type=str, required=True, nargs='+', help="Type of classification training: tt (training and test) or cv (cross validation)")
 parser.add_argument("-i", dest="images", type=str, required=True, nargs='+', help=".jpg files image to be binarized")
 parser.add_argument("-core", dest="core", type=float, required=True, nargs='+', help="Size in pixels or percentage expressed as decimal for the sliding window core where is putted the result of the classification.")
+parser.add_argument("-dfs", dest="dfs", type=int, required=True, nargs=1, help="Amount of fractal dimensions in the MFS")
+parser.add_argument("-yiq", dest="yiq", type=str, required=True, nargs=1, help="Transform to YIQ or not")
 
 args = parser.parse_args()
+
+yiq_str = "yiq" if args.yiq[0] in true_values else "no_yiq"
+dfs_str = str(args.dfs[0])
 
 
 def sliding_window(image, stepSize, windowSize):
@@ -79,10 +82,11 @@ def binarize(filename_img_to_binarize, filename_model, windowSizes, coreSize):
 
     #seteo MFS igual al que use cuando entrené los clasificadores
     ins = MFS()
-    ins.setDef(1,dDFs,3)
+    ins.setDef(1,args.dfs[0],3)
     
     #string con los tamaños de ventanas usadas. lo uso para concatenarlo al nombre del archivo de imagen "binarizado"
     wsrealized=""
+
     
     for s in range(len(windowSizes)):
         
@@ -92,7 +96,7 @@ def binarize(filename_img_to_binarize, filename_model, windowSizes, coreSize):
 
         #levanto modelo del clasificador segun tamano de grilla 
         if filename_model != '':
-            filename_model_size=filename_model.format(winSize)
+            filename_model_size=filename_model.format(winSize, yiq_str, dfs_str)
             clf = joblib.load(filename_model_size)
         else:
             print "Must specify a filename_model"
@@ -168,7 +172,7 @@ def binarize(filename_img_to_binarize, filename_model, windowSizes, coreSize):
     #make new file name to save the binarized images
     orginalfn=os.path.basename(filename_img_to_binarize)
             
-    binarized_dolphinfn="{}_dolphin_{}_{}_n{}{}{}".format(os.path.splitext(orginalfn)[0],args.classifier[0],args.training[0], str(coreSize),wsrealized,os.path.splitext(orginalfn)[1])
+    binarized_dolphinfn="{}_dolphin_{}_{}_n{}{}_{}_{}{}".format(os.path.splitext(orginalfn)[0],args.classifier[0],args.training[0], str(coreSize),wsrealized,yiq_str,dfs_str,os.path.splitext(orginalfn)[1])
     outdirfn="{}/{}".format(outdir,binarized_dolphinfn)
     
     im_binarized= Image.fromarray(dolphin_masked_img)
@@ -176,7 +180,7 @@ def binarize(filename_img_to_binarize, filename_model, windowSizes, coreSize):
     print 'saving '+ outdirfn
     
     
-    binarized_seafn="{}_sea_{}_{}_n{}{}{}".format(os.path.splitext(orginalfn)[0],args.classifier[0],args.training[0], str(coreSize),wsrealized,os.path.splitext(orginalfn)[1])
+    binarized_seafn="{}_sea_{}_{}_n{}{}_{}_{}{}".format(os.path.splitext(orginalfn)[0],args.classifier[0],args.training[0], str(coreSize),wsrealized,yiq_str,dfs_str,os.path.splitext(orginalfn)[1])
     outdirfn="{}/{}".format(outdir,binarized_seafn)
     
     im_binarized= Image.fromarray(sea_masked_img)
@@ -189,7 +193,7 @@ def do_test():
     print args.classifier[0]
     print args.training[0]
     
-    filename_model = args.path_models[0] + "/"+ args.classifier[0] +"_"+ args.training[0] +"_{}.pkl"
+    filename_model = args.path_models[0] + "/"+ args.classifier[0] +"_"+ args.training[0] +"_{}_{}_{}.pkl"
         
     for filename_img_to_binarize in args.images:
             binarize(filename_img_to_binarize, filename_model, args.windowSizes, args.core[0])            
