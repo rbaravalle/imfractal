@@ -174,12 +174,12 @@ def test_model_amount(train_percentage, seatrain_i, dolphintrain_i, resol, args)
     outdir_clf=filename_model_RF_tt.format(resol, yiq_str, dfs_str)
     if not os.path.exists(model_directory):
         os.makedirs(model_directory)
-    #print outdir_clf
+    print "Saving classifier...",  outdir_clf
     joblib.dump(clf, outdir_clf) 
         
     clf2 = cfr2.fit(X_train, y_train)
     outdir_clf2=filename_model_SVC_tt.format(resol, yiq_str, dfs_str)
-    #print outdir_clf2
+    print "Saving classifier...", outdir_clf2
     joblib.dump(clf2, outdir_clf2)
     
     print "RF, SVM: " + str( round(clf.score(X_test, y_test), 4) ) + " " + str( round(clf2.score(X_test, y_test), 4) )
@@ -209,10 +209,10 @@ def test_path(amount, seatrain_i, dolphintrain_i, resol, args):
     labels_dolphin = np.zeros(len(dolphintrain_i)) + 2
     labels = np.hstack((labels_sea, labels_dolphin))
 
-    scores_rf = cross_validation.cross_val_score(cfr, data, labels, cv=4)
-    scores_svm = cross_validation.cross_val_score(cfr2, data, labels, cv=4)
+    scores_rf = cross_validation.cross_val_score(cfr, data, labels, cv=10)
+    scores_svm = cross_validation.cross_val_score(cfr2, data, labels, cv=10)
     
-    print "RF, SVM: " + str( round(np.array(scores_rf).mean(),4) ) + " " + str( round(np.array(scores_svm).mean(),4) )
+    print "RF, SVM: " + str( round(np.array(scores_rf).mean(),10) ) + " " + str( round(np.array(scores_svm).mean(),10) )
 
 def test_all_resolutions(amount, func, seatrain, dolphintrain, resolutions, args):
     for i in range(len(resolutions)):
@@ -233,7 +233,7 @@ def test_train_predict(seatrain, dolphintrain, resolutions, args):
 
 def test_cross_val(seatrain, dolphintrain, resolutions, args):
     print " "
-    print "########### Results with 4-cross validation"
+    print "########### Results with 10-cross validation (90% train)"
     print ""
     print "All samples"
 
