@@ -146,9 +146,9 @@ def prepare_dataset(seatrain, dolphintrain, resolutions, args):
      
 
 
-def test_model_amount(train_size, seatrain_i, dolphintrain_i, resol, args):
+def test_model_amount(train_percentage, seatrain_i, dolphintrain_i, resol, args):
 
-    if train_size == 0:
+    if train_percentage == 0:
         return
 
     cfr = RandomForestClassifier(n_estimators=100)
@@ -159,8 +159,8 @@ def test_model_amount(train_size, seatrain_i, dolphintrain_i, resol, args):
     labels_dolphin = np.zeros(len(dolphintrain_i)) + dolphin_label
     labels = np.hstack((labels_sea, labels_dolphin))
     
-    X_train_sea, X_test_sea, y_train_sea, y_test_sea = train_test_split(seatrain_i, labels_sea, train_size=min(train_size,len(seatrain_i)), random_state=0)
-    X_train_do, X_test_do, y_train_do, y_test_do = train_test_split(dolphintrain_i, labels_dolphin, train_size=min(train_size,len(dolphintrain_i)), random_state=0)
+    X_train_sea, X_test_sea, y_train_sea, y_test_sea = train_test_split(seatrain_i, labels_sea, train_size=train_percentage, random_state=0)
+    X_train_do, X_test_do, y_train_do, y_test_do = train_test_split(dolphintrain_i, labels_dolphin, train_size=train_percentage, random_state=0)
 
     X_train = np.vstack((X_train_sea, X_train_do))
     X_test = np.vstack((X_test_sea, X_test_do))
@@ -224,10 +224,11 @@ def test_train_predict(seatrain, dolphintrain, resolutions, args):
     print " "
     print "########### Training-predicting test"
 
-    for a in range(5,60,10):
-        print ""
-        print a, " samples"
-        test_all_resolutions(a, test_model_amount, seatrain, dolphintrain, resolutions, args)
+    #for a in range(5,60,10):
+    #    print ""
+    #    print a, " samples"
+    percentage_train = args.percentage_train[0]
+    test_all_resolutions(percentage_train, test_model_amount, seatrain, dolphintrain, resolutions, args)
 
 
 def test_cross_val(seatrain, dolphintrain, resolutions, args):
@@ -245,6 +246,7 @@ def do_test():
     parser.add_argument("-data", dest="data_path", type=str, required=True, nargs=1, help="Path where data will be saved")
     parser.add_argument("-dfs", dest="dfs", type=int, required=True, nargs=1, help="Amount of MFS dimensions per MFS")
     parser.add_argument("-yiq", dest="yiq", type=str, required=True, nargs=1, help="Convert data to YIQ, and use only I channel")
+    parser.add_argument("-ptrain", dest="percentage_train", type=float, required=True, nargs=1, help="Percentage of dataset to be used for training (float)")
     
     args = parser.parse_args()
 
