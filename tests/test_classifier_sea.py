@@ -48,18 +48,19 @@ import argparse
 
 model_directory = "model/"
 
-# resolution, YIQ, amount of dfs
+# resolution, transform, amount of dfs
 filename_model_RF_tt=model_directory+"RF_tt_{}_{}_{}.pkl"
 filename_model_SVC_tt=model_directory+"SVC_tt_{}_{}_{}.pkl"
 
 sea_label=1
 dolphin_label=2
 
+transformation_values = ["YIQ", "R", "G", "B"]
 true_values = ['t', 'T', '1', 1, 'true', 'True', 'TRUE']
 
 
 
-def transform_and_eq_hist(im):
+def transform_yiq_and_eq_hist(im):
 
     data = np.array(im.getdata()).reshape((im.size[0], im.size[1], 3))
 
@@ -69,7 +70,61 @@ def transform_and_eq_hist(im):
 
     return exposure.equalize_hist(I)
 
-def compute_MFS(path_sea, path_dolphin, dfs, yiq):
+
+def transform_r_and_eq_hist(im):
+
+    data = np.array(im.getdata()).reshape((im.size[0], im.size[1], 3))
+
+    data = data / 255.0
+
+    R = data[:,:,0]
+
+    return R
+
+def transform_g_and_eq_hist(im):
+
+    data = np.array(im.getdata()).reshape((im.size[0], im.size[1], 3))
+
+    data = data / 255.0
+
+    G = data[:,:,1]
+
+    return G
+
+def transform_b_and_eq_hist(im):
+
+    data = np.array(im.getdata()).reshape((im.size[0], im.size[1], 3))
+
+    data = data / 255.0
+
+    B = data[:,:,2]
+
+    return B
+
+# transform image to other color space given filename
+def transform_f(filename, transformation):
+
+    im = Image.open(filename)
+
+    if transformation == "YIQ":
+        return transform_yiq_and_eq_hist(im)
+
+    if transformation == "R":
+        return transform_r_and_eq_hist(im)
+
+    if transformation == "G":
+        return transform_g_and_eq_hist(im)
+
+    if transformation == "B":
+        return transform_b_and_eq_hist(im)
+
+    print "ERROR: inexistent transformation"
+    exit()
+
+def compute_MFS(path_sea, path_dolphin, args):
+    dfs = args.dfs[0]
+    transform = args.transform[0]
+
     dir_sea  = os.listdir(path_sea)
     dir_dolphin = os.listdir(path_dolphin)
 
@@ -84,22 +139,16 @@ def compute_MFS(path_sea, path_dolphin, dfs, yiq):
 
     for i in range(cant_sea):
         filename = path_sea + dir_sea[i]
-        if(yiq in true_values):
-            # RGB -> YIQ
-            im = Image.open(filename)
-            im_eq = transform_and_eq_hist(im)
-            
+        if(transform in transformation_values):
+            im_eq = transform_f(filename, transform)
             seatrain_i[i] = ins.getFDs('', im_eq)
         else:
             seatrain_i[i] = ins.getFDs(filename)
 
     for i in range(cant_dolphin):
         filename = path_dolphin + dir_dolphin[i]
-        if(yiq in true_values):
-            # RGB -> YIQ
-            im = Image.open(filename)
-            im_eq = transform_and_eq_hist(im)
-            
+        if(transform in transformation_values):
+            im_eq = transform_f(filename, transform)
             dolphintrain_i[i] = ins.getFDs('', im_eq)
         else:
             dolphintrain_i[i] = ins.getFDs(filename)
@@ -119,8 +168,10 @@ def prepare_dataset(seatrain, dolphintrain, resolutions, args):
 
 
 
-    if args.yiq[0] in true_values:
-        print "Computing YIQ transformation"
+    if args.transform[0] in transformation_values:
+        print "Computing", args.transform[0], "transformation"
+    else:
+        print "No transformation computed"
 
     for i in range(len(resolutions)):
         r = resolutions[i]
@@ -136,7 +187,7 @@ def prepare_dataset(seatrain, dolphintrain, resolutions, args):
         path_sea = path_images+'sample-point-sea'+str(r)+'x'+str(r)+'/'
         path_dolphin = path_images+'sample-point-dolphin'+str(r)+'x'+str(r)+'/'
           
-        seatrain[i], dolphintrain[i] = compute_MFS(path_sea, path_dolphin, args.dfs[0], args.yiq[0])
+        seatrain[i], dolphintrain[i] = compute_MFS(path_sea, path_dolphin, args)
 
         #np.save(data_path+"seatrain"+r+".npy", seatrain[i])
         #np.save(data_path+"dolphintrain"+r+".npy", dolphintrain[i])
@@ -167,25 +218,23 @@ def test_model_amount(train_percentage, seatrain_i, dolphintrain_i, resol, args)
     y_train = np.hstack((y_train_sea, y_train_do))
     y_test = np.hstack((y_test_sea, y_test_do))
 
-    yiq_str = "yiq" if args.yiq[0] in true_values else "no_yiq"
+    tr = args.transform[0]
+    transform_str = tr if tr in transformation_values else "no_transform"
     dfs_str = str(args.dfs[0])
 
     clf = cfr.fit(X_train, y_train)
-    outdir_clf=filename_model_RF_tt.format(resol, yiq_str, dfs_str)
+    outdir_clf=filename_model_RF_tt.format(resol, transform_str, dfs_str)
     if not os.path.exists(model_directory):
         os.makedirs(model_directory)
     print "Saving classifier...",  outdir_clf
     joblib.dump(clf, outdir_clf) 
         
     clf2 = cfr2.fit(X_train, y_train)
-    outdir_clf2=filename_model_SVC_tt.format(resol, yiq_str, dfs_str)
+    outdir_clf2=filename_model_SVC_tt.format(resol, transform_str, dfs_str)
     print "Saving classifier...", outdir_clf2
     joblib.dump(clf2, outdir_clf2)
     
     print "RF, SVM: " + str( round(clf.score(X_test, y_test), 4) ) + " " + str( round(clf2.score(X_test, y_test), 4) )
-        
-
-
 
 def test_path(amount, seatrain_i, dolphintrain_i, resol, args):
 
@@ -212,7 +261,7 @@ def test_path(amount, seatrain_i, dolphintrain_i, resol, args):
     scores_rf = cross_validation.cross_val_score(cfr, data, labels, cv=10)
     scores_svm = cross_validation.cross_val_score(cfr2, data, labels, cv=10)
     
-    print "RF, SVM: " + str( round(np.array(scores_rf).mean(),10) ) + " " + str( round(np.array(scores_svm).mean(),10) )
+    print "RF, SVM: " + str( round(np.array(scores_rf).mean(),4) ) + " " + str( round(np.array(scores_svm).mean(),4) )
 
 def test_all_resolutions(amount, func, seatrain, dolphintrain, resolutions, args):
     for i in range(len(resolutions)):
@@ -224,9 +273,6 @@ def test_train_predict(seatrain, dolphintrain, resolutions, args):
     print " "
     print "########### Training-predicting test"
 
-    #for a in range(5,60,10):
-    #    print ""
-    #    print a, " samples"
     percentage_train = args.percentage_train[0]
     test_all_resolutions(percentage_train, test_model_amount, seatrain, dolphintrain, resolutions, args)
 
@@ -245,7 +291,7 @@ def do_test():
     parser.add_argument("-imgs", dest="path_images", type=str, required=True, nargs=1, help="Path with images to be tested")
     parser.add_argument("-data", dest="data_path", type=str, required=True, nargs=1, help="Path where data will be saved")
     parser.add_argument("-dfs", dest="dfs", type=int, required=True, nargs=1, help="Amount of MFS dimensions per MFS")
-    parser.add_argument("-yiq", dest="yiq", type=str, required=True, nargs=1, help="Convert data to YIQ, and use only I channel")
+    parser.add_argument("-tr", dest="transform", type=str, required=True, nargs=1, help="Convert data. Specify transformation (Y(I)Q, R, G, B) or no transformation")
     parser.add_argument("-ptrain", dest="percentage_train", type=float, required=True, nargs=1, help="Percentage of dataset to be used for training (float)")
     
     args = parser.parse_args()

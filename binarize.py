@@ -32,6 +32,7 @@ from scipy.stats import mode
 sea_label=1
 dolphin_label=2
 true_values = ['t', 'T', '1', 1, 'true', 'True', 'TRUE']
+transformation_values = ["YIQ", "R", "G", "B"]
 
 parser = argparse.ArgumentParser(description='Binarize an image using classifiers models')
 parser.add_argument("-ws", dest="windowSizes", type=int, required=True, nargs='+', help="Sizes in pixels for sliding windows. Must be corresponding to the ws used in the classification model given")
@@ -41,11 +42,12 @@ parser.add_argument("-t", dest="training", type=str, required=True, nargs='+', h
 parser.add_argument("-i", dest="images", type=str, required=True, nargs='+', help=".jpg files image to be binarized")
 parser.add_argument("-core", dest="core", type=float, required=True, nargs='+', help="Size in pixels or percentage expressed as decimal for the sliding window core where is putted the result of the classification.")
 parser.add_argument("-dfs", dest="dfs", type=int, required=True, nargs=1, help="Amount of fractal dimensions in the MFS")
-parser.add_argument("-yiq", dest="yiq", type=str, required=True, nargs=1, help="Transform to YIQ or not")
+parser.add_argument("-tr", dest="transformation", type=str, required=True, nargs=1, help="Transform or not")
 
 args = parser.parse_args()
 
-yiq_str = "yiq" if args.yiq[0] in true_values else "no_yiq"
+tr = args.transformation[0]
+transformation_str = tr if tr in transformation_values else "no_transformation"
 dfs_str = str(args.dfs[0])
 
 
@@ -96,8 +98,9 @@ def binarize(filename_img_to_binarize, filename_model, windowSizes, coreSize):
 
         #levanto modelo del clasificador segun tamano de grilla 
         if filename_model != '':
-            filename_model_size=filename_model.format(winSize, yiq_str, dfs_str)
+            filename_model_size=filename_model.format(winSize, transformation_str, dfs_str)
             clf = joblib.load(filename_model_size)
+            print "Using", filename_model_size, "trained model"
         else:
             print "Must specify a filename_model"
             exit()
@@ -172,7 +175,7 @@ def binarize(filename_img_to_binarize, filename_model, windowSizes, coreSize):
     #make new file name to save the binarized images
     orginalfn=os.path.basename(filename_img_to_binarize)
             
-    binarized_dolphinfn="{}_dolphin_{}_{}_n{}{}_{}_{}{}".format(os.path.splitext(orginalfn)[0],args.classifier[0],args.training[0], str(coreSize),wsrealized,yiq_str,dfs_str,os.path.splitext(orginalfn)[1])
+    binarized_dolphinfn="{}_dolphin_{}_{}_n{}{}_{}_{}{}".format(os.path.splitext(orginalfn)[0],args.classifier[0],args.training[0], str(coreSize),wsrealized,transformation_str,dfs_str,os.path.splitext(orginalfn)[1])
     outdirfn="{}/{}".format(outdir,binarized_dolphinfn)
     
     im_binarized= Image.fromarray(dolphin_masked_img)
@@ -180,7 +183,7 @@ def binarize(filename_img_to_binarize, filename_model, windowSizes, coreSize):
     print 'saving '+ outdirfn
     
     
-    binarized_seafn="{}_sea_{}_{}_n{}{}_{}_{}{}".format(os.path.splitext(orginalfn)[0],args.classifier[0],args.training[0], str(coreSize),wsrealized,yiq_str,dfs_str,os.path.splitext(orginalfn)[1])
+    binarized_seafn="{}_sea_{}_{}_n{}{}_{}_{}{}".format(os.path.splitext(orginalfn)[0],args.classifier[0],args.training[0], str(coreSize),wsrealized,transformation_str,dfs_str,os.path.splitext(orginalfn)[1])
     outdirfn="{}/{}".format(outdir,binarized_seafn)
     
     im_binarized= Image.fromarray(sea_masked_img)
