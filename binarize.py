@@ -32,7 +32,7 @@ from scipy.stats import mode
 sea_label=1
 dolphin_label=2
 true_values = ['t', 'T', '1', 1, 'true', 'True', 'TRUE']
-transformation_values = ["YIQ", "R", "G", "B"]
+transformation_values = ["YIQ", "R", "G", "B", "lab"]
 
 parser = argparse.ArgumentParser(description='Binarize an image using classifiers models')
 parser.add_argument("-ws", dest="windowSizes", type=int, required=True, nargs='+', help="Sizes in pixels for sliding windows. Must be corresponding to the ws used in the classification model given")

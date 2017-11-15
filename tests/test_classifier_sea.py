@@ -38,6 +38,7 @@ from sklearn import svm
 from sklearn.model_selection import train_test_split
 from sklearn.externals import joblib
 from skimage import exposure
+from skimage import io, color
 
 import numpy as np
 import scipy
@@ -55,12 +56,13 @@ filename_model_SVC_tt=model_directory+"SVC_tt_{}_{}_{}.pkl"
 sea_label=1
 dolphin_label=2
 
-transformation_values = ["YIQ", "R", "G", "B"]
+transformation_values = ["YIQ", "R", "G", "B", "lab"]
 true_values = ['t', 'T', '1', 1, 'true', 'True', 'TRUE']
 
 
 
-def transform_yiq_and_eq_hist(im):
+def transform_yiq_and_eq_hist(filename, ins):
+    im = Image.open(filename)
 
     data = np.array(im.getdata()).reshape((im.size[0], im.size[1], 3))
 
@@ -68,10 +70,12 @@ def transform_yiq_and_eq_hist(im):
 
     I = 0.595716*data[:,:,0] - 0.274453*data[:,:,1] - 0.321263*data[:,:,2]
 
-    return exposure.equalize_hist(I)
+    im = exposure.equalize_hist(I)
+    return ins.getFDs('', im)
 
 
-def transform_r_and_eq_hist(im):
+def transform_r_and_eq_hist(filename, ins):
+    im = Image.open(filename)
 
     data = np.array(im.getdata()).reshape((im.size[0], im.size[1], 3))
 
@@ -79,9 +83,10 @@ def transform_r_and_eq_hist(im):
 
     R = data[:,:,0]
 
-    return R
+    return ins.getFDs('', R)
 
-def transform_g_and_eq_hist(im):
+def transform_g_and_eq_hist(filename, ins):
+    im = Image.open(filename)
 
     data = np.array(im.getdata()).reshape((im.size[0], im.size[1], 3))
 
@@ -89,9 +94,10 @@ def transform_g_and_eq_hist(im):
 
     G = data[:,:,1]
 
-    return G
+    return ins.getFDs('', G)
 
-def transform_b_and_eq_hist(im):
+def transform_b_and_eq_hist(filename, ins):
+    im = Image.open(filename)
 
     data = np.array(im.getdata()).reshape((im.size[0], im.size[1], 3))
 
@@ -99,24 +105,37 @@ def transform_b_and_eq_hist(im):
 
     B = data[:,:,2]
 
-    return B
+    return ins.getFDs('', B)
+
+# Lab color space
+def transform_lab_and_eq_hist(filename, ins):
+    rgb = io.imread(filename)
+
+    lab = color.rgb2lab(rgb)
+
+    l = lab[:,:,0]
+    a = lab[:,:,1]
+    b = lab[:,:,2]
+      
+    return ins.getFDs('', l) + ins.getFDs('', a) + ins.getFDs('', b)
 
 # transform image to other color space given filename
-def transform_f(filename, transformation):
-
-    im = Image.open(filename)
+def transform_f(filename, transformation, ins):
 
     if transformation == "YIQ":
-        return transform_yiq_and_eq_hist(im)
+        return transform_yiq_and_eq_hist(filename, ins)
 
     if transformation == "R":
-        return transform_r_and_eq_hist(im)
+        return transform_r_and_eq_hist(filename, ins)
 
     if transformation == "G":
-        return transform_g_and_eq_hist(im)
+        return transform_g_and_eq_hist(filename, ins)
 
     if transformation == "B":
-        return transform_b_and_eq_hist(im)
+        return transform_b_and_eq_hist(filename, ins)
+
+    if transformation == "lab":
+        return transform_lab_and_eq_hist(filename, ins)
 
     print "ERROR: inexistent transformation"
     exit()
@@ -131,8 +150,8 @@ def compute_MFS(path_sea, path_dolphin, args):
     cant_sea = len(dir_sea)
     cant_dolphin = len(dir_dolphin)
 
-    seatrain_i = np.zeros((cant_sea, dfs)).astype(np.float32)
-    dolphintrain_i = np.zeros((cant_dolphin, dfs)).astype(np.float32)
+    seatrain_i = [[] for i in range(cant_sea)] #np.zeros((cant_sea, dfs)).astype(np.float32)
+    dolphintrain_i = [[] for i in range(cant_dolphin)] #np.zeros((cant_dolphin, dfs)).astype(np.float32)
 
     ins = MFS()
     ins.setDef(1,dfs,3)
@@ -140,20 +159,18 @@ def compute_MFS(path_sea, path_dolphin, args):
     for i in range(cant_sea):
         filename = path_sea + dir_sea[i]
         if(transform in transformation_values):
-            im_eq = transform_f(filename, transform)
-            seatrain_i[i] = ins.getFDs('', im_eq)
+            seatrain_i[i] = transform_f(filename, transform, ins)
         else:
             seatrain_i[i] = ins.getFDs(filename)
 
     for i in range(cant_dolphin):
         filename = path_dolphin + dir_dolphin[i]
         if(transform in transformation_values):
-            im_eq = transform_f(filename, transform)
-            dolphintrain_i[i] = ins.getFDs('', im_eq)
+            dolphintrain_i[i] = transform_f(filename, transform, ins)
         else:
             dolphintrain_i[i] = ins.getFDs(filename)
 
-    return seatrain_i, dolphintrain_i
+    return np.array(seatrain_i).reshape(cant_sea,len(seatrain_i[0])), np.array(dolphintrain_i).reshape(cant_dolphin,len(dolphintrain_i[0]))
 
 
 
@@ -291,7 +308,7 @@ def do_test():
     parser.add_argument("-imgs", dest="path_images", type=str, required=True, nargs=1, help="Path with images to be tested")
     parser.add_argument("-data", dest="data_path", type=str, required=True, nargs=1, help="Path where data will be saved")
     parser.add_argument("-dfs", dest="dfs", type=int, required=True, nargs=1, help="Amount of MFS dimensions per MFS")
-    parser.add_argument("-tr", dest="transform", type=str, required=True, nargs=1, help="Convert data. Specify transformation (Y(I)Q, R, G, B) or no transformation")
+    parser.add_argument("-tr", dest="transform", type=str, required=True, nargs=1, help="Convert data. Specify transformation " + ', '.join(transformation_values) + " or no transformation")
     parser.add_argument("-ptrain", dest="percentage_train", type=float, required=True, nargs=1, help="Percentage of dataset to be used for training (float)")
     
     args = parser.parse_args()
