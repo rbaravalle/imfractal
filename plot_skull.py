@@ -33,14 +33,15 @@ def cross_v(mfss):
 def main():
     parser = argparse.ArgumentParser(description='Test '+str(Nc)+'-cross validation of mfss classes')
     parser.add_argument("-npy", dest="npy", type=str, required=True, nargs=1, help="npy you want to test")
-    parser.add_argument("-plot", dest="plot", type=str, required=False, nargs=1, help="Plot or not")
+    parser.add_argument("--plot", nargs='?', default='F', dest="plot", help="Plot if specified")
 
     args = parser.parse_args()
 
     mfss = np.load(args.npy[0])
     cross_v(mfss)
 
-    if args.plot:
+    #FIXME
+    if type(args.plot) != str:
         plot(args.npy[0])
 
 def plot(npy):
@@ -48,8 +49,10 @@ def plot(npy):
     for i in range(mfss.shape[0]):
         for j in range(len(mfss[i])):
             x = np.array(mfss[i][j])
-            print x
-            plt.plot(x, color='C'+str(i%10))
+            if i > 10:
+                plt.plot(x, '--o', color='C'+str(i%10))
+            else:
+                plt.plot(x, '-x', color='C'+str(i%10))
     plt.title('All samples')
     plt.show()
 
