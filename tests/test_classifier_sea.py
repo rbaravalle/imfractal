@@ -217,6 +217,7 @@ def prepare_dataset(seatrain, dolphintrain, resolutions, args):
 def test_model_amount(train_percentage, seatrain_i, dolphintrain_i, resol, args):
 
     if train_percentage == 0:
+        print "ZERO!"
         return
 
     cfr = RandomForestClassifier(n_estimators=100)
@@ -324,6 +325,7 @@ def do_test():
             resolutions.append(res)
 
     resolutions.sort(reverse = True)
+
 
     seatrain = [[] for i in range(len(resolutions))]
     dolphintrain = [[] for i in range(len(resolutions))]

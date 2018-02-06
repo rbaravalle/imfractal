@@ -43,12 +43,18 @@ parser.add_argument("-i", dest="images", type=str, required=True, nargs='+', hel
 parser.add_argument("-core", dest="core", type=float, required=True, nargs='+', help="Size in pixels or percentage expressed as decimal for the sliding window core where is putted the result of the classification.")
 parser.add_argument("-dfs", dest="dfs", type=int, required=True, nargs=1, help="Amount of fractal dimensions in the MFS")
 parser.add_argument("-tr", dest="transformation", type=str, required=True, nargs=1, help="Transform or not")
+parser.add_argument("-o", dest="output_folder", type=str, required=True, nargs=1, help="Output folder for binarized images")
 
 args = parser.parse_args()
 
 tr = args.transformation[0]
 transformation_str = tr if tr in transformation_values else "no_transformation"
 dfs_str = str(args.dfs[0])
+
+# create directory if it does not exist
+def create_dir_if_not_exists(directory):
+  if not os.path.exists(directory):
+    os.makedirs(directory)
 
 
 def sliding_window(image, stepSize, windowSize):
@@ -60,8 +66,9 @@ def sliding_window(image, stepSize, windowSize):
             yield (x, y, image[y:y + windowSize[0], x:x + windowSize[1]])
 
 
-def binarize(filename_img_to_binarize, filename_model, windowSizes, coreSize):
+def binarize(filename_img_to_binarize, filename_model, windowSizes, coreSize, output_dir):
 
+    print "BINARIZE!:", filename_img_to_binarize
     #levanto imagen a binarizar
     img = []
     if filename_img_to_binarize != '':
@@ -171,24 +178,26 @@ def binarize(filename_img_to_binarize, filename_model, windowSizes, coreSize):
 #    plt.show()
 
     #path
+
     outdir=os.path.dirname(filename_img_to_binarize)
+    print "OUT:", filename_img_to_binarize, outdir, output_dir
     #make new file name to save the binarized images
     orginalfn=os.path.basename(filename_img_to_binarize)
             
     binarized_dolphinfn="{}_dolphin_{}_{}_n{}{}_{}_{}{}".format(os.path.splitext(orginalfn)[0],args.classifier[0],args.training[0], str(coreSize),wsrealized,transformation_str,dfs_str,os.path.splitext(orginalfn)[1])
-    outdirfn="{}/{}".format(outdir,binarized_dolphinfn)
+    outdirfn="{}/{}".format(output_dir,binarized_dolphinfn)
     
     im_binarized= Image.fromarray(dolphin_masked_img)
     im_binarized.save(outdirfn)
     print 'saving '+ outdirfn
     
+    # for now we only save the dolphin version
+    #binarized_seafn="{}_sea_{}_{}_n{}{}_{}_{}{}".format(os.path.splitext(orginalfn)[0],args.classifier[0],args.training[0], str(coreSize),wsrealized,transformation_str,dfs_str,os.path.splitext(orginalfn)[1])
+    #outdirfn="{}/{}".format(outdir,binarized_seafn)
     
-    binarized_seafn="{}_sea_{}_{}_n{}{}_{}_{}{}".format(os.path.splitext(orginalfn)[0],args.classifier[0],args.training[0], str(coreSize),wsrealized,transformation_str,dfs_str,os.path.splitext(orginalfn)[1])
-    outdirfn="{}/{}".format(outdir,binarized_seafn)
-    
-    im_binarized= Image.fromarray(sea_masked_img)
-    im_binarized.save(outdirfn)    
-    print 'saving '+ outdirfn
+    #im_binarized= Image.fromarray(sea_masked_img)
+    #im_binarized.save(outdirfn)    
+    #print 'saving '+ outdirfn
 
 def do_test():
    
@@ -197,8 +206,14 @@ def do_test():
     print args.training[0]
     
     filename_model = args.path_models[0] + "/"+ args.classifier[0] +"_"+ args.training[0] +"_{}_{}_{}.pkl"
+
+    print "Creating folder...", args.output_folder[0]
+    create_dir_if_not_exists(args.output_folder[0])
+
+    print "ARGS IMAGES:", args.images
+    images = os.listdir(args.images[0])
         
-    for filename_img_to_binarize in args.images:
-            binarize(filename_img_to_binarize, filename_model, args.windowSizes, args.core[0])            
+    for filename_img_to_binarize in images:
+            binarize(args.images[0]+filename_img_to_binarize, filename_model, args.windowSizes, args.core[0], args.output_folder[0])            
 
 do_test()
