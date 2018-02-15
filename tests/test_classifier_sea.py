@@ -61,7 +61,7 @@ true_values = ['t', 'T', '1', 1, 'true', 'True', 'TRUE']
 
 
 
-def transform_yiq_and_eq_hist(filename, ins):
+def transform_yiq(filename, ins, equalize):
     im = Image.open(filename)
 
     data = np.array(im.getdata()).reshape((im.size[0], im.size[1], 3))
@@ -70,11 +70,13 @@ def transform_yiq_and_eq_hist(filename, ins):
 
     I = 0.595716*data[:,:,0] - 0.274453*data[:,:,1] - 0.321263*data[:,:,2]
 
-    im = exposure.equalize_hist(I)
-    return ins.getFDs('', im)
+    if equalize in true_values:
+      I = exposure.equalize_hist(I)
+
+    return ins.getFDs('', I)
 
 
-def transform_r_and_eq_hist(filename, ins):
+def transform_r(filename, ins, equalize):
     im = Image.open(filename)
 
     data = np.array(im.getdata()).reshape((im.size[0], im.size[1], 3))
@@ -83,9 +85,12 @@ def transform_r_and_eq_hist(filename, ins):
 
     R = data[:,:,0]
 
+    if equalize in true_values:
+      R = exposure.equalize_hist(R)
+
     return ins.getFDs('', R)
 
-def transform_g_and_eq_hist(filename, ins):
+def transform_g(filename, ins, equalize):
     im = Image.open(filename)
 
     data = np.array(im.getdata()).reshape((im.size[0], im.size[1], 3))
@@ -94,9 +99,12 @@ def transform_g_and_eq_hist(filename, ins):
 
     G = data[:,:,1]
 
+    if equalize in true_values:
+      G = exposure.equalize_hist(G)
+
     return ins.getFDs('', G)
 
-def transform_b_and_eq_hist(filename, ins):
+def transform_b(filename, ins, equalize):
     im = Image.open(filename)
 
     data = np.array(im.getdata()).reshape((im.size[0], im.size[1], 3))
@@ -105,10 +113,13 @@ def transform_b_and_eq_hist(filename, ins):
 
     B = data[:,:,2]
 
+    if equalize in true_values:
+      B = exposure.equalize_hist(B)
+
     return ins.getFDs('', B)
 
 # Lab color space
-def transform_lab_and_eq_hist(filename, ins):
+def transform_lab(filename, ins, equalize):
     rgb = io.imread(filename)
 
     lab = color.rgb2lab(rgb)
@@ -116,26 +127,31 @@ def transform_lab_and_eq_hist(filename, ins):
     l = lab[:,:,0]
     a = lab[:,:,1]
     b = lab[:,:,2]
+
+    if equalize in true_values:
+      l = exposure.equalize_hist(l)
+      a = exposure.equalize_hist(a)
+      b = exposure.equalize_hist(b)
       
     return ins.getFDs('', l) + ins.getFDs('', a) + ins.getFDs('', b)
 
 # transform image to other color space given filename
-def transform_f(filename, transformation, ins):
+def transform_f(filename, transformation, ins, equalize):
 
     if transformation == "YIQ":
-        return transform_yiq_and_eq_hist(filename, ins)
+        return transform_yiq(filename, ins, equalize)
 
     if transformation == "R":
-        return transform_r_and_eq_hist(filename, ins)
+        return transform_r(filename, ins, equalize)
 
     if transformation == "G":
-        return transform_g_and_eq_hist(filename, ins)
+        return transform_g(filename, ins, equalize)
 
     if transformation == "B":
-        return transform_b_and_eq_hist(filename, ins)
+        return transform_b(filename, ins, equalize)
 
     if transformation == "lab":
-        return transform_lab_and_eq_hist(filename, ins)
+        return transform_lab(filename, ins, equalize)
 
     print "ERROR: inexistent transformation"
     exit()
@@ -159,14 +175,14 @@ def compute_MFS(path_sea, path_dolphin, args):
     for i in range(cant_sea):
         filename = path_sea + dir_sea[i]
         if(transform in transformation_values):
-            seatrain_i[i] = transform_f(filename, transform, ins)
+            seatrain_i[i] = transform_f(filename, transform, ins, args.equalize[0])
         else:
             seatrain_i[i] = ins.getFDs(filename)
 
     for i in range(cant_dolphin):
         filename = path_dolphin + dir_dolphin[i]
         if(transform in transformation_values):
-            dolphintrain_i[i] = transform_f(filename, transform, ins)
+            dolphintrain_i[i] = transform_f(filename, transform, ins, args.equalize[0])
         else:
             dolphintrain_i[i] = ins.getFDs(filename)
 
@@ -237,7 +253,12 @@ def test_model_amount(train_percentage, seatrain_i, dolphintrain_i, resol, args)
     y_test = np.hstack((y_test_sea, y_test_do))
 
     tr = args.transform[0]
-    transform_str = tr if tr in transformation_values else "no_transform"
+    if tr in transformation_values:
+        transform_str = tr
+        if args.equalize[0] in true_values:
+            transform_str += '_eq'
+    else:
+        transform_str = "no_transform"
     dfs_str = str(args.dfs[0])
 
     clf = cfr.fit(X_train, y_train)
@@ -310,6 +331,7 @@ def do_test():
     parser.add_argument("-data", dest="data_path", type=str, required=True, nargs=1, help="Path where data will be saved")
     parser.add_argument("-dfs", dest="dfs", type=int, required=True, nargs=1, help="Amount of MFS dimensions per MFS")
     parser.add_argument("-tr", dest="transform", type=str, required=True, nargs=1, help="Convert data. Specify transformation " + ', '.join(transformation_values) + " or no transformation")
+    parser.add_argument("-eq", dest="equalize", type=str, required=True, nargs=1, help="Equalize image or not for training")
     parser.add_argument("-ptrain", dest="percentage_train", type=float, required=True, nargs=1, help="Percentage of dataset to be used for training (float)")
     
     args = parser.parse_args()

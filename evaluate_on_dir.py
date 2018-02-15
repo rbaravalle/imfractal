@@ -6,11 +6,11 @@ def main(args):
 
     print "Training........."
 
-    subprocess.call("python test_sea.py -imgs "+args.train_images[0]+" -data "+args.data[0]+" -dfs "+str(args.dfs[0])+" -tr "+args.tr[0]+" -p "+str(args.ptrain[0]), shell=True)
+    subprocess.call("python test_sea.py -imgs "+args.train_images[0]+" -data "+args.data[0]+" -dfs "+str(args.dfs[0])+" -tr "+args.tr[0]+" -p "+str(args.ptrain[0])+" -eq "+str(args.equalize[0]), shell=True)
 
     print "Binarizing images......"
 
-    subprocess.call("python binarize.py -ws "+str(args.ws[0])+" -pmodel "+args.model[0]+" -c "+args.classifier[0]+" -core "+str(args.core[0])+" -t "+args.training[0]+" -i "+args.images[0]+" -dfs "+str(args.dfs[0])+" -tr "+args.tr[0]+" -o "+str(args.output_folder[0]), shell=True)
+    subprocess.call("python binarize.py -ws "+str(args.ws[0])+" -pmodel "+args.model[0]+" -c "+args.classifier[0]+" -core "+str(args.core[0])+" -t "+args.training[0]+" -i "+args.images[0]+" -dfs "+str(args.dfs[0])+" -tr "+args.tr[0]+" -o "+str(args.output_folder[0])+" -eq "+str(args.equalize[0]), shell=True)
 
 
     print "Comparing with Ground Truth........"
@@ -37,6 +37,7 @@ if __name__=="__main__":
     parser.add_argument("-timgs", dest="train_images", type=str, required=True, nargs=1, help="Path with images for training")
     parser.add_argument("-g", dest="gt_dir", type=str, required=True, nargs=1, help="Dir with GT binarized images")
     parser.add_argument("-o", dest="output_folder", type=str, required=True, nargs=1, help="Output folder for binarized images")
+    parser.add_argument("-eq", dest="equalize", type=str, required=True, nargs=1, help="Equalize image or not for training")
 
 
 

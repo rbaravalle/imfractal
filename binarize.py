@@ -43,12 +43,18 @@ parser.add_argument("-i", dest="images", type=str, required=True, nargs='+', hel
 parser.add_argument("-core", dest="core", type=float, required=True, nargs='+', help="Size in pixels or percentage expressed as decimal for the sliding window core where is putted the result of the classification.")
 parser.add_argument("-dfs", dest="dfs", type=int, required=True, nargs=1, help="Amount of fractal dimensions in the MFS")
 parser.add_argument("-tr", dest="transformation", type=str, required=True, nargs=1, help="Transform or not")
+parser.add_argument("-eq", dest="equalize", type=str, required=True, nargs=1, help="Equalize image or not for training")
 parser.add_argument("-o", dest="output_folder", type=str, required=True, nargs=1, help="Output folder for binarized images")
 
 args = parser.parse_args()
 
 tr = args.transformation[0]
-transformation_str = tr if tr in transformation_values else "no_transformation"
+transformation_str = tr
+if tr in transformation_values:
+    if args.equalize[0] in true_values:
+        transformation_str += '_eq'
+else:
+    transformation_str = "no_transform"
 dfs_str = str(args.dfs[0])
 
 # create directory if it does not exist
